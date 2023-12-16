@@ -9,6 +9,8 @@ async function createTables() {
                 password VARCHAR(255) NOT NULL,
                 email VARCHAR(255) NOT NULL,
                 owned_games INTEGER[]
+                wishlist INTEGER[]
+                favorites INTEGER[]
             );
 
             CREATE TABLE games (
