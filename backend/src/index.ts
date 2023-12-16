@@ -3,7 +3,7 @@ import express from "express";
 
 import {test} from "./controllers/test";
 
-const PORT = 8080;
+const PORT = 3000;
 
 const app = express();
 
