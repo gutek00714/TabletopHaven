@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "swc --config-file config/.swcrc src -d build",
-    "watch": "nodemon -w src src/index.ts"
+    "watch": "nodemon -w src src/index.ts",
+    "compile-sass": "node-sass public/styles.scss public/styles.css -w"
   },
   "author": "GDA",
   "private": true,
@@ -22,6 +23,8 @@
   "dependencies": {
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "materialize-css": "^1.0.0",
+    "node-sass": "^9.0.0",
     "pg-promise": "^11.5.4"
   }
 }
