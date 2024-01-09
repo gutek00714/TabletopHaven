@@ -3,13 +3,16 @@ const db = require('./db');
 async function createTables() {
     try {
         await db.none(`
+            DROP TABLE IF EXISTS users CASCADE;
+            DROP TABLE IF EXISTS games CASCADE;
+
             CREATE TABLE users (
                 id SERIAL PRIMARY KEY,
-                username VARCHAR(255) NOT NULL,
-                password VARCHAR(255) NOT NULL,
-                email VARCHAR(255) NOT NULL,
-                owned_games INTEGER[]
-                wishlist INTEGER[]
+                googleId VARCHAR(255) UNIQUE NOT NULL,
+                email VARCHAR(255) UNIQUE NOT NULL,
+                username VARCHAR(255),
+                owned_games INTEGER[],
+                wishlist INTEGER[],
                 favorites INTEGER[]
             );
 
