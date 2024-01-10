@@ -35,5 +35,5 @@ npm install
 
 3. Run server
 ```
-npm start
+npm run serve
 ```
