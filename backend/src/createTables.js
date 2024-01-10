@@ -1,3 +1,6 @@
+const path = require('path');
+const dotenvPath = path.resolve(__dirname, '../.env');
+require('dotenv').config({ path: dotenvPath });
 const db = require('./db');
 
 async function createTables() {
@@ -24,7 +27,8 @@ async function createTables() {
                 rating FLOAT,
                 play_time VARCHAR(20),
                 age INT,
-                foreign_names VARCHAR(255)[]
+                foreign_names VARCHAR(255)[],
+                bgg_id INT
             );
         `);
         console.log('Tables created successfully.');
