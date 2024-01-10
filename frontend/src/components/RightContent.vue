@@ -1,6 +1,6 @@
 <!-- RightContent.vue -->
 <template>
-    <div class="col m10 column-background: materialize-red">
+    <div class="col m10 column-background materialize-red">
         <div class="main-site">
             <!-- Main site content here -->
             <div class="divider"></div>
@@ -12,11 +12,7 @@
             <div class="divider"></div>
             <div class="section white-text">
                 <h5>Top 5</h5>
-                <div class="col m2">dupa</div>
-                <div class="col m2">dupa1</div>
-                <div class="col m2">dupa2</div>
-                <div class="col m2">dupa3</div>
-                <div class="col m2">dupa4</div>
+                <div v-for="item in backendItems" :key="item.id" class="col m2">{{ item.name }}</div>
             </div>
         </div>
     </div>
@@ -24,8 +20,19 @@
   
   <script>
   export default {
-    name: 'RightContent',
-    // Możesz dodać właściwości, metody, itp.
+      name: 'RightContent',
+      data() {
+          return {
+              backendItems: [
+                  { id: 1, name: 'Placeholder1' },
+                  { id: 2, name: 'Placeholder2' },
+                  { id: 3, name: 'Placeholder3' },
+                  { id: 4, name: 'Placeholder4' },
+                  { id: 5, name: 'Placeholder5' }
+              ]
+              // W rzeczywistości, zamiast używać statycznych danych, pobrałbyś dane z backendu i przypisałbyś je do backendItems
+          };
+      },
   }
   </script>
   

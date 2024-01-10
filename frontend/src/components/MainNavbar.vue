@@ -40,4 +40,7 @@ export default {
     padding-left: 10px;
     padding-right: 10px;
 }
+
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+
 </style>

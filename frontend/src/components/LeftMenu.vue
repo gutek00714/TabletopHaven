@@ -21,7 +21,7 @@
   <script>
   export default {
     name: 'LeftMenu',
-    // Możesz dodać właściwości, metody, itp.
+    
   }
   </script>
   
@@ -29,5 +29,17 @@
   .col{
     margin-left: 0 !important;
   }
+
+  .custom-button{
+    color: #808191;
+    text-transform: capitalize;
+    width: 100%;
+    box-sizing: border-box;
+    transition: color 0.3s;
+}
+
+.custom-button:hover{
+    color: #000; /*dodać customowy color */
+}
   </style>
   
