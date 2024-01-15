@@ -47,6 +47,7 @@ export default {
 }
 .search-bar-container {
   height: 64px;
+  margin-left: 3rem;
 }
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 
