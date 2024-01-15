@@ -21,7 +21,7 @@
 
                 <!-- Login button on the right -->
                 <div class="col m3 right-align">
-                    <a class="waves-effect waves-light btn">Register/Login</a>
+                    <button @click="loginWithGoogle" class="waves-effect waves-light btn">Register/Login</button>
                 </div>
             </div>
     </div>
@@ -32,6 +32,11 @@
 export default {
   name: 'MainNavbar',
   // Możesz dodać właściwości, metody, itp.
+  methods: {
+    loginWithGoogle() {
+      window.location.href = 'http://localhost:3000/auth/google';
+    }
+  }
 }
 </script>
 
