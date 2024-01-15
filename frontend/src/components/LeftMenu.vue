@@ -1,7 +1,6 @@
 <!-- LeftMenu.vue -->
 <template>
     <div class="col m2">
-        <div class="divider"></div>
         <div class="section">
             <h5>MENU</h5>
             <p><a class="waves-effect waves-teal btn-flat custom-button">News</a></p>

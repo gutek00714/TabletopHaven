@@ -3,7 +3,6 @@
     <div class="col m9 column-background materialize-red main-content">
         <div class="main-site">
             <!-- Main site content here -->
-            <div class="divider"></div>
             <div class="section white-text">
                 <h5>News</h5>
                 <div class="col m6">dupa</div>
