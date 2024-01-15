@@ -11,7 +11,7 @@
                 <!-- Search bar in the center -->
                 <div class="col m7">
                     <form>
-                        <div class="input-field center-align">
+                        <div class="input-field center-align search-bar-container">
                             <input id="search" type="search" required>
                             <label class="label-icon" for="search"><i class="material-icons">search</i></label>
                             <i class="material-icons">close</i>
@@ -45,7 +45,9 @@ export default {
     padding-left: 10px;
     padding-right: 10px;
 }
-
+.search-bar-container {
+  height: 64px;
+}
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 
 </style>
