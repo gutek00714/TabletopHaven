@@ -1,6 +1,6 @@
 <!-- RightContent.vue -->
 <template>
-    <div class="col m10 column-background materialize-red">
+    <div class="col m9 column-background materialize-red main-content">
         <div class="main-site">
             <!-- Main site content here -->
             <div class="divider"></div>
@@ -37,6 +37,10 @@
   </script>
   
   <style scoped>
-  /* Styl dla komponentu RightContent */
+    .column-background.materialize-red.main-content {
+        margin-left: 2.5rem;
+        margin-top: 3rem;
+        border-radius: 5px;
+    }
   </style>
   
