@@ -1,11 +1,27 @@
 <template>
   <div id="app">
-    <router-view></router-view>
+    <MainNavbar />
+    <div class="row">
+      <LeftMenu />
+      <RightContent />
+    </div>
   </div>
 </template>
 
 <script>
+import MainNavbar from '@/components/MainNavbar.vue';
+import LeftMenu from '@/components/LeftMenu.vue';
+import RightContent from '@/components/RightContent.vue';
+
 export default {
-  name: 'App'
+  components: {
+    MainNavbar,
+    LeftMenu,
+    RightContent,
+  },
 }
 </script>
+
+<style>
+/* Dostosuj globalny styl tutaj, jeśli to konieczne */
+</style>
