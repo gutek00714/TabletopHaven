@@ -21,7 +21,8 @@
 
                 <!-- Login button on the right -->
                 <div class="col m3 right-align">
-                    <button @click="loginWithGoogle" class="waves-effect waves-light btn">Register/Login</button>
+                  <button v-if="!isLoggedIn" @click="loginWithGoogle" class="waves-effect waves-light btn">Register/Login</button>
+                  <button v-else @click="logout" class="waves-effect waves-light btn">Logout</button>
                 </div>
             </div>
     </div>
@@ -31,11 +32,40 @@
 <script>
 export default {
   name: 'MainNavbar',
-  // Możesz dodać właściwości, metody, itp.
+  data() {
+    return {
+      isLoggedIn: false // This will be updated based on the user's login status
+    };
+  },
   methods: {
     loginWithGoogle() {
       window.location.href = 'http://localhost:3000/auth/google';
+    },
+    logout() {
+      fetch('http://localhost:3000/logout', { method: 'GET' })
+        .then(() => {
+          this.isLoggedIn = false;
+          // Redirect or update UI as needed after successful logout
+        })
+        .catch(error => {
+          console.error('Logout failed:', error);
+        });
     }
+  },
+  created() {
+    // Check login status when the component is created
+    // You may need to implement an API endpoint to check if the user is logged in
+    fetch('http://localhost:3000/check-login-status', {
+      method: 'GET',
+      credentials: 'include' // Important for sending cookies
+    })
+      .then(response => response.json())
+      .then(data => {
+        this.isLoggedIn = data.isLoggedIn;
+      })
+      .catch(error => {
+        console.error('Failed to check login status:', error);
+      });
   }
 }
 </script>

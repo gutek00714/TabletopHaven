@@ -4,18 +4,49 @@ import session from 'express-session';
 import passport from 'passport';
 import './passport-setup';
 import cors from 'cors';
+import pgSession from 'connect-pg-simple';
+import { Pool } from 'pg';
+
+require('dotenv').config();
+console.log('PostgreSQL connection settings:', {
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_DATABASE,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT
+});
+
 
 const PORT = 3000;
 const app = express();
 
-app.use(express.static('public'));
-app.use(cors());
+const PgSession = pgSession(session);
+const sessionSecret = process.env.SESSION_SECRET;
+if (!sessionSecret) {
+  throw new Error('SESSION_SECRET is not set');
+}
 
-// Session setup
+app.use(express.static('public'));
+app.use(cors({
+  origin: 'http://localhost:8081', // Your frontend URL
+  credentials: true
+}));
+
 app.use(session({
-  secret: process.env.SESSION_SECRET!,
+  store: new PgSession({
+    pool: new Pool({ // Use node-postgres Pool
+      user: process.env.DB_USER,
+      host: process.env.DB_HOST,
+      database: process.env.DB_DATABASE,
+      password: process.env.DB_PASSWORD,
+      port: parseInt(process.env.DB_PORT || '5432', 10)
+    }),
+    tableName: 'session' // optional, default is 'session'
+  }),
+  secret: sessionSecret,
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: true,
+  cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 } // 30 days for example
 }));
 
 // Initialize Passport
@@ -38,12 +69,27 @@ app.get('/auth/google/callback',
 app.get('/logout', (req, res) => {
   req.logout((err) => {
     if (err) {
-      console.error(err);
-      res.status(500).send('Error during logout');
-      return;
+      console.error('Logout error:', err);
+      return res.status(500).send('Error during logout');
     }
-    res.redirect('/login.html');
+    req.session.destroy(err => { // Explicitly destroy the session
+      if (err) {
+        console.error('Session destruction error:', err);
+        return res.status(500).send('Could not log out');
+      }
+      res.clearCookie('connect.sid'); // Clear the session cookie
+      res.redirect('/login.html'); // Redirect or handle as needed
+    });
   });
+});  
+
+app.get('/check-login-status', (req, res) => {
+  console.log('Checking login status, user:', req.user);
+  if (req.isAuthenticated()) {
+    res.json({ isLoggedIn: true });
+  } else {
+    res.json({ isLoggedIn: false });
+  }
 });
 
 http.createServer(app).listen(PORT, () => {
