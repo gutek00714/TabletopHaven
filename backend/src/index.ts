@@ -80,7 +80,7 @@ app.get('/logout', (req, res) => {
       }
       console.log('Session destroyed');
       res.clearCookie('connect.sid');
-      res.redirect('http://localhost:8081');
+      res.json({ message: 'Logged out' });
     });
   });
 });  
