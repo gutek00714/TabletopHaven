@@ -42,10 +42,14 @@ export default {
       window.location.href = 'http://localhost:3000/auth/google';
     },
     logout() {
-      fetch('http://localhost:3000/logout', { method: 'GET' })
+      fetch('http://localhost:3000/logout', { 
+        method: 'GET',
+        credentials: 'include'
+      })
         .then(() => {
+          console.log('Logged out, updating state');
           this.isLoggedIn = false;
-          // Redirect or update UI as needed after successful logout
+          window.location.reload(); // Force a page reload
         })
         .catch(error => {
           console.error('Logout failed:', error);
@@ -54,7 +58,6 @@ export default {
   },
   created() {
     // Check login status when the component is created
-    // You may need to implement an API endpoint to check if the user is logged in
     fetch('http://localhost:3000/check-login-status', {
       method: 'GET',
       credentials: 'include' // Important for sending cookies

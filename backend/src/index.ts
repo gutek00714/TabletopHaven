@@ -59,26 +59,28 @@ app.get('/auth/google',
 
 app.get('/auth/google/callback', 
   passport.authenticate('google', { 
-      failureRedirect: 'http://localhost:8081/fail' // Redirect to Vue.js fail route
+      failureRedirect: 'http://localhost:8081' // Redirect to Vue.js fail route
   }),
   (req, res) => {
     // Successful authentication, redirect to Vue.js success route
-    res.redirect('http://localhost:8081/success');
+    res.redirect('http://localhost:8081');
   });
 
 app.get('/logout', (req, res) => {
+  console.log('Initiating logout for user:', req.user);
   req.logout((err) => {
     if (err) {
       console.error('Logout error:', err);
       return res.status(500).send('Error during logout');
     }
-    req.session.destroy(err => { // Explicitly destroy the session
+    req.session.destroy(err => {
       if (err) {
         console.error('Session destruction error:', err);
         return res.status(500).send('Could not log out');
       }
-      res.clearCookie('connect.sid'); // Clear the session cookie
-      res.redirect('/login.html'); // Redirect or handle as needed
+      console.log('Session destroyed');
+      res.clearCookie('connect.sid');
+      res.redirect('http://localhost:8081');
     });
   });
 });  
