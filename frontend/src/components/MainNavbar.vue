@@ -44,7 +44,7 @@ export default {
     logout() {
       fetch('http://localhost:3000/logout', { 
         method: 'GET',
-        credentials: 'include'
+        credentials: 'include' // VERY important for sending cookies
       })
         .then(() => {
           console.log('Logged out, updating state');
