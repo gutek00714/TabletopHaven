@@ -27,7 +27,6 @@ passport.serializeUser((user, done) => {
   done(null, user.id);
 });
 
-
 passport.deserializeUser((id, done) => {
   db.one('SELECT * FROM users WHERE id = $1', [id])
     .then(user => done(null, user))
