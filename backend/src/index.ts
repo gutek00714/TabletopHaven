@@ -4,12 +4,14 @@ import session from 'express-session';
 import passport from 'passport';
 import './passport-setup';
 import cors from 'cors';
+import { bggAPI } from "./controllers/bggAPI";
 
 const PORT = 3000;
 const app = express();
 
 app.use(express.static('public'));
 app.use(cors());
+app.use(bggAPI);
 
 // Session setup
 app.use(session({
