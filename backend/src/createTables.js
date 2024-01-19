@@ -24,8 +24,8 @@ async function createTables() {
             CREATE TABLE games (
                 id SERIAL PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
-                publisher VARCHAR(255) NOT NULL,
-                categories INTEGER[],
+                publisher VARCHAR(255)[],
+                categories VARCHAR(255)[],
                 rating FLOAT,
                 play_time VARCHAR(20),
                 age INT,
