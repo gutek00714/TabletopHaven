@@ -34,11 +34,12 @@
     text-transform: capitalize;
     width: 100%;
     box-sizing: border-box;
-    transition: color 0.3s;
+    transition: background-color 0.3s ease;
+    border-radius: 4px;
 }
 
 .custom-button:hover{
-    color: #000; /*dodać customowy color */
+    background-color: #322f46;
 }
   </style>
   
