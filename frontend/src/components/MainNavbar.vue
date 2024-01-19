@@ -10,9 +10,9 @@
                 
                 <!-- Search bar in the center -->
                 <div class="col m7">
-                    <form>
+                    <form @submit.prevent="searchBoardGames(searchQuery)">
                         <div class="input-field center-align search-bar-container">
-                            <input id="search" type="search" required>
+                            <input v-model="searchQuery" id="search" type="search" @input="debouncedOnChange" required>
                             <label class="label-icon" for="search"><i class="material-icons">search</i></label>
                             <i class="material-icons">close</i>
                         </div>
@@ -30,17 +30,48 @@
 </template>
 
 <script>
+import axios from 'axios';
+import _debounce from 'lodash.debounce';
+
 export default {
   name: 'MainNavbar',
+  // Możesz dodać właściwości, metody, itp.
+  
   data() {
-    return {
-      isLoggedIn: false // This will be updated based on the user's login status
-    };
+  return {
+    searchQuery: '',
+    isLoggedIn: false, // This will be updated based on the user's login status
+  };
+},
+
+  computed: {
+    debouncedOnChange () {
+      return _debounce(this.onChange, 700);
+    }
   },
+
+
   methods: {
     loginWithGoogle() {
       window.location.href = 'http://localhost:3000/auth/google';
     },
+    async searchBoardGames(query) {
+      try {
+        const response = await axios.get(`http://localhost:3000/search/${query}`);
+        console.log(response.data);
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    },
+
+    onChange() {
+      setTimeout(() => {
+        console.log(this.searchQuery);
+        this.searchBoardGames(this.searchQuery);
+      }, 100); // 100 milliseconds delay
+    },
+    
+
     logout() {
       fetch('http://localhost:3000/logout', { 
         method: 'GET',
