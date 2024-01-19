@@ -69,7 +69,7 @@ export default {
         console.log(this.searchQuery);
         this.searchBoardGames(this.searchQuery);
       }, 100); // 100 milliseconds delay
-    }
+    },
     
 
     logout() {
