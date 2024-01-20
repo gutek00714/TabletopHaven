@@ -1,4 +1,7 @@
-const db = require('./db'); // Ensure this points to your database configuration module
+const path = require('path');
+const dotenvPath = path.resolve(__dirname, '../.env');
+require('dotenv').config({ path: dotenvPath });
+const db = require('./db');
 
 async function displayAllGames() {
     try {
