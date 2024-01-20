@@ -25,11 +25,13 @@ async function createTables() {
                 id SERIAL PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
                 publisher VARCHAR(255)[],
+                description TEXT,
                 categories VARCHAR(255)[],
                 rating FLOAT,
                 play_time VARCHAR(20),
                 age INT,
                 foreign_names VARCHAR(255)[],
+                image VARCHAR(255),
                 bgg_id INT
             );
 
