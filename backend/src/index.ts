@@ -4,6 +4,8 @@ import session from 'express-session';
 import passport from 'passport';
 import './passport-setup';
 import cors from 'cors';
+
+import { gameDetails } from "./bggAPI/gameDetails";
 import { bggAPI } from "./controllers/bggAPI";
 import pgSession from 'connect-pg-simple';
 import { Pool } from 'pg';
@@ -33,7 +35,10 @@ app.use(cors({
   origin: 'http://localhost:8081', // Your frontend URL
   credentials: true
 }));
+
+app.use(gameDetails);
 app.use(bggAPI);
+
 
 app.use(session({
   store: new PgSession({
