@@ -48,8 +48,8 @@ const db = require('./db'); // Your database module
 async function addGameToDatabase(game) {
     try {
         await db.none(
-            'INSERT INTO games (name, publisher, categories, rating, play_time, age, foreign_names, image, description, bgg_id) ' +
-            'VALUES (${name}, ${publisher}, ${categories}, ${rating}, ${play_time}, ${age}, ${foreign_names}, ${image}, ${description}, ${bgg_id})',
+            'INSERT INTO games (name, publisher, categories, rating, min_players, max_players, play_time, age, foreign_names, image, description, bgg_id) ' +
+            'VALUES (${name}, ${publisher}, ${categories}, ${rating}, ${min_players}, ${max_players}, ${play_time}, ${age}, ${foreign_names}, ${image}, ${description}, ${bgg_id})',
             game
         );
         console.log('Game added:', game.name);
