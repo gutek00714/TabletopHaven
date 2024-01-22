@@ -11,7 +11,7 @@
       <img :src="gameData.image" alt="Game image" width="200" height="200" />
       <div style="margin-left: 20px;">
         <h2 style="color: white;">{{ gameData.name }}</h2>
-        <div style="display: flex; justify-content: space-around; width: 100%; color: white;">
+        <div style="display: flex; width: 100%; color: white;">
           <div style="padding-right: 10px;">Players: {{ gameData.min_players }} - {{ gameData.max_players }}</div>
           <div style="border-left: 1px solid white; padding-left: 10px; padding-right: 10px;">Playing time: {{ gameData.play_time }} minutes</div>
           <div style="border-left: 1px solid white; padding-left: 10px; padding-right: 10px;">Age: {{ gameData.age }}</div>
