@@ -3,7 +3,7 @@
     <MainNavbar />
     <div class="row">
       <LeftMenu />
-      <RightContent />
+      <GameDetails />
     </div>
   </div>
 </template>
@@ -11,17 +11,17 @@
 <script>
 import MainNavbar from '@/components/MainNavbar.vue';
 import LeftMenu from '@/components/LeftMenu.vue';
-import RightContent from '@/components/RightContent.vue';
+import GameDetails from '@/components/GameDetails.vue';
 
 export default {
   components: {
     MainNavbar,
     LeftMenu,
-    RightContent,
+    GameDetails,
   },
 }
 </script>
 
 <style>
-/* Dostosuj globalny styl tutaj, jeśli to konieczne */
+
 </style>
