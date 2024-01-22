@@ -1,24 +1,19 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import LoginSuccess from '../views/LoginSuccess.vue';
-import LoginFail from '../views/LoginFail.vue';
-import UserLogin from '../components/UserLogin.vue';
+import GameDetails from '../components/GameDetails.vue';
+import RightContent from '../components/RightContent.vue';
 
 const routes = [
-    {
+  {
     path: '/',
-    name: 'UserLogin',
-    component: UserLogin
-    },
-    {
-    path: '/success',
-    name: 'LoginSuccess',
-    component: LoginSuccess
-    },
-    {
-    path: '/fail',
-    name: 'LoginFail',
-    component: LoginFail
-    }
+    name: 'Home',
+    component: RightContent
+  },
+  {
+    path: '/game/:gameId',
+    name: 'GameDetails',
+    component: GameDetails,
+    props: true // Pass route params as props
+  }
   // other routes...
 ];
 

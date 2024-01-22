@@ -19,7 +19,7 @@ console.log('PostgreSQL connection settings:', {
   port: process.env.DB_PORT
 });
 
-
+const path = require('path');
 const PORT = 3000;
 const app = express();
 
@@ -100,6 +100,51 @@ app.get('/check-login-status', (req, res) => {
   } else {
     res.json({ isLoggedIn: false });
   }
+});
+
+app.get('/game/:gameId', async (req, res) => {
+  const gameId = parseInt(req.params.gameId, 10);
+  if (!gameId) {
+    return res.status(400).send('Invalid game ID');
+  }
+
+  try {
+    const gameDetails = await getGameDetails(gameId);
+    if (!gameDetails) {
+      return res.status(404).send('Game not found');
+    }
+    res.json(gameDetails);
+  } catch (error) {
+    console.error('Error fetching game details:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+const pool = new Pool({
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_DATABASE,
+  password: process.env.DB_PASSWORD,
+  port: parseInt(process.env.DB_PORT || '5432', 10),
+});
+
+async function getGameDetails(gameId: number) {
+  const query = 'SELECT * FROM games WHERE id = $1';
+  try {
+    const res = await pool.query(query, [gameId]);
+    return res.rows[0]; // Assuming id is unique and only one row is returned
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error('Error executing query', err.stack);
+    } else {
+      console.error('An unknown error occurred');
+    }
+    throw err;
+  }
+}
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'path/to/your/index.html'));
 });
 
 http.createServer(app).listen(PORT, () => {

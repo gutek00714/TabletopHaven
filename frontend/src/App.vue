@@ -3,7 +3,8 @@
     <MainNavbar />
     <div class="row">
       <LeftMenu />
-      <RightContent />
+      <!-- The router-view component is where routed components will be displayed -->
+      <router-view />
     </div>
   </div>
 </template>
@@ -11,17 +12,15 @@
 <script>
 import MainNavbar from '@/components/MainNavbar.vue';
 import LeftMenu from '@/components/LeftMenu.vue';
-import RightContent from '@/components/RightContent.vue';
 
 export default {
   components: {
     MainNavbar,
     LeftMenu,
-    RightContent,
   },
 }
 </script>
 
 <style>
-/* Dostosuj globalny styl tutaj, jeśli to konieczne */
+/* Global style adjustments */
 </style>
