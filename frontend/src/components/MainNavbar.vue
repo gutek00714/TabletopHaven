@@ -142,7 +142,7 @@ export default {
 .search-bar-container {
   height: 64px;
   margin-left: 3rem;
-  position: relative; /* Set relative positioning for the search bar container */
+  position: relative;
   width: 100%;
 }
 
@@ -150,19 +150,19 @@ export default {
 
 .search-results-dropdown {
   position: absolute;
-  background-color: #333; /* Dark background for contrast */
-  color: #fff; /* Light text color for visibility */
+  background-color: #333;
+  color: #fff;
   border: 1px solid #ddd;
   border-radius: 4px;
   z-index: 100;
   top: 100%;
-  width: calc(100% - 20px); /* Slightly narrower than search bar */
-  box-shadow: 0 8px 16px rgba(0,0,0,0.2); /* Optional: Add a shadow for depth */
-  max-height: 300px; /* Optional: Limit the height with scroll */
-  overflow-y: auto; /* Optional: Add scroll for overflow */
-  left: 50%; /* Start at the center of the search bar container */
-  transform: translateX(-50%); /* Shift it back by half its own width */
-  width: 70%; /* Adjust the width as needed */
+  width: calc(100% - 20px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  max-height: 300px;
+  overflow-y: auto;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 70%;
 }
 
 @media screen and (max-width: 1000) {
@@ -174,11 +174,11 @@ export default {
 }
 
 .game-image {
-  width: 30px; /* Adjust the size as needed */
-  height: 30px; /* Adjust the size as needed */
-  object-fit: cover; /* This ensures the image keeps its aspect ratio */
-  margin-right: 10px; /* Space between image and text */
-  vertical-align: middle; /* Align image with text */
+  width: 30px;
+  height: 30px;
+  object-fit: cover;
+  margin-right: 10px;
+  vertical-align: middle;
 }
 
 .search-results-dropdown ul {
@@ -188,8 +188,8 @@ export default {
 }
 
 .search-results-dropdown li {
-  display: flex; /* Align image and text horizontally */
-  align-items: center; /* Center items vertically */
+  display: flex;
+  align-items: center;
   padding: 10px;
 }
 
@@ -198,7 +198,7 @@ export default {
 }
 
 .search-results-dropdown li:hover {
-  background-color: #444; /* Slightly different shade for hover */
+  background-color: #444;
 }
 
 </style>
