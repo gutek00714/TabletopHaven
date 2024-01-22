@@ -22,10 +22,13 @@
                 <div v-if="searchResults.length" class="search-results-dropdown">
                   <ul>
                     <li v-for="game in searchResults" :key="game.id">
-                      <router-link :to="`/game/${game.id}`" @click="clearSearch">{{ game.name }}</router-link>
+                      <router-link :to="`/game/${game.id}`" @click="clearSearch">
+                        <img :src="game.image" class="game-image" alt="Game Image"> <!-- Game Image -->
+                        {{ game.name }}
+                      </router-link>
                     </li>                                      
                   </ul>
-                </div>
+                </div>                
                 
 
                 <!-- Login button on the right -->
@@ -140,6 +143,7 @@ export default {
   height: 64px;
   margin-left: 3rem;
   position: relative; /* Set relative positioning for the search bar container */
+  width: 100%;
 }
 
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
@@ -156,6 +160,25 @@ export default {
   box-shadow: 0 8px 16px rgba(0,0,0,0.2); /* Optional: Add a shadow for depth */
   max-height: 300px; /* Optional: Limit the height with scroll */
   overflow-y: auto; /* Optional: Add scroll for overflow */
+  left: 50%; /* Start at the center of the search bar container */
+  transform: translateX(-50%); /* Shift it back by half its own width */
+  width: 70%; /* Adjust the width as needed */
+}
+
+@media screen and (max-width: 1000) {
+  .search-results-dropdown {
+    width: 95%;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+.game-image {
+  width: 30px; /* Adjust the size as needed */
+  height: 30px; /* Adjust the size as needed */
+  object-fit: cover; /* This ensures the image keeps its aspect ratio */
+  margin-right: 10px; /* Space between image and text */
+  vertical-align: middle; /* Align image with text */
 }
 
 .search-results-dropdown ul {
@@ -165,6 +188,8 @@ export default {
 }
 
 .search-results-dropdown li {
+  display: flex; /* Align image and text horizontally */
+  align-items: center; /* Center items vertically */
   padding: 10px;
 }
 

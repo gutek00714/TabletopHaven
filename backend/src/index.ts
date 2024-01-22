@@ -152,7 +152,7 @@ app.get('/search-games', async (req, res) => {
   }
 
   try {
-    const query = 'SELECT * FROM games WHERE LOWER(name) LIKE $1 LIMIT 10'; // Limiting to 10 results for efficiency
+    const query = 'SELECT * FROM games WHERE LOWER(name) LIKE $1 LIMIT 100'; // Limiting to 10 results for efficiency
     const results = await pool.query(query, [`%${searchQuery.toLowerCase()}%`]);
     res.json(results.rows);
     } catch (err) {
