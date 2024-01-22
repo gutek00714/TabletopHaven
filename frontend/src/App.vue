@@ -4,7 +4,7 @@
     <div class="row">
       <LeftMenu />
       <!-- The router-view component is where routed components will be displayed -->
-      <router-view />
+      <router-view :key="$route.fullPath" />
     </div>
   </div>
 </template>
