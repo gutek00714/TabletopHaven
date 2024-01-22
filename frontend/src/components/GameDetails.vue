@@ -10,7 +10,7 @@
     <div style="display: flex; flex-direction: row; justify-content: flex-start;">
       <img :src="gameData.image" alt="Game image" width="200" height="200" />
       <div style="margin-left: 20px;">
-        <h2 style="color: white;">{{ gameData.name }}</h2>
+        <h2 style="color: white;">{{ gameData.name }} ({{ gameData.year}})</h2>
         <div style="display: flex; width: 100%; color: white;">
           <div style="padding-right: 10px;">Players: {{ gameData.min_players }} - {{ gameData.max_players }}</div>
           <div style="border-left: 1px solid white; padding-left: 10px; padding-right: 10px;">Playing time: {{ gameData.play_time }} minutes</div>

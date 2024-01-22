@@ -25,6 +25,7 @@ async function createTables() {
                 id SERIAL PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
                 publisher VARCHAR(255)[],
+                year INT,
                 description TEXT,
                 categories VARCHAR(255)[],
                 rating INTEGER[],
