@@ -24,16 +24,20 @@ async function fetchGameFromBGG(id) {
 }
 
 function transformGameData(gameData) {
-    // Extract and transform data from gameData to match your database schema
+    // Generate random ratings
+    const ratings = Array.from({ length: Math.floor(Math.random() * 15 + 2) }, () => Math.floor(Math.random() * 10 + 1));
+
     return {
         name: gameData.name.find(n => n.$.primary === 'true')._,
         publisher: gameData.boardgamepublisher ? gameData.boardgamepublisher.map(pub => pub._) : [],
         categories: gameData.boardgamecategory ? gameData.boardgamecategory.map(cat => cat._) : [],
-        rating: null, // If available
+        rating: ratings,
+        min_players: parseInt(gameData.minplayers[0], 10),
+        max_players: parseInt(gameData.maxplayers[0], 10),
         play_time: gameData.playingtime[0],
         age: parseInt(gameData.age[0], 10),
         foreign_names: gameData.name.filter(n => !n.$.primary).map(n => n._),
-        image: gameData.image ? gameData.image[0] : null, // Extract image URL
+        image: gameData.image ? gameData.image[0] : null,
         description: gameData.description ? gameData.description[0] : null,
         bgg_id: parseInt(gameData.$.objectid, 10)
     };
