@@ -1,3 +1,4 @@
+<!-- GameDetails.vue -->
 <template>
   <div v-if="loading" class="column-background main-content">
     Loading game details...

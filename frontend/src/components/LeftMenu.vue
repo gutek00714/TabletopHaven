@@ -29,17 +29,16 @@
     margin-left: 0 !important;
   }
 
-  .custom-button{
-    color: #808191;
-    text-transform: capitalize;
-    width: 100%;
-    box-sizing: border-box;
-    transition: background-color 0.3s ease;
-    border-radius: 4px;
+.custom-button{
+  color: #808191;
+  text-transform: capitalize;
+  width: 100%;
+  box-sizing: border-box;
+  transition: background-color 0.3s ease;
+  border-radius: 4px;
 }
 
 .custom-button:hover{
-    background-color: #322f46;
+  background-color: #322f46;
 }
-  </style>
-  
+</style>
