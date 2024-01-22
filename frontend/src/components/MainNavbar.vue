@@ -14,7 +14,7 @@
                         <div class="input-field center-align search-bar-container" ref="searchContainer">
                           <input v-model="searchQuery" id="search" type="search" @input="debouncedOnChange" required>
                             <label class="label-icon" for="search"><i class="material-icons">search</i></label>
-                            <i class="material-icons">close</i>
+                            <i class="material-icons" @click="clearSearch">close</i>
                         </div>
                     </form>
                 </div>
