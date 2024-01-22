@@ -1,14 +1,14 @@
 <!-- LeftMenu.vue -->
 <template>
     <div class="col m2">
-        <div class="section">
+        <div class="section" style="width: 80%">
             <h5>MENU</h5>
             <p><a class="waves-effect waves-teal btn-flat custom-button">News</a></p>
             <p><a class="waves-effect waves-teal btn-flat custom-button">Ranking</a></p>
             <p><a class="waves-effect waves-teal btn-flat custom-button">Categories</a></p>
         </div>
-        <div class="divider"></div>
-        <div class="section">
+        <div class="divider" style="width: 80%"></div>
+        <div class="section" style="width: 80%">
             <h5>PROFILE</h5>
             <p><a class="waves-effect waves-teal btn-flat custom-button">Your shelf</a></p>
             <p><a class="waves-effect waves-teal btn-flat custom-button">Friends</a></p>
