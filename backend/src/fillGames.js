@@ -30,6 +30,7 @@ function transformGameData(gameData) {
     return {
         name: gameData.name.find(n => n.$.primary === 'true')._,
         publisher: gameData.boardgamepublisher ? gameData.boardgamepublisher.map(pub => pub._) : [],
+        year: parseInt(gameData.yearpublished[0], 10),
         categories: gameData.boardgamecategory ? gameData.boardgamecategory.map(cat => cat._) : [],
         rating: ratings,
         min_players: parseInt(gameData.minplayers[0], 10),
@@ -48,8 +49,8 @@ const db = require('./db'); // Your database module
 async function addGameToDatabase(game) {
     try {
         await db.none(
-            'INSERT INTO games (name, publisher, categories, rating, min_players, max_players, play_time, age, foreign_names, image, description, bgg_id) ' +
-            'VALUES (${name}, ${publisher}, ${categories}, ${rating}, ${min_players}, ${max_players}, ${play_time}, ${age}, ${foreign_names}, ${image}, ${description}, ${bgg_id})',
+            'INSERT INTO games (name, publisher, year, categories, rating, min_players, max_players, play_time, age, foreign_names, image, description, bgg_id) ' +
+            'VALUES (${name}, ${publisher}, ${year}, ${categories}, ${rating}, ${min_players}, ${max_players}, ${play_time}, ${age}, ${foreign_names}, ${image}, ${description}, ${bgg_id})',
             game
         );
         console.log('Game added:', game.name);
