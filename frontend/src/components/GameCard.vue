@@ -1,19 +1,21 @@
 <template>
-  <div v-if="loading" class="game-card">
-    Loading game details...
-  </div>
-  <div v-else-if="error" class="game-card">
-    Error loading game details: {{ error }}
-  </div>
-  <div v-else class="game-card" @click="handleClick">
-    <div class="game-image-container">
-      <img :src="gameData.image" alt="Game image" class="game-image" />
+  <router-link :to="`/game/${gameId}`" class="router-link">
+    <div v-if="loading" class="game-card">
+      Loading game details...
     </div>
-    <h2 class="game-title">{{ gameData.name }}</h2>
-    <h3 class="game-year">Year: {{ gameData.year }}</h3>
-    <div v-if="averageRating !== null">Rating: {{ averageRating.toFixed(1) }}</div>
-    <div>Players: {{ gameData.min_players }} - {{ gameData.max_players }}</div>
-  </div>
+    <div v-else-if="error" class="game-card">
+      Error loading game details: {{ error }}
+    </div>
+    <div v-else class="game-card">
+      <div class="game-image-container">
+        <img :src="gameData.image" alt="Game image" class="game-image" />
+      </div>
+      <h2 class="game-title" :style="{ fontSize: adjustFontSize(gameData.name) }">{{ gameData.name }}</h2>
+      <h3 class="game-year">({{ gameData.year }})</h3>
+      <div v-if="averageRating !== null">Rating: {{ averageRating.toFixed(1) }}</div>
+      <div>Players: {{ gameData.min_players }} - {{ gameData.max_players }}</div>
+    </div>
+  </router-link>
 </template>
 
 <script>
@@ -62,33 +64,53 @@ export default {
       }
     },
 
-    handleClick() {
-      // add button logic
+    adjustFontSize(title) {
+      if (title.length > 16) { // Adjust the number based on your needs
+        return '24px'; // Smaller font size for longer titles
+      }
+      else if (title.length > 19) {
+        return '20px';
+      }
+      else if (title.length > 23) {
+        return '16px';
+      }
+      return '30px';
     },
   },
 };
 </script>
 
 <style scoped>
+.router-link {
+  text-decoration: none;
+  color: #FFF;
+}
+
 .game-card {
-    width: 200px; 
+    height: 350px;
+    width: 250px !important;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
     word-wrap: break-word;
     cursor: pointer;
-    transition: transform 0.3s ease;
+    transition: all 0.3s ease;
+    border-radius: 10px;
+    box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.5);
 }
 
 .game-card:hover {
   background-color: #322f46;
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.8);
+  transform: translateY(-2px);
 }
 
 .game-image-container {
     width: 200px;
     height: 200px;
     display: flex;
+    padding-top: 2rem;
     align-items: center;
     justify-content: center;
     overflow: hidden;
@@ -97,15 +119,17 @@ export default {
 .game-card img {
     max-width: 100%;
     max-height: 100%;
+    border-radius: 4px;
 }
 
 .game-title {
     font-size: 30px; 
-    margin-top: 0;
+    margin-top: 0.5rem;
+    margin-bottom: 2px;
 }
 
 .game-year {
-  font-size: 20px;
-  margin-top: -10px;
+  font-size: 18px;
+  margin-top: 0px
 }
 </style>
