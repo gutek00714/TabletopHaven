@@ -5,7 +5,7 @@
       <div class="row">
                 <!-- Logo on the left -->
                 <div class="col m2">
-                    <a href="#" class="brand-logo">TabletopHaven</a>
+                  <router-link to="/" class="brand-logo">TabletopHaven</router-link>
                 </div>
                 
                 <!-- Search bar in the center -->
