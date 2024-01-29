@@ -134,7 +134,7 @@ async function getGameDetails(gameId: number) {
   const query = 'SELECT * FROM games WHERE id = $1';
   try {
     const res = await pool.query(query, [gameId]);
-    return res.rows[0]; // Assuming id is unique and only one row is returned
+    return res.rows[0];
   } catch (err) {
     if (err instanceof Error) {
       console.error('Error executing query', err.stack);
@@ -145,6 +145,28 @@ async function getGameDetails(gameId: number) {
   }
 }
 
+app.get('/top-games', async (req, res) => {
+  try {
+    const query = `
+    SELECT g.id, g.name, g.publisher, g.description, g.categories, g.min_players, g.max_players, g.play_time, g.age, g.foreign_names, g.image, g.bgg_id,
+       COALESCE(ROUND(AVG(r.rating)::numeric, 1), 0) AS average_rating
+    FROM games g
+    LEFT JOIN LATERAL unnest(g.rating) AS r(rating) ON true
+    GROUP BY g.id
+    ORDER BY average_rating DESC
+    LIMIT 5;
+    `;
+    const result = await pool.query(query);
+    res.json(result.rows);
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error('Error executing query', err.stack);
+    } else {
+      console.error('An unknown error occurred');
+    }
+    res.status(500).send('Internal Server Error');
+  }
+});
 app.get('/search-games', async (req, res) => {
   const searchQuery = typeof req.query.q === 'string' ? req.query.q : '';
   if (!searchQuery) {
