@@ -8,7 +8,7 @@
   </div>
   <div v-else class="col m9 column-background main-content">
     <div style="display: flex; flex-direction: row; justify-content: flex-start;">
-      <img :src="gameData.image" alt="Game image" width="200" height="200" />
+      <img :src="gameData.image" alt="Game image" width="200" height="200" style="border-radius:4px;" />
       <div style="margin-left: 20px;">
         <h2 style="color: white;">{{ gameData.name }} ({{ gameData.year}})</h2>
         <div style="display: flex; width: 100%; color: white;">
