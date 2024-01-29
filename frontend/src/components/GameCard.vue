@@ -65,15 +65,19 @@ export default {
     },
 
     adjustFontSize(title) {
-      if (title.length > 16) { // Adjust the number based on your needs
-        return '24px'; // Smaller font size for longer titles
-      }
-      else if (title.length > 19) {
-        return '20px';
+      if (title.length > 28) {
+        return '14px';
       }
       else if (title.length > 23) {
-        return '16px';
+        return '18px';
       }
+      else if (title.length > 19) {
+        return '22px';
+      }
+      else if (title.length > 16) { // Adjust the number based on your needs
+        return '24px'; // Smaller font size for longer titles
+      } 
+
       return '30px';
     },
   },
