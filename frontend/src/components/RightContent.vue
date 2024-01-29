@@ -12,7 +12,9 @@
       <div class="divider"></div>
       <div class="section white-text">
         <h4>Top 5</h4>
-        <GameCard v-for="item in backendItems" :key="item.id" :gameId="item.id" class="game-card col m2" />
+        <div class="row">
+          <GameCard v-for="item in backendItems" :key="item.id" :gameId="item.id" class="game-card col m2" />
+        </div>
       </div>
     </div>
   </div>
