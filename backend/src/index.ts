@@ -33,7 +33,9 @@ app.use(express.static('public'));
 
 app.use(cors({
   origin: 'http://localhost:8081', // Your frontend URL
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // allow these methods
+  allowedHeaders: ['Content-Type', 'Authorization'] // allow these headers
 }));
 
 app.use(gameDetails);
@@ -165,6 +167,24 @@ app.get('/top-games', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
+app.get('/search-games', async (req, res) => {
+  const searchQuery = typeof req.query.q === 'string' ? req.query.q : '';
+  if (!searchQuery) {
+    return res.json([]);
+  }
+
+  try {
+    const query = 'SELECT * FROM games WHERE LOWER(name) LIKE $1 LIMIT 100'; // Limiting to 10 results for efficiency
+    const results = await pool.query(query, [`%${searchQuery.toLowerCase()}%`]);
+    res.json(results.rows);
+    } catch (err) {
+      if (err instanceof Error) {
+        console.error('Error executing search query', err.stack);
+      } else {
+        console.error('An unknown error occurred');
+      }
+    }
+  });
 
 http.createServer(app).listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
