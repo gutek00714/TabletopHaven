@@ -19,7 +19,9 @@
         </div>
       </div>
     </div>
-    <button @click="addToShelf" class="waves-effect waves-light btn" style="white-space: nowrap; display: flex; justify-content: center; margin-top: 20px;">Add to your shelf</button>
+      <button @click="addToShelf" class="waves-effect waves-light btn" style="white-space: nowrap; display: flex; justify-content: center; margin-top: 20px;">
+        {{ isGameInShelf ? 'Remove from your shelf' : 'Add to your shelf' }}
+      </button>
     <div>
       <p v-html="gameData.description" style="color: white;"> </p>
     </div>
@@ -39,6 +41,7 @@ export default {
   data() {
     return {
       gameData: {},
+      isGameInShelf: false,
       loading: false,
       error: null,
       averageRating: null,
@@ -51,8 +54,12 @@ export default {
     async fetchGameData() {
       this.loading = true;
       try {
-        const response = await axios.get(`http://localhost:3000/game/${this.gameId}`);
+        const response = await axios.get(`http://localhost:3000/game/${this.gameId}`, { withCredentials: true });
         this.gameData = response.data;
+
+        // Check if owned_games exists and includes the current game
+        this.isGameInShelf = response.data.owned_games ? response.data.owned_games.includes(this.gameId) : false;
+
         this.calculateAverageRating();
         this.error = null;
       } catch (error) {
@@ -72,9 +79,31 @@ export default {
       }
     },
 
-    addToShelf() {
-      // Add button logic
+    async addToShelf() {
+      if (!this.isGameInShelf) {
+        try {
+          await axios.post('http://localhost:3000/add-to-shelf', { gameId: this.gameId }, { withCredentials: true });
+          this.isGameInShelf = true;
+          alert('Game added to your shelf!');
+        } catch (error) {
+          console.error('Error adding game to shelf:', error);
+          alert('Failed to add game to shelf');
+        }
+      } else {
+        this.removeFromShelf();
+      }
     },
+
+    async removeFromShelf() {
+      try {
+        await axios.post('http://localhost:3000/remove-from-shelf', { gameId: this.gameId }, { withCredentials: true });
+        this.isGameInShelf = false;
+        alert('Game removed from your shelf!');
+      } catch (error) {
+        console.error('Error removing game from shelf:', error);
+        alert('Failed to remove game from shelf');
+      }
+    }
   },
 };
 </script>

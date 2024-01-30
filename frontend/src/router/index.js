@@ -12,7 +12,7 @@ const routes = [
     path: '/game/:gameId',
     name: 'GameDetails',
     component: GameDetails,
-    props: true // Pass route params as props
+    props: route => ({ gameId: parseInt(route.params.gameId, 10) })
   }
   // other routes...
 ];
