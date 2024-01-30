@@ -94,17 +94,31 @@ export default {
     },
 
     async addToShelf() {
-      if (!this.isGameInShelf) {
-        try {
-          await axios.post('http://localhost:3000/add-to-shelf', { gameId: this.gameId }, { withCredentials: true });
-          this.isGameInShelf = true;
-          alert('Game added to your shelf!');
-        } catch (error) {
-          console.error('Error adding game to shelf:', error);
-          alert('Failed to add game to shelf');
+      try {
+        const response = await axios.get('http://localhost:3000/check-login-status', { withCredentials: true });
+        if (response.data.isLoggedIn) {
+          if (!this.isGameInShelf) {
+            await this.addGameToShelf();
+          } else {
+            this.removeFromShelf();
+          }
+        } else {
+          alert('You must be logged in to add games to your shelf');
         }
-      } else {
-        this.removeFromShelf();
+      } catch (error) {
+        console.error('Error checking login status:', error);
+        alert('Unable to check login status');
+      }
+    },
+
+    async addGameToShelf() {
+      try {
+        await axios.post('http://localhost:3000/add-to-shelf', { gameId: this.gameId }, { withCredentials: true });
+        this.isGameInShelf = true;
+        alert('Game added to your shelf!');
+      } catch (error) {
+        console.error('Error adding game to shelf:', error);
+        alert('Failed to add game to shelf');
       }
     },
 
@@ -120,17 +134,31 @@ export default {
     },
 
     async addToWishlist() {
-      if (!this.isGameInWishlist) {
-        try {
-          await axios.post('http://localhost:3000/add-to-wishlist', { gameId: this.gameId }, { withCredentials: true });
-          this.isGameInWishlist = true;
-          alert('Game added to wishlist!');
-        } catch (error) {
-          console.error('Error adding game to wishlist:', error);
-          alert('Failed to add game to wishlist');
+      try {
+        const response = await axios.get('http://localhost:3000/check-login-status', { withCredentials: true });
+        if (response.data.isLoggedIn) {
+          if (!this.isGameInWishlist) {
+            await this.addGameToWishlist();
+          } else {
+            this.removeFromWishlist();
+          }
+        } else {
+          alert('You must be logged in to add games to your wishlist');
         }
-      } else {
-        this.removeFromWishlist();
+      } catch (error) {
+        console.error('Error checking login status:', error);
+        alert('Unable to check login status');
+      }
+    },
+
+    async addGameToWishlist() {
+      try {
+        await axios.post('http://localhost:3000/add-to-wishlist', { gameId: this.gameId }, { withCredentials: true });
+        this.isGameInWishlist = true;
+        alert('Game added to wishlist!');
+      } catch (error) {
+        console.error('Error adding game to wishlist:', error);
+        alert('Failed to add game to wishlist');
       }
     },
 
@@ -146,17 +174,31 @@ export default {
     },
 
     async addToFavorites() {
-      if (!this.isGameInFavorites) {
-        try {
-          await axios.post('http://localhost:3000/add-to-favorites', { gameId: this.gameId }, { withCredentials: true });
-          this.isGameInFavorites = true;
-          alert('Game added to favorites!');
-        } catch (error) {
-          console.error('Error adding game to favorites:', error);
-          alert('Failed to add game to favorites');
+      try {
+        const response = await axios.get('http://localhost:3000/check-login-status', { withCredentials: true });
+        if (response.data.isLoggedIn) {
+          if (!this.isGameInFavorites) {
+            await this.addGameToFavorites();
+          } else {
+            this.removeFromFavorites();
+          }
+        } else {
+          alert('You must be logged in to add games to favorites');
         }
-      } else {
-        this.removeFromFavorites();
+      } catch (error) {
+        console.error('Error checking login status:', error);
+        alert('Unable to check login status');
+      }
+    },
+
+    async addGameToFavorites() {
+      try {
+        await axios.post('http://localhost:3000/add-to-favorites', { gameId: this.gameId }, { withCredentials: true });
+        this.isGameInFavorites = true;
+        alert('Game added to favorites!');
+      } catch (error) {
+        console.error('Error adding game to favorites:', error);
+        alert('Failed to add game to favorites');
       }
     },
 
@@ -191,16 +233,17 @@ export default {
   margin-right: 10px;
   padding: 10px 15px;
   color: white;
-  background-color: #1f1d2b;
-  border: 1px solid #333030;
-  border-radius: 16px;
+  border: 2px solid #474747;
+  border-radius: 8px;
   cursor: pointer;
   display: flex;
   justify-content: center;
   align-items: center;
   text-align: center;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transition: all 0.3s ease-in-out;
+  font-size: 16px;
+  font-weight: bold;
 }
 
 .btn-add {
