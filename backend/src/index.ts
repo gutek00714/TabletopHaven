@@ -124,13 +124,19 @@ app.get('/game/:gameId', async (req, res) => {
     }
 
     let ownedGames = [];
-    if (user && user.id) { 
-      const userQuery = 'SELECT owned_games FROM users WHERE id = $1';
+    let wishlist = [];
+    let favorites = [];
+  
+    if (user && user.id) {
+      const userQuery = 'SELECT owned_games, wishlist, favorites FROM users WHERE id = $1';
       const userRes = await pool.query(userQuery, [user.id]);
       ownedGames = userRes.rows[0]?.owned_games || [];
+      wishlist = userRes.rows[0]?.wishlist || [];
+      favorites = userRes.rows[0]?.favorites || [];
     }
-
-    res.json({ ...gameDetails, owned_games: ownedGames });
+  
+    res.json({ ...gameDetails, owned_games: ownedGames, wishlist, favorites });
+  
   } catch (error) {
     console.error('Error fetching game details:', error);
     res.status(500).send('Internal Server Error');
@@ -239,6 +245,68 @@ app.post('/add-to-shelf', async (req, res) => {
   }
 });
 
+app.post('/add-to-wishlist', async (req, res) => {
+  interface MinimalUser {
+    id: number;
+  }
+
+  const user = req.user as MinimalUser | undefined;
+  const gameId = parseInt(req.body.gameId, 10);
+
+  if (!user || !user.id || !gameId) {
+    return res.status(400).send('Invalid data');
+  }
+
+  try {
+    const userQuery = 'SELECT wishlist FROM users WHERE id = $1';
+    const userRes = await pool.query(userQuery, [user.id]);
+    let wishlist = userRes.rows[0]?.wishlist || [];
+
+    if (wishlist.includes(gameId)) {
+      return res.status(400).send('Game already in wishlist');
+    }
+
+    wishlist = [...wishlist, gameId];
+    const updateQuery = 'UPDATE users SET wishlist = $1 WHERE id = $2 RETURNING *';
+    const updatedUser = await pool.query(updateQuery, [wishlist, user.id]);
+    res.json(updatedUser.rows[0]);
+  } catch (error) {
+    console.error('Error adding game to wishlist:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/add-to-favorites', async (req, res) => {
+  interface MinimalUser {
+    id: number;
+  }
+
+  const user = req.user as MinimalUser | undefined;
+  const gameId = parseInt(req.body.gameId, 10);
+
+  if (!user || !user.id || !gameId) {
+    return res.status(400).send('Invalid data');
+  }
+
+  try {
+    const userQuery = 'SELECT favorites FROM users WHERE id = $1';
+    const userRes = await pool.query(userQuery, [user.id]);
+    let favorites = userRes.rows[0]?.favorites || [];
+
+    if (favorites.includes(gameId)) {
+      return res.status(400).send('Game already in favorites');
+    }
+
+    favorites = [...favorites, gameId];
+    const updateQuery = 'UPDATE users SET favorites = $1 WHERE id = $2 RETURNING *';
+    const updatedUser = await pool.query(updateQuery, [favorites, user.id]);
+    res.json(updatedUser.rows[0]);
+  } catch (error) {
+    console.error('Error adding game to favorites:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
 app.post('/remove-from-shelf', async (req, res) => {
   interface MinimalUser {
     id: number;
@@ -268,6 +336,72 @@ app.post('/remove-from-shelf', async (req, res) => {
     res.json(updatedUser.rows[0]);
   } catch (error) {
     console.error('Error removing game from shelf:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/remove-from-wishlist', async (req, res) => {
+  interface MinimalUser {
+    id: number;
+  }
+
+  const user = req.user as MinimalUser | undefined;
+  const gameId = parseInt(req.body.gameId, 10);
+
+  if (!user || !user.id || !gameId) {
+    return res.status(400).send('Invalid data');
+  }
+
+  try {
+    // Fetch current wishlist
+    const userQuery = 'SELECT wishlist FROM users WHERE id = $1';
+    const userRes = await pool.query(userQuery, [user.id]);
+    let wishlist = userRes.rows[0]?.wishlist || [];
+
+    // Remove the game from the wishlist
+    wishlist = wishlist.filter((g: number) => g !== gameId);
+
+    // Update the user's wishlist
+    const updateQuery = 'UPDATE users SET wishlist = $1 WHERE id = $2 RETURNING *';
+    const updatedUser = await pool.query(updateQuery, [wishlist, user.id]);
+
+    console.log('Updated user with removed game from wishlist:', updatedUser.rows[0]);
+    res.json(updatedUser.rows[0]);
+  } catch (error) {
+    console.error('Error removing game from wishlist:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/remove-from-favorites', async (req, res) => {
+  interface MinimalUser {
+    id: number;
+  }
+
+  const user = req.user as MinimalUser | undefined;
+  const gameId = parseInt(req.body.gameId, 10);
+
+  if (!user || !user.id || !gameId) {
+    return res.status(400).send('Invalid data');
+  }
+
+  try {
+    // Fetch current favorites
+    const userQuery = 'SELECT favorites FROM users WHERE id = $1';
+    const userRes = await pool.query(userQuery, [user.id]);
+    let favorites = userRes.rows[0]?.favorites || [];
+
+    // Remove the game from the favorites
+    favorites = favorites.filter((g: number) => g !== gameId);
+
+    // Update the user's favorites
+    const updateQuery = 'UPDATE users SET favorites = $1 WHERE id = $2 RETURNING *';
+    const updatedUser = await pool.query(updateQuery, [favorites, user.id]);
+
+    console.log('Updated user with removed game from favorites:', updatedUser.rows[0]);
+    res.json(updatedUser.rows[0]);
+  } catch (error) {
+    console.error('Error removing game from favorites:', error);
     res.status(500).send('Internal Server Error');
   }
 });

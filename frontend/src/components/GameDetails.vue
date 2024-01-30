@@ -19,9 +19,19 @@
         </div>
       </div>
     </div>
-      <button @click="addToShelf" class="waves-effect waves-light btn" style="white-space: nowrap; display: flex; justify-content: center; margin-top: 20px;">
-        {{ isGameInShelf ? 'Remove from your shelf' : 'Add to your shelf' }}
+    <div class="button-container">
+      <button @click="addToShelf" :class="['btn', isGameInShelf ? 'btn-remove' : 'btn-add']">
+        {{ isGameInShelf ? 'Remove from Shelf' : 'Add to Shelf' }}
       </button>
+    
+      <button @click="addToWishlist" :class="['btn', isGameInWishlist ? 'btn-remove' : 'btn-add']">
+        {{ isGameInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist' }}
+      </button>
+    
+      <button @click="addToFavorites" :class="['btn', isGameInFavorites ? 'btn-remove' : 'btn-add']">
+        {{ isGameInFavorites ? 'Remove from Favorites' : 'Add to Favorites' }}
+      </button>
+    </div>
     <div>
       <p v-html="gameData.description" style="color: white;"> </p>
     </div>
@@ -42,6 +52,8 @@ export default {
     return {
       gameData: {},
       isGameInShelf: false,
+      isGameInWishlist: false,
+      isGameInFavorites: false,
       loading: false,
       error: null,
       averageRating: null,
@@ -59,6 +71,8 @@ export default {
 
         // Check if owned_games exists and includes the current game
         this.isGameInShelf = response.data.owned_games ? response.data.owned_games.includes(this.gameId) : false;
+        this.isGameInWishlist = response.data.wishlist ? response.data.wishlist.includes(this.gameId) : false;
+        this.isGameInFavorites = response.data.favorites ? response.data.favorites.includes(this.gameId) : false;
 
         this.calculateAverageRating();
         this.error = null;
@@ -103,7 +117,59 @@ export default {
         console.error('Error removing game from shelf:', error);
         alert('Failed to remove game from shelf');
       }
-    }
+    },
+
+    async addToWishlist() {
+      if (!this.isGameInWishlist) {
+        try {
+          await axios.post('http://localhost:3000/add-to-wishlist', { gameId: this.gameId }, { withCredentials: true });
+          this.isGameInWishlist = true;
+          alert('Game added to wishlist!');
+        } catch (error) {
+          console.error('Error adding game to wishlist:', error);
+          alert('Failed to add game to wishlist');
+        }
+      } else {
+        this.removeFromWishlist();
+      }
+    },
+
+    async removeFromWishlist() {
+      try {
+        await axios.post('http://localhost:3000/remove-from-wishlist', { gameId: this.gameId }, { withCredentials: true });
+        this.isGameInWishlist = false;
+        alert('Game removed from wishlist!');
+      } catch (error) {
+        console.error('Error removing game from wishlist:', error);
+        alert('Failed to remove game from wishlist');
+      }
+    },
+
+    async addToFavorites() {
+      if (!this.isGameInFavorites) {
+        try {
+          await axios.post('http://localhost:3000/add-to-favorites', { gameId: this.gameId }, { withCredentials: true });
+          this.isGameInFavorites = true;
+          alert('Game added to favorites!');
+        } catch (error) {
+          console.error('Error adding game to favorites:', error);
+          alert('Failed to add game to favorites');
+        }
+      } else {
+        this.removeFromFavorites();
+      }
+    },
+
+    async removeFromFavorites() {
+      try {
+        await axios.post('http://localhost:3000/remove-from-favorites', { gameId: this.gameId }, { withCredentials: true });
+        this.isGameInFavorites = false;
+        alert('Game removed from favorites!');
+      } catch (error) {
+        console.error('Error removing game from favorites:', error);
+        alert('Failed to remove game from favorites');
+      }
+    },
   },
 };
 </script>
@@ -113,6 +179,49 @@ export default {
     margin-left: 2.5rem;
     margin-top: 5rem;
     border-radius: 5px;
-    /* Background color can be set here if needed */
 }
+
+.button-container {
+  display: flex;
+  justify-content: start;
+  margin-top: 20px;
+}
+
+.btn {
+  margin-right: 10px;
+  padding: 10px 15px;
+  color: white;
+  background-color: #1f1d2b;
+  border: 1px solid #333030;
+  border-radius: 16px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+}
+
+.btn-add {
+  background-color: #4caf50;
+}
+.btn-add:hover {
+  background-color: #2c612f;
+}
+
+.btn-remove {
+  background-color: #e53935;
+}
+
+.btn-remove:hover {
+  background-color: #7a1f1c;
+}
+
+.btn:hover {
+  color: #1f1d2b;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transform: translateY(-2px);
+}
+
 </style>
