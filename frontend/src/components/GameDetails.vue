@@ -7,15 +7,29 @@
     Error loading game details: {{ error }}
   </div>
   <div v-else class="col m9 column-background main-content">
-    <div style="display: flex; flex-direction: row; justify-content: flex-start;">
-      <img :src="gameData.image" alt="Game image" width="200" height="200" />
-      <div style="margin-left: 20px;">
+    <div class="game-details">
+      <img :src="gameData.image" style="border-radius:4px;" alt="Game image" width="200" height="200" />
+      <div class="game-info">
         <h2 style="color: white;">{{ gameData.name }} ({{ gameData.year}})</h2>
-        <div style="display: flex; width: 100%; color: white;">
-          <div style="padding-right: 10px;">Players: {{ gameData.min_players }} - {{ gameData.max_players }}</div>
-          <div style="border-left: 1px solid white; padding-left: 10px; padding-right: 10px;">Playing time: {{ gameData.play_time }} minutes</div>
-          <div style="border-left: 1px solid white; padding-left: 10px; padding-right: 10px;">Age: {{ gameData.age }}</div>
-          <div v-if="averageRating !== null" style="border-left: 1px solid white; padding-left: 10px;">Rating: {{ averageRating.toFixed(1) }}</div>
+        <div style="display: flex; flex-direction: column;">
+          <div style="display: flex; color: white;">
+            <div style="padding-right: 10px;">Players: {{ gameData.min_players }} - {{ gameData.max_players }}</div>
+            <div style="border-left: 1px solid white; padding-left: 10px; padding-right: 10px;">Playing time: {{ gameData.play_time }} minutes</div>
+            <div style="border-left: 1px solid white; padding-left: 10px; padding-right: 10px;">Age: {{ gameData.age }}</div>
+            <div v-if="averageRating !== null" style="border-left: 1px solid white; padding-left: 10px;">Rating: {{ averageRating.toFixed(1) }}</div>
+          </div>
+          <div v-if="gameData.categories" class="game-categories">
+            <div class="categories-title">
+              <h5>Categories:</h5>
+            </div>
+            <ul>
+              <li v-for="category in gameData.categories" :key="category">
+                <router-link :to="{ name: 'GamesByCategory', params: { category: category }}">
+                  {{ category }}
+                </router-link>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
@@ -265,6 +279,58 @@ export default {
   color: #1f1d2b;
   box-shadow: 0 4px 8px rgba(0,0,0,0.3);
   transform: translateY(-2px);
+}
+
+.game-details {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+}
+
+.game-info {
+  display: flex;
+  flex-direction: column;
+  margin-left: 20px;
+}
+
+.game-categories {
+  display: flex;
+  align-items: center;
+  color: white;
+  margin-top:1rem;
+}
+
+.categories-title {
+  margin-right: 10px;
+}
+
+.game-categories ul {
+  display: flex;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.game-categories li {
+  margin-right: 10px;
+}
+
+.game-categories a {
+  text-decoration: none;
+  color: #FFF;
+  padding: 4px 8px;
+  border-radius: 5px;
+  background-color: #474747;
+  transition: background-color 0.3s ease;
+}
+
+.game-categories a:hover {
+  background-color: #5c5c5c;
+}
+
+.game-categories h5 {
+  font-size: 15px;
+  margin: 0;
 }
 
 </style>
