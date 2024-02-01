@@ -4,7 +4,7 @@
       <div class="section" style="width: 80%">
           <h5>MENU</h5>
           <p><a class="waves-effect waves-teal btn-flat menu-button">Ranking</a></p>
-          <p><a class="waves-effect waves-teal btn-flat menu-button">Categories</a></p>
+          <p><router-link to="/categories" class="waves-effect waves-teal btn-flat menu-button">Categories</router-link></p>
       </div>
       <div class="divider" style="width: 80%"></div>
       <div class="section" style="width: 80%">

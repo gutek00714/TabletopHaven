@@ -406,6 +406,37 @@ app.post('/remove-from-favorites', async (req, res) => {
   }
 });
 
+app.get('/categories', async (req, res) => {
+  try {
+    const query = 'SELECT DISTINCT unnest(categories) AS category FROM games ORDER BY category';
+    const result = await pool.query(query);
+    res.json(result.rows.map(row => row.category));
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error('Error executing query', err.stack);
+    } else {
+      console.error('An unknown error occurred');
+    }
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/games/category/:category', async (req, res) => {
+  const category = req.params.category;
+  try {
+    const query = 'SELECT * FROM games WHERE $1 = ANY(categories)';
+    const result = await pool.query(query, [category]);
+    res.json(result.rows);
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error('Error executing query', err.stack);
+    } else {
+      console.error('An unknown error occurred');
+    }
+    res.status(500).send('Internal Server Error');
+  }
+});
+
 http.createServer(app).listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });

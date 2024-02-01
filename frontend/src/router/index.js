@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import GameDetails from '../components/GameDetails.vue';
 import RightContent from '../components/RightContent.vue';
+import Categories from '../components/GameCategories.vue';
+import GamesByCategory from '../components/GamesByCategory.vue';
 
 const routes = [
   {
@@ -13,7 +15,19 @@ const routes = [
     name: 'GameDetails',
     component: GameDetails,
     props: route => ({ gameId: parseInt(route.params.gameId, 10) })
-  }
+  },
+  {
+    path: '/categories',
+    name: 'GameCategories',
+    component: Categories
+  },
+  {
+    path: '/games/category/:category',
+    name: 'GamesByCategory',
+    component: GamesByCategory,
+    props: route => ({ category: route.params.category })
+  },
+  
   // other routes...
 ];
 
