@@ -9,21 +9,24 @@
       </div>
       <section class="owned-games">
         <h3 class="section-title">Owned Games</h3>
-        <div class="games-grid">
+        <div v-if="ownedGames.length > 0" class="games-grid">
           <GameCard v-for="game in ownedGames" :key="game.id" :gameId="game.id" class="game-card" />
         </div>
+        <div v-else class="no-games-message">You have no games in your shelf.</div>
       </section>
       <section class="wishlist">
         <h3 class="section-title">Wishlist</h3>
-        <div class="games-grid">
+        <div v-if="wishlist.length > 0" class="games-grid">
           <GameCard v-for="game in wishlist" :key="game.id" :gameId="game.id" class="game-card" />
         </div>
+        <div v-else class="no-games-message">Your wishlist is empty.</div>
       </section>
       <section class="favorites">
         <h3 class="section-title">Favorites</h3>
-        <div class="games-grid">
+        <div v-if="favorites.length > 0" class="games-grid">
           <GameCard v-for="game in favorites" :key="game.id" :gameId="game.id" class="game-card" />
         </div>
+        <div v-else class="no-games-message">You have no favorites yet.</div>
       </section>
     </div>
   </div>
@@ -136,6 +139,12 @@ export default {
   color: white;
   text-align: center;
   margin-top: 2rem;
+}
+
+.no-games-message {
+  color: rgb(131, 125, 125);
+  font-size: 1.2rem;
+  margin-top: 1rem;
 }
 
 @media (max-width: 768px) {
