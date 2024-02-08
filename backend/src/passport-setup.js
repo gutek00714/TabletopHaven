@@ -15,8 +15,8 @@ passport.use(new GoogleStrategy({
 
     if (existingUser) {
       // Update the existing user's profile image URL if necessary
-      if (existingUser.profileImageUrl !== profileImageUrl) {
-        await db.one('UPDATE users SET profileImageUrl = $1 WHERE id = $2 RETURNING *',
+      if (existingUser.profile_image_url !== profileImageUrl) {
+        await db.one('UPDATE users SET profile_image_url = $1 WHERE id = $2 RETURNING *',
                      [profileImageUrl, existingUser.id]);
       }
       done(null, existingUser);

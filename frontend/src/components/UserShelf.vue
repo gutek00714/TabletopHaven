@@ -1,7 +1,7 @@
 <template>
   <div class="shelf-container">
-    <div v-if="loading">Loading your shelf...</div>
-    <div v-else-if="error">{{ error }}</div>
+    <div v-if="loading" class="loading-error">Loading your shelf...</div>
+    <div v-else-if="error" class="loading-error">{{ error }}</div>
     <div v-else-if="showShelf">
       <div class="profile-header">
         <img :src="profileImageUrl" alt="Profile Image" class="profile-image">
@@ -85,20 +85,22 @@ export default {
 
 <style scoped>
 .shelf-container {
-  margin-left: 250px; /* Adjust this value to match the actual width of your menu */
+  margin-left: 320px; /* Adjust as needed */
   padding-top: 1rem;
+}
+
+.shelf-title, .section-title {
+  color: white;
 }
 
 .shelf-title {
   font-size: 2rem;
   margin-bottom: 0.5rem;
-  color: white;
   margin-left: 20px;
 }
 
 .section-title {
   font-size: 1.5rem;
-  color: white;
 }
 
 .section {
@@ -116,20 +118,29 @@ export default {
   margin-bottom: 10px;
 }
 
-@media (max-width: 768px) {
-  .shelf-container {
-    margin-left: 1rem;
-  }
-}
 .profile-header {
   display: flex;
   align-items: center;
   gap: 20px;
 }
+
 .profile-image {
   width: 75px;
-  height: 75;
+  height: 75px;
   border-radius: 50%;
   object-fit: cover;
+}
+
+.loading-error {
+  font-size: 1.5rem;
+  color: white;
+  text-align: center;
+  margin-top: 2rem;
+}
+
+@media (max-width: 768px) {
+  .shelf-container {
+    margin-left: 1rem;
+  }
 }
 </style>
