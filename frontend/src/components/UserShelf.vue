@@ -31,7 +31,7 @@
 
 <script>
 import axios from 'axios';
-import GameCard from './GameCard.vue';
+import GameCard from './SmallGameCard.vue';
 
 export default {
   components: {
