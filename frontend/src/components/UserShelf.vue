@@ -142,7 +142,7 @@ export default {
 }
 
 .no-games-message {
-  color: rgb(131, 125, 125);
+  color: #9e9696;
   font-size: 1.2rem;
   margin-top: 1rem;
 }
