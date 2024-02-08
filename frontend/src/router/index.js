@@ -3,6 +3,7 @@ import GameDetails from '../components/GameDetails.vue';
 import RightContent from '../components/RightContent.vue';
 import Categories from '../components/GameCategories.vue';
 import GamesByCategory from '../components/GamesByCategory.vue';
+import UserShelf from '../components/UserShelf.vue';
 
 const routes = [
   {
@@ -26,6 +27,11 @@ const routes = [
     name: 'GamesByCategory',
     component: GamesByCategory,
     props: route => ({ category: route.params.category })
+  },
+  {
+    path: '/shelf',
+    name: 'UserShelf',
+    component: UserShelf
   },
   
   // other routes...

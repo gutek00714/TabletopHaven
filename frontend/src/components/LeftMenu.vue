@@ -9,7 +9,7 @@
       <div class="divider" style="width: 80%"></div>
       <div class="section" style="width: 80%">
           <h5>PROFILE</h5>
-          <p><a class="waves-effect waves-teal btn-flat menu-button">Your shelf</a></p>
+          <p><router-link to="/shelf" class="waves-effect waves-teal btn-flat menu-button">Your Shelf</router-link></p>
           <p><a class="waves-effect waves-teal btn-flat menu-button">Friends</a></p>
           <p><a class="waves-effect waves-teal btn-flat menu-button">Your groups</a></p>
       </div>

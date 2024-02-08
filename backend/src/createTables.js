@@ -18,7 +18,8 @@ async function createTables() {
                 owned_games INTEGER[],
                 wishlist INTEGER[],
                 favorites INTEGER[],
-                friends INTEGER[]
+                friends INTEGER[],
+                profile_image_url VARCHAR(255) UNIQUE NOT NULL
             );
 
             CREATE TABLE games (
