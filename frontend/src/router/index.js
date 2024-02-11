@@ -4,6 +4,7 @@ import RightContent from '../components/RightContent.vue';
 import Categories from '../components/GameCategories.vue';
 import GamesByCategory from '../components/GamesByCategory.vue';
 import UserShelf from '../components/UserShelf.vue';
+import Ranking from '../components/Ranking.vue';
 
 const routes = [
   {
@@ -32,6 +33,11 @@ const routes = [
     path: '/shelf',
     name: 'UserShelf',
     component: UserShelf
+  },
+  {
+    path: '/ranking',
+    name: 'Ranking',
+    component: Ranking
   },
   
   // other routes...

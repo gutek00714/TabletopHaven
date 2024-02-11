@@ -3,7 +3,7 @@
   <div class="col m2">
       <div class="section" style="width: 80%">
           <h5>MENU</h5>
-          <p><a class="waves-effect waves-teal btn-flat menu-button">Ranking</a></p>
+          <p><router-link to="/ranking" class="waves-effect waves-teal btn-flat menu-button">Ranking</router-link></p>
           <p><router-link to="/categories" class="waves-effect waves-teal btn-flat menu-button">Categories</router-link></p>
       </div>
       <div class="divider" style="width: 80%"></div>

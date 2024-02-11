@@ -4,12 +4,13 @@
       <!-- Main site content here -->
       <div class="section white-text">
         <h4>News</h4>
-          <div class="news-content">
-            <div class="col m6">dupa</div>
-            <div class="col m6">dupa1</div>
-          </div>
+        <div class="carousel">
+          <a class="carousel-item" href="#one!"><img src="/image1.jpg"></a>
+          <a class="carousel-item" href="#two!"><img src="/image2.jpg"></a>
+          <a class="carousel-item" href="#three!"><img src="/image3.jpg"></a>
+          <a class="carousel-item" href="#four!"><img src="/image4.jpg"></a>
+        </div>
       </div>
-      <div class="divider"></div>
       <div class="section white-text">
         <h4>Top 5</h4>
         <div class="row">
@@ -19,8 +20,9 @@
     </div>
   </div>
 </template>
-  
+
 <script>
+/* global M */
 import GameCard from './GameCard.vue';
 import axios from 'axios';
 
@@ -37,6 +39,9 @@ export default {
   async created() {
     await this.fetchTopGames();
   },
+  mounted() {
+    this.initializeCarousel();
+  },
   methods: {
     async fetchTopGames() {
       try {
@@ -47,10 +52,13 @@ export default {
         // Optionally handle the error, e.g., by showing a message to the user
       }
     },
+    initializeCarousel() {
+      var elems = document.querySelectorAll('.carousel');
+      M.Carousel.init(elems);
+    },
   },
 }
 </script>
-
 
 <style scoped>
 .column-background.main-content {
@@ -64,7 +72,20 @@ export default {
   margin-top: 0.5rem;
 }
 
-.news-content {
-  margin-top: 2rem;
+.carousel {
+  width: 100%;
+  height: 400px; /* Adjust based on your needs */
+}
+
+.carousel-item {
+  width: 800px !important;
+  height: 400px !important;
+  border-radius: 10px !important;
+}
+
+.carousel-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 </style>
