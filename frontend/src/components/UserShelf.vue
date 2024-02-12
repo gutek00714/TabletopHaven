@@ -88,8 +88,8 @@ export default {
 
 <style scoped>
 .shelf-container {
-  margin-left: 320px; /* Adjust as needed */
-  padding-top: 1rem;
+  margin-left: 330px; /* Adjust as needed */
+  padding-top: 3rem;
 }
 
 .shelf-title, .section-title {
@@ -97,8 +97,9 @@ export default {
 }
 
 .shelf-title {
+  margin: 0;
+  padding: 0;
   font-size: 2rem;
-  margin-bottom: 0.5rem;
   margin-left: 20px;
 }
 
