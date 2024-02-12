@@ -3,7 +3,7 @@ import GameDetails from '../components/GameDetails.vue';
 import RightContent from '../components/RightContent.vue';
 import Categories from '../components/GameCategories.vue';
 import GamesByCategory from '../components/GamesByCategory.vue';
-import UserShelf from '../components/UserShelf.vue';
+import YourShelf from '../components/YourShelf.vue';
 import Ranking from '../components/Ranking.vue';
 
 const routes = [
@@ -31,8 +31,8 @@ const routes = [
   },
   {
     path: '/shelf',
-    name: 'UserShelf',
-    component: UserShelf
+    name: 'YourShelf',
+    component: YourShelf
   },
   {
     path: '/ranking',
