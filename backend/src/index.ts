@@ -531,6 +531,89 @@ app.get('/user/:userId', async (req, res) => {
   }
 });
 
+app.post('/add-friend', async (req, res) => {
+  interface MinimalUser {
+    id: number;
+  }
+
+  const user = req.user as MinimalUser | undefined;
+  const friendId = parseInt(req.body.friendId, 10);
+
+  if (!user || !user.id || !friendId) {
+    return res.status(400).send('Invalid data');
+  }
+
+  try {
+    const userQuery = 'SELECT friends FROM users WHERE id = $1';
+    const userRes = await pool.query(userQuery, [user.id]);
+    let friends = userRes.rows[0]?.friends || [];
+
+    if (friends.includes(friendId)) {
+      return res.status(400).send('User already followed');
+    }
+
+    friends = [...friends, friendId];
+    const updateQuery = 'UPDATE users SET friends = $1 WHERE id = $2 RETURNING *';
+    const updatedUser = await pool.query(updateQuery, [friends, user.id]);
+    res.json(updatedUser.rows[0]);
+  } catch (error) {
+    console.error('Error adding friend:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/remove-friend', async (req, res) => {
+  interface MinimalUser {
+    id: number;
+  }
+
+  const user = req.user as MinimalUser | undefined;
+  const friendId = parseInt(req.body.friendId, 10);
+
+  if (!user || !user.id || !friendId) {
+    return res.status(400).send('Invalid data');
+  }
+
+  try {
+    const userQuery = 'SELECT friends FROM users WHERE id = $1';
+    const userRes = await pool.query(userQuery, [user.id]);
+    let friends = userRes.rows[0]?.friends || [];
+
+    friends = friends.filter((f: number) => f !== friendId);
+    const updateQuery = 'UPDATE users SET friends = $1 WHERE id = $2 RETURNING *';
+    const updatedUser = await pool.query(updateQuery, [friends, user.id]);
+    res.json(updatedUser.rows[0]);
+  } catch (error) {
+    console.error('Error removing friend:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/is-following/:friendId', async (req, res) => {
+  interface MinimalUser {
+    id: number;
+  }
+
+  const user = req.user as MinimalUser | undefined;
+  const friendId = parseInt(req.params.friendId, 10);
+
+  if (!user || !user.id || !friendId) {
+    return res.status(400).send('Invalid data');
+  }
+
+  try {
+    const userQuery = 'SELECT friends FROM users WHERE id = $1';
+    const userRes = await pool.query(userQuery, [user.id]);
+    const friends = userRes.rows[0]?.friends || [];
+
+    const isFollowing = friends.includes(friendId);
+    res.json({ isFollowing });
+  } catch (error) {
+    console.error('Error checking follow status:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
 http.createServer(app).listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });

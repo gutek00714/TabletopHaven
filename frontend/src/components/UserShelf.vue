@@ -6,6 +6,9 @@
       <div class="profile-header">
         <img :src="userProfile.profileImageUrl" alt="Profile Image" class="profile-image">
         <h2 class="shelf-title">{{ userProfile.username }}'s Shelf</h2>
+        <button @click="toggleFollow" :class="{ 'btn-follow': !isFollowing, 'btn-unfollow': isFollowing }">
+          {{ isFollowing ? 'Unfollow' : 'Follow' }} 
+        </button>
       </div>
       <div class="user-shelf">
         <section class="owned-games">
@@ -51,10 +54,11 @@ export default {
       userProfile: {
         username: 'Guest',
         profileImageUrl: '',
-        ownedGames: [], // Initialize as empty arrays
+        ownedGames: [],
         wishlist: [],
         favorites: [],
       },
+      isFollowing: false,
       loading: false,
       error: null,
     };
@@ -73,6 +77,8 @@ export default {
         this.userProfile.wishlist = this.processGameList(response.data.wishlist);
         this.userProfile.favorites = this.processGameList(response.data.favorites);
         this.error = null;
+        const followCheckResponse = await axios.get(`http://localhost:3000/is-following/${this.userId}`, { withCredentials: true });
+      this.isFollowing = followCheckResponse.data.isFollowing;
 
       } catch (error) {
         console.error('Error fetching user profile:', error);
@@ -82,15 +88,33 @@ export default {
       }
     },
 
-      processGameList(gameList) {
+    processGameList(gameList) {
       return gameList.map(gameId => {
         return { id: gameId };
       });
     },
+
+    async toggleFollow() {
+      try {
+        if (this.isFollowing) {
+          await axios.post('http://localhost:3000/remove-friend', { friendId: this.userId }, { withCredentials: true });
+          this.isFollowing = false;
+          alert(`You have unfollowed ${this.userProfile.username}.`);
+        } else {
+          await axios.post('http://localhost:3000/add-friend', { friendId: this.userId }, { withCredentials: true });
+          this.isFollowing = true;
+          alert(`You are now following ${this.userProfile.username}.`);
+        }
+        // You may also consider re-fetching the user profile here to ensure all data is up-to-date
+        // await this.fetchUserProfile();
+      } catch (error) {
+        console.error('Error toggling follow:', error);
+        alert('Failed to update follow status');
+      }
+    },
   }
 };
 </script>
-
 
 <style scoped>
 .user-profile-container {
@@ -152,6 +176,44 @@ export default {
   color: #9e9696;
   font-size: 1.2rem;
   margin-top: 1rem;
+}
+
+.btn-follow, .btn-unfollow {
+  margin-right: 10px;
+  padding: 10px 15px;
+  color: white;
+  border: 2px solid #474747;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transition: all 0.3s ease-in-out;
+  font-size: 16px;
+  font-weight: bold;
+}
+.btn-follow:hover, .btn-unfollow:hover {
+  color: #1f1d2b;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transform: translateY(-2px);
+}
+
+.btn-follow {
+  background-color: #4caf50;
+}
+
+.btn-follow:hover {
+  background-color: #2c612f;
+}
+
+.btn-unfollow {
+  background-color: #e53935;
+}
+
+.btn-unfollow:hover {
+  background-color: #7a1f1c;
 }
 
 @media (max-width: 768px) {
