@@ -543,6 +543,10 @@ app.post('/add-friend', async (req, res) => {
     return res.status(400).send('Invalid data');
   }
 
+  if (friendId === user.id) {
+    return res.status(400).send('Cannot follow yourself');
+  }
+
   try {
     const userQuery = 'SELECT friends FROM users WHERE id = $1';
     const userRes = await pool.query(userQuery, [user.id]);
@@ -572,6 +576,10 @@ app.post('/remove-friend', async (req, res) => {
 
   if (!user || !user.id || !friendId) {
     return res.status(400).send('Invalid data');
+  }
+
+  if (friendId === user.id) {
+    return res.status(400).send('Cannot follow yourself');
   }
 
   try {

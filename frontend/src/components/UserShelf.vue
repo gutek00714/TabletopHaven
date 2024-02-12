@@ -6,9 +6,9 @@
       <div class="profile-header">
         <img :src="userProfile.profileImageUrl" alt="Profile Image" class="profile-image">
         <h2 class="shelf-title">{{ userProfile.username }}'s Shelf</h2>
-        <button @click="toggleFollow" :class="{ 'btn-follow': !isFollowing, 'btn-unfollow': isFollowing }">
+        <button v-if="isLoggedIn && userId !== loggedInUserId" @click="toggleFollow" :class="{ 'btn-follow': !isFollowing, 'btn-unfollow': isFollowing }">
           {{ isFollowing ? 'Unfollow' : 'Follow' }} 
-        </button>
+        </button>            
       </div>
       <div class="user-shelf">
         <section class="owned-games">
@@ -16,7 +16,7 @@
           <div v-if="userProfile.ownedGames.length > 0" class="games-grid">
             <GameCard v-for="game in userProfile.ownedGames" :key="game.id" :gameId="game.id" class="game-card" />
           </div>
-          <div v-else class="no-games-message">{{ userProfile.username }} has no games shelf.</div>
+          <div v-else class="no-games-message">{{ userProfile.username }} has no games in shelf.</div>
         </section>
         <section class="wishlist">
           <h3 class="section-title">Wishlist</h3>
@@ -59,14 +59,24 @@ export default {
         favorites: [],
       },
       isFollowing: false,
+      isLoggedIn: false,
       loading: false,
       error: null,
     };
   },
   async created() {
+    await this.checkLoginStatus();
     await this.fetchUserProfile();
   },
   methods: {
+    async checkLoginStatus() {
+      try {
+        const response = await axios.get('http://localhost:3000/check-login-status', { withCredentials: true });
+        this.isLoggedIn = response.data.isLoggedIn;
+      } catch (error) {
+        console.error('Error checking login status:', error);
+      }
+    },
     async fetchUserProfile() {
       this.loading = true;
       try {
@@ -77,9 +87,16 @@ export default {
         this.userProfile.wishlist = this.processGameList(response.data.wishlist);
         this.userProfile.favorites = this.processGameList(response.data.favorites);
         this.error = null;
-        const followCheckResponse = await axios.get(`http://localhost:3000/is-following/${this.userId}`, { withCredentials: true });
-      this.isFollowing = followCheckResponse.data.isFollowing;
-
+        if (this.isLoggedIn) {
+          try {
+            const followCheckResponse = await axios.get(`http://localhost:3000/is-following/${this.userId}`, { withCredentials: true });
+            this.isFollowing = followCheckResponse.data.isFollowing;
+          } catch (error) {
+            console.error('Error checking following status:', error);
+          }
+        } else {
+          this.isFollowing = false;
+        }
       } catch (error) {
         console.error('Error fetching user profile:', error);
         this.error = error.message || "An error occurred";
@@ -89,6 +106,9 @@ export default {
     },
 
     processGameList(gameList) {
+      if (!gameList) {
+        return [];
+      }
       return gameList.map(gameId => {
         return { id: gameId };
       });
