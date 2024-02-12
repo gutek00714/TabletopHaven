@@ -1,14 +1,16 @@
 <template>
-  <div class="categories-container">
-    <h4 class="categories-title">Game Categories</h4>
-    <div class="categories-list">
-      <router-link 
-        class="category-item" 
-        v-for="category in categories" 
-        :key="category" 
-        :to="{ name: 'GamesByCategory', params: { category: category }}">
-        {{ category }}
-      </router-link>
+  <div class="col m9 column-background main-content">
+    <div class="section white-text">
+      <h4>Game Categories</h4>
+      <div class="categories-list">
+        <router-link 
+          class="category-item" 
+          v-for="category in categories" 
+          :key="category" 
+          :to="{ name: 'GamesByCategory', params: { category: category }}">
+          {{ category }}
+        </router-link>
+      </div>
     </div>
   </div>
 </template>
@@ -37,23 +39,10 @@ export default {
 }
 </script>
 <style scoped>
-.categories-container {
-  padding: 0rem 2rem;
-  color: #FFF;
-  background-color: #1f1d2b;
-  margin-left: 250px;
-  border-radius: 10px;
-  padding-top: 3.9rem;
-}
-
 .categories-list {
   display: flex;
   flex-wrap: wrap;
   padding: 0px;
-}
-
-.categories-title {
-  padding-left: 3.4rem;
 }
 
 .category-item {

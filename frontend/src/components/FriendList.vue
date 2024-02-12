@@ -1,28 +1,28 @@
 <template>
   <div class="col m9 column-background main-content">
-    <div class="section white-text">
-      <div class="col m7">
+    <div class="row section white-text">
+      <h4>Search Users</h4>
+      <div class="col m9">
         <form @submit.prevent="searchBoardGames(searchQuery)">
             <div class="input-field center-align search-bar-container" ref="searchContainer">
-              <input v-model="searchQuery" id="search" type="search" @input="debouncedOnChange" required>
-                <label class="label-icon" for="search"><i class="material-icons">search</i></label>
-                <i class="material-icons" @click="clearSearch">close</i>
+                <i class="material-icons" style="margin-left: 10px;">search</i>
+                <input v-model="searchQuery" class="input-search" id="search" type="search" @input="debouncedOnChange" required>
+                <i class="material-icons" @click="clearSearch" style="margin-right: 10px;">close</i>
+                <div v-if="searchResults.length" class="search-results-dropdown">
+                  <ul>
+                    <li v-for="user in searchResults" :key="user.id">
+                      <router-link :to="`/user/${user.id}`" @click="clearSearch">
+                        <img :src="user.profile_image_url" class="dropdown-user-image" alt="User Image">
+                        {{ user.username }}
+                      </router-link>
+                    </li>
+                  </ul>
+                </div>
             </div>
         </form>
       </div>
-
-      <div v-if="searchResults.length" class="search-results-dropdown">
-        <ul>
-          <li v-for="user in searchResults" :key="user.id">
-            <router-link :to="`/user/${user.id}`" @click="clearSearch">
-              <!-- Display user details -->
-              {{ user.username }}
-            </router-link>
-          </li>                                      
-        </ul>
-      </div>
     </div>
-    <div class="section white-text">
+    <div class="row section white-text">
       <h4>Friends</h4>
       <div v-if="loading" class="loading">Loading friends list...</div>
       <div v-else-if="error" class="error">{{ error }}</div>
@@ -126,6 +126,10 @@ export default {
 </script>
 
 <style scoped>
+.row {
+  margin-left: 0 !important;
+}
+
 .column-background.main-content {
   margin-left: 2.5rem;
   margin-top: 3rem;
@@ -144,7 +148,7 @@ export default {
 
 .friend-item {
   margin: 0.5rem;
-  padding: 1rem;
+  padding: 1.5rem;
   border-radius: 10px;
   background-color: #272538;
   transition: all 0.3s ease;
@@ -197,4 +201,100 @@ export default {
   }
 }
 
+.input-field {
+  display: flex;
+  align-items: center;
+  background-color: #343246;
+  border-radius: 4px;
+  height: 64px;
+}
+
+.input-field i.material-icons {
+  color: #e2e2e2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.input-field input.input-search[type="search"] {
+  flex-grow: 1;
+  background-color: transparent;
+  border: none;
+  color: #FFF;
+  padding-left: 16px;
+  height: 100%;
+  margin: 0;
+}
+
+.search-bar-container {
+  height: 64px;
+  margin-left: 3rem;
+  position: relative;
+  width: 100%;
+}
+
+
+.input-field input.input-search[type="search"]:focus {
+  background-color: transparent;
+  border-radius:4px;
+  color: #FFF;
+}
+
+.search-results-dropdown {
+  position: absolute;
+  background-color: #2e2c45;
+  color: #e2e2e2;
+  border: 1px solid #444;
+  border-radius: 4px;
+  z-index: 100;
+  top: 100%;
+  width: calc(100% - 20px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  max-height: 300px;
+  overflow-y: auto;
+}
+.search-bar-container {
+  position: relative;
+}
+
+.search-results-dropdown ul a, search-results-dropdown ul router-link {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-radius:4px;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.search-results-dropdown li a, .search-results-dropdown li router-link {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  transition: background-color 0.3s;
+  border-radius: 6px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.dropdown-user-image {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 10px;
+}
+
+.search-results-dropdown li a:last-child, .search-results-dropdown li router-link:last-child {
+  border-bottom: none;
+}
+
+.search-results-dropdown li a:hover, .search-results-dropdown li router-link:hover {
+  background-color: #38365a;
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  transition: background-color 0.3s;
+  border-radius: 6px;
+}
 </style>

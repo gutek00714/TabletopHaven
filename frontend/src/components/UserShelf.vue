@@ -138,8 +138,7 @@ export default {
 
 <style scoped>
 .user-profile-container {
-  margin-left: 330px;
-  padding-top: 3rem;
+  padding-top: 5rem;
 }
 
 .shelf-title, .section-title {
