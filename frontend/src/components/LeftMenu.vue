@@ -25,6 +25,10 @@ export default {
 <style scoped>
 .col{
   margin-left: 0 !important;
+  position: fixed;
+  top: 64px;
+  left: 0;
+  z-index: 1000;
 }
 .section h5 {
   color: #fff;

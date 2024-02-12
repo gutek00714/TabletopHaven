@@ -4,7 +4,9 @@
     <div class="row">
       <LeftMenu />
       <!-- The router-view component is where routed components will be displayed -->
-      <router-view :key="$route.fullPath" />
+      <div class="main-content">
+        <router-view :key="$route.fullPath" />
+      </div>
     </div>
   </div>
 </template>
@@ -22,5 +24,8 @@ export default {
 </script>
 
 <style>
-/* Global style adjustments */
+.main-content {
+  margin-left: 340px;
+  margin-top: 32px
+}
 </style>
