@@ -5,6 +5,7 @@ import Categories from '../components/GameCategories.vue';
 import GamesByCategory from '../components/GamesByCategory.vue';
 import YourShelf from '../components/YourShelf.vue';
 import Ranking from '../components/Ranking.vue';
+import UserShelf from '../components/UserShelf.vue';
 
 const routes = [
   {
@@ -38,6 +39,12 @@ const routes = [
     path: '/ranking',
     name: 'Ranking',
     component: Ranking
+  },
+  {
+    path: '/user/:userId',
+    name: 'UserShelf',
+    component: UserShelf,
+    props: route => ({ userId: parseInt(route.params.userId, 10) })
   },
   
   // other routes...
