@@ -1,6 +1,6 @@
 <template>
   <div class="categories-container">
-    <h3>Game Categories</h3>
+    <h4 class="categories-title">Game Categories</h4>
     <div class="categories-list">
       <router-link 
         class="category-item" 
@@ -38,17 +38,22 @@ export default {
 </script>
 <style scoped>
 .categories-container {
-  padding: 2rem;
+  padding: 0rem 2rem;
   color: #FFF;
   background-color: #1f1d2b;
   margin-left: 250px;
   border-radius: 10px;
+  padding-top: 3.9rem;
 }
 
 .categories-list {
   display: flex;
   flex-wrap: wrap;
-  padding: 0;
+  padding: 0px;
+}
+
+.categories-title {
+  padding-left: 3.4rem;
 }
 
 .category-item {
@@ -66,8 +71,9 @@ export default {
   align-items: center;
   text-align: center;
   height: 100px;
-  width: 200px;
+  width: 190px;
   overflow: hidden; 
+  font-size:18px;
 }
 
 .category-item:hover {
