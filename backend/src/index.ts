@@ -622,6 +622,49 @@ app.get('/is-following/:friendId', async (req, res) => {
   }
 });
 
+app.get('/user-friends', async (req, res) => {
+  interface MinimalUser {
+    id: number;
+  }
+  const user = req.user as MinimalUser | undefined;
+
+  if (!user || !user.id) {
+    return res.status(400).send('Invalid data');
+  }
+
+  try {
+    const friendsQuery = 'SELECT friends FROM users WHERE id = $1';
+    const friendsRes = await pool.query(friendsQuery, [user.id]);
+    const friendIds = friendsRes.rows[0].friends;
+
+    const userDetailsQuery = 'SELECT id, username, profile_image_url FROM users WHERE id = ANY($1)';
+    const userDetailsRes = await pool.query(userDetailsQuery, [friendIds]);
+    res.json(userDetailsRes.rows);
+  } catch (error) {
+    console.error('Error fetching friends:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/search-users', async (req, res) => {
+  const searchQuery = typeof req.query.q === 'string' ? req.query.q : '';
+  if (!searchQuery) {
+    return res.json([]);
+  }
+
+  try {
+    const query = 'SELECT * FROM users WHERE LOWER(username) LIKE $1 LIMIT 100';
+    const results = await pool.query(query, [`%${searchQuery.toLowerCase()}%`]);
+    res.json(results.rows);
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error('Error executing user search query', err.stack);
+    } else {
+      console.error('An unknown error occurred');
+    }
+  }
+});
+
 http.createServer(app).listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });

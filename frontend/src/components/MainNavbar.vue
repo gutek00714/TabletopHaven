@@ -56,12 +56,12 @@ export default {
   },
 
   data() {
-  return {
-    searchQuery: '',
-    isLoggedIn: false, // This will be updated based on the user's login status
-    searchResults: [],
-  };
-},
+    return {
+      searchQuery: '',
+      isLoggedIn: false, // This will be updated based on the user's login status
+      searchResults: [],
+    };
+  },
 
   computed: {
     debouncedOnChange () {

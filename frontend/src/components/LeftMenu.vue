@@ -10,7 +10,7 @@
       <div class="section" style="width: 80%">
           <h5>PROFILE</h5>
           <p><router-link to="/shelf" class="waves-effect waves-teal btn-flat menu-button">Your Shelf</router-link></p>
-          <p><a class="waves-effect waves-teal btn-flat menu-button">Friends</a></p>
+          <p><router-link to="/friends" class="waves-effect waves-teal btn-flat menu-button">Friends</router-link></p>
           <p><a class="waves-effect waves-teal btn-flat menu-button">Your groups</a></p>
       </div>
   </div>

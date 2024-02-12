@@ -1,21 +1,18 @@
 <template>
   <div class="col m9 column-background main-content">
-    <div class="main-site">
-      <!-- Main site content here -->
-      <div class="section white-text">
-        <h4>News</h4>
-        <div class="carousel">
-          <a class="carousel-item" href="#one!"><img src="/image1.jpg"></a>
-          <a class="carousel-item" href="#two!"><img src="/image2.jpg"></a>
-          <a class="carousel-item" href="#three!"><img src="/image3.jpg"></a>
-          <a class="carousel-item" href="#four!"><img src="/image4.jpg"></a>
-        </div>
+    <div class="section white-text">
+      <h4>News</h4>
+      <div class="carousel">
+        <a class="carousel-item" href="#one!"><img src="/image1.jpg"></a>
+        <a class="carousel-item" href="#two!"><img src="/image2.jpg"></a>
+        <a class="carousel-item" href="#three!"><img src="/image3.jpg"></a>
+        <a class="carousel-item" href="#four!"><img src="/image4.jpg"></a>
       </div>
-      <div class="section white-text">
-        <h4>Top 5</h4>
-        <div class="row">
-          <GameCard v-for="item in backendItems" :key="item.id" :gameId="item.id" class="game-card col m2" />
-        </div>
+    </div>
+    <div class="section white-text">
+      <h4>Top 5</h4>
+      <div class="row">
+        <GameCard v-for="item in backendItems" :key="item.id" :gameId="item.id" class="game-card col m2" />
       </div>
     </div>
   </div>
