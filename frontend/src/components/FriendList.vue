@@ -25,7 +25,7 @@
     <div class="row section">
       <h4>Friends</h4>
       <div v-if="loading" class="loading">Loading friends list...</div>
-      <div v-else-if="error" class="error">{{ error }}</div>
+      <div v-else-if="error" class="error-message">{{ error }}</div>
       <div v-else-if="isAuthenticated">
         <ul class="friends-list">
           <li v-for="friend in friendsList" :key="friend.id">
@@ -87,8 +87,14 @@ export default {
 
         if (response.ok) {
           const friends = await response.json();
-          this.friendsList = friends;
-          this.isAuthenticated = true;
+          if (friends.length === 0) {
+            this.error = "You have no friends.";
+            this.isAuthenticated = true;
+            this.friendsList = [];
+          } else {
+            this.friendsList = friends;
+            this.isAuthenticated = true;
+          }
         } else {
           if (response.status === 401 || response.status === 403) {
             this.error = "You need to log in to see your friends.";
@@ -98,12 +104,10 @@ export default {
           }
         }
       } catch (error) {
-        if (error.response && error.response.status === 401) {
-          this.isAuthenticated = false;
-          this.error = error.response.data.message; // Use the server-sent message
-        } else {
+        if (!this.error) {
           this.error = 'An error occurred while fetching your friends.';
         }
+        this.isAuthenticated = false;
       } finally {
         this.loading = false;
       }
@@ -310,5 +314,11 @@ export default {
   padding: 10px;
   transition: background-color 0.3s;
   border-radius: 6px;
+}
+
+.error-message {
+  color: #9e9696;
+  font-size: 1.2rem;
+  margin-top: 1rem;
 }
 </style>
