@@ -159,6 +159,9 @@ export default {
   margin-top: 3rem;
   list-style-type: none;
   padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .friend-item {
