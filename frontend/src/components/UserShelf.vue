@@ -146,6 +146,7 @@ export default {
 <style scoped>
 .user-profile-container {
   padding-top: 1.5rem;
+  padding-right: 2rem;
 }
 
 .shelf-title, .section-title {
