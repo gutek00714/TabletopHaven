@@ -39,6 +39,19 @@ async function createTables() {
                 bgg_id INT
             );
 
+            CREATE TABLE groups (
+              id SERIAL PRIMARY KEY,
+              name VARCHAR(255) UNIQUE NOT NULL,
+              description TEXT,
+              owner_id INTEGER REFERENCES users(id)
+            );
+          
+          CREATE TABLE group_members (
+              group_id INTEGER REFERENCES groups(id),
+              user_id INTEGER REFERENCES users(id),
+              PRIMARY KEY (group_id, user_id)
+            );
+
             CREATE TABLE session (
                 sid varchar NOT NULL COLLATE "default",
                 sess json NOT NULL,

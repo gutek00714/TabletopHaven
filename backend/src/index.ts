@@ -665,6 +665,118 @@ app.get('/search-users', async (req, res) => {
   }
 });
 
+app.get('/user-groups', async (req, res) => {
+  interface MinimalUser {
+    id: number;
+  }
+  const user = req.user as MinimalUser | undefined;
+
+  if (!user || !user.id) {
+    return res.status(401).json({ message: 'User not logged in.' });
+  }
+
+  try {
+    const query = `
+      SELECT DISTINCT g.id, g.name, g.description
+      FROM groups g
+      LEFT JOIN group_members gm ON g.id = gm.group_id
+      WHERE gm.user_id = $1 OR g.owner_id = $1;
+    `;
+    const result = await pool.query(query, [user.id]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching user groups:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/group/:groupId/add-member', async (req, res) => {
+  const groupId = parseInt(req.params.groupId, 10);
+  interface MinimalUser {
+    id: number;
+  }
+  const user = req.user as MinimalUser | undefined;
+
+  if (!groupId || !user || !user.id) {
+    return res.status(400).send('Invalid data');
+  }
+
+  try {
+    const query = 'INSERT INTO group_members (group_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING RETURNING *';
+    const result = await pool.query(query, [groupId, user.id]);
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error adding user to group:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/group/:groupId/remove-member', async (req, res) => {
+  const groupId = parseInt(req.params.groupId, 10);
+  interface MinimalUser {
+    id: number;
+  }
+  const user = req.user as MinimalUser | undefined;
+
+  if (!groupId || !user || !user.id) {
+    return res.status(400).send('Invalid data');
+  }
+
+  try {
+    const query = 'DELETE FROM group_members WHERE group_id = $1 AND user_id = $2 RETURNING *';
+    const result = await pool.query(query, [groupId, user.id]);
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error removing user from group:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/group/:groupId/members', async (req, res) => {
+  const groupId = parseInt(req.params.groupId, 10);
+
+  if (!groupId) {
+    return res.status(400).send('Invalid group ID');
+  }
+
+  try {
+    const query = `
+      SELECT u.id, u.username, u.profile_image_url
+      FROM users u
+      INNER JOIN group_members gm ON u.id = gm.user_id
+      WHERE gm.group_id = $1;
+    `;
+    const result = await pool.query(query, [groupId]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching group members:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/group/:groupId/games', async (req, res) => {
+  const groupId = parseInt(req.params.groupId, 10);
+
+  if (!groupId) {
+    return res.status(400).send('Invalid group ID');
+  }
+
+  try {
+    const query = `
+      SELECT DISTINCT g.*
+      FROM games g
+      INNER JOIN users u ON g.id = ANY(u.owned_games)
+      INNER JOIN group_members gm ON u.id = gm.user_id
+      WHERE gm.group_id = $1;
+    `;
+    const result = await pool.query(query, [groupId]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching group games:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
 http.createServer(app).listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
