@@ -1,8 +1,10 @@
 <template>
-  <div class="games-container">
-    <h3>Games in Category: {{ $route.params.category }}</h3>
-    <div class="games-list">
-    <GameCard v-for="game in games" :key="game.id" :gameId="game.id" />
+  <div class="col m11 column-background">
+    <div class="section">
+      <h4>Games in Category: {{ $route.params.category }}</h4>
+      <div class="games-list">
+        <GameCard v-for="game in games" :key="game.id" :gameId="game.id" />
+      </div>
     </div>
   </div>
 </template>
@@ -35,14 +37,7 @@ methods: {
 }
 </script>
 <style scoped>
-.games-container {
-    padding: 2rem;
-    color: #FFF;
-    background-color: #1f1d2b;
-    margin-left: 250px;
-    border-radius: 10px;
-  }
-  
+
   .games-list {
     display: flex;
     flex-wrap: wrap;

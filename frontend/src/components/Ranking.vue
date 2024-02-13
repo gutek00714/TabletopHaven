@@ -1,8 +1,8 @@
 <template>
-    <div class="col m9 column-background main-content">
+    <div class="col m11 column-background">
       <div class="main-site">
         <!-- Main site content here -->
-        <div class="section white-text">
+        <div class="section">
           <h4>Ranking (Top 100)</h4>
           <div class="row">
             <GameCard v-for="item in backendItems" :key="item.id" :gameId="item.id" class="game-card col m2" />
@@ -46,7 +46,6 @@
   <style scoped>
   .column-background.main-content {
     margin-left: 2.5rem;
-    margin-top: 3rem;
     border-radius: 5px;
   }
   

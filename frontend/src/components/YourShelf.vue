@@ -88,7 +88,7 @@ export default {
 
 <style scoped>
 .shelf-container {
-  padding-top: 5rem;
+  padding-top: 1.5rem;
 }
 
 .shelf-title, .section-title {

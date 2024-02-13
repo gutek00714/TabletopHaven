@@ -1,6 +1,6 @@
 <template>
-  <div class="col m9 column-background main-content">
-    <div class="section white-text">
+  <div class="col m11 column-background ">
+    <div class="section">
       <h4>News</h4>
       <div class="carousel">
         <a class="carousel-item" href="#one!"><img src="/image1.jpg"></a>
@@ -9,7 +9,7 @@
         <a class="carousel-item" href="#four!"><img src="/image4.jpg"></a>
       </div>
     </div>
-    <div class="section white-text">
+    <div class="section">
       <h4>Top 5</h4>
       <div class="row">
         <GameCard v-for="item in backendItems" :key="item.id" :gameId="item.id" class="game-card col m2" />
@@ -60,7 +60,6 @@ export default {
 <style scoped>
 .column-background.main-content {
   margin-left: 2.5rem;
-  margin-top: 3rem;
   border-radius: 5px;
 }
 

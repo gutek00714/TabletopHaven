@@ -1,6 +1,6 @@
 <template>
-  <div class="col m9 column-background main-content">
-    <div class="section white-text">
+  <div class="col m11 column-background">
+    <div class="section">
       <h4>Game Categories</h4>
       <div class="categories-list">
         <router-link 

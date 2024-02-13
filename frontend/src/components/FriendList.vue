@@ -1,8 +1,8 @@
 <template>
-  <div class="col m9 column-background main-content">
-    <div class="row section white-text">
+  <div class="col m11 column-background">
+    <div class="row section">
       <h4>Search Users</h4>
-      <div class="col m9">
+      <div class="col m7">
         <form @submit.prevent="searchBoardGames(searchQuery)">
             <div class="input-field center-align search-bar-container" ref="searchContainer">
                 <i class="material-icons" style="margin-left: 10px;">search</i>
@@ -22,7 +22,7 @@
         </form>
       </div>
     </div>
-    <div class="row section white-text">
+    <div class="row section">
       <h4>Friends</h4>
       <div v-if="loading" class="loading">Loading friends list...</div>
       <div v-else-if="error" class="error">{{ error }}</div>
@@ -132,7 +132,6 @@ export default {
 
 .column-background.main-content {
   margin-left: 2.5rem;
-  margin-top: 3rem;
   border-radius: 5px;
 }
 

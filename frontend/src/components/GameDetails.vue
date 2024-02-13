@@ -1,12 +1,12 @@
 <!-- GameDetails.vue -->
 <template>
-  <div v-if="loading" class="column-background main-content">
+  <div v-if="loading" class="column-background">
     Loading game details...
   </div>
-  <div v-else-if="error" class="column-background main-content">
+  <div v-else-if="error" class="column-background">
     Error loading game details: {{ error }}
   </div>
-  <div v-else class="col m9 column-background main-content">
+  <div v-else class="col m11 column-background">
     <div class="game-details">
       <img :src="gameData.image" style="border-radius:4px;" alt="Game image" width="200" height="200" />
       <div class="game-info">
