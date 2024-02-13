@@ -743,8 +743,11 @@ app.get('/group/:groupId/members', async (req, res) => {
     const query = `
       SELECT u.id, u.username, u.profile_image_url
       FROM users u
-      INNER JOIN group_members gm ON u.id = gm.user_id
-      WHERE gm.group_id = $1;
+      WHERE u.id IN (
+        SELECT user_id FROM group_members WHERE group_id = $1
+        UNION
+        SELECT owner_id FROM groups WHERE id = $1
+      );
     `;
     const result = await pool.query(query, [groupId]);
     res.json(result.rows);
@@ -766,8 +769,11 @@ app.get('/group/:groupId/games', async (req, res) => {
       SELECT DISTINCT g.*
       FROM games g
       INNER JOIN users u ON g.id = ANY(u.owned_games)
-      INNER JOIN group_members gm ON u.id = gm.user_id
-      WHERE gm.group_id = $1;
+      WHERE u.id IN (
+        SELECT user_id FROM group_members WHERE group_id = $1
+        UNION
+        SELECT owner_id FROM groups WHERE id = $1
+      );
     `;
     const result = await pool.query(query, [groupId]);
     res.json(result.rows);

@@ -276,7 +276,7 @@ export default {
 }
 
 .btn:hover {
-  color: #1f1d2b;
+  color: #e2e2e2;
   box-shadow: 0 4px 8px rgba(0,0,0,0.3);
   transform: translateY(-2px);
 }

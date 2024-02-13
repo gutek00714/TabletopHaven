@@ -9,6 +9,8 @@ async function createTables() {
             DROP TABLE IF EXISTS users CASCADE;
             DROP TABLE IF EXISTS games CASCADE;
             DROP TABLE IF EXISTS session CASCADE;
+            DROP TABLE IF EXISTS groups CASCADE;
+            DROP TABLE IF EXISTS group_members CASCADE;
 
             CREATE TABLE users (
                 id SERIAL PRIMARY KEY,
