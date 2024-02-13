@@ -13,7 +13,7 @@
             <form @submit.prevent="searchBoardGames(searchQuery)">
                 <div class="input-field center-align search-bar-container" ref="searchContainer">
                   <input v-model="searchQuery" class="input-search" id="search" type="search" @input="debouncedOnChange" required>
-                    <label class="label-icon" for="search"><i class="material-icons">search</i></label>
+                    <label class="label-icon" for="search"><i class="material-icons" style="color:#e2e2e2">search</i></label>
                     <i class="material-icons" @click="clearSearch">close</i>
                 </div>
             </form>
@@ -161,7 +161,7 @@ export default {
 
 .nav-wrapper .input-field input.input-search[type="search"]:focus {
   color:#FFF;
-  background-color: #32304d;
+  background-color: #36344d;
   border-radius:4px;
 }
 
@@ -179,7 +179,7 @@ export default {
 
 .search-results-dropdown {
   position: absolute;
-  background-color: #2e2c45;
+  background-color: #2c2a3e;
   color: #e2e2e2;
   border: 1px solid #444;
   border-radius: 4px;

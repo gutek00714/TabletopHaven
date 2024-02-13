@@ -206,6 +206,7 @@ export default {
   background-color: #343246;
   border-radius: 4px;
   height: 64px;
+  transition: background-color 0.3s ease;
 }
 
 .input-field i.material-icons {
@@ -220,7 +221,7 @@ export default {
   flex-grow: 1;
   background-color: transparent;
   border: none;
-  color: #FFF;
+  color: #e2e2e2;
   padding-left: 16px;
   height: 100%;
   margin: 0;
@@ -232,12 +233,14 @@ export default {
   position: relative;
   width: 100%;
 }
-
+.input-field:focus-within {
+  background-color: #36344d; /* Change the background color when input is focused */
+}
 
 .input-field input.input-search[type="search"]:focus {
   background-color: transparent;
   border-radius:4px;
-  color: #FFF;
+  color: #e2e2e2;
 }
 
 .search-results-dropdown {
