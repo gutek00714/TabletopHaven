@@ -37,7 +37,7 @@
         </ul>
       </div>
       <div v-else>
-        <p>Please log in to view your friends list.</p>
+        <div v-if="error" class="error">{{ error }}</div>
       </div>
     </div> 
   </div>
@@ -84,19 +84,31 @@ export default {
           method: 'GET',
           credentials: 'include'
         });
-        if (!response.ok) {
-          throw new Error('Failed to fetch friends');
+
+        if (response.ok) {
+          const friends = await response.json();
+          this.friendsList = friends;
+          this.isAuthenticated = true;
+        } else {
+          if (response.status === 401 || response.status === 403) {
+            this.error = "You need to log in to see your friends.";
+            this.isAuthenticated = false;
+          } else {
+            this.error = 'Failed to fetch friends';
+          }
         }
-        const friends = await response.json();
-        this.isAuthenticated = true;
-        this.friendsList = friends;
       } catch (error) {
-        this.error = error.message;
-        this.isAuthenticated = false;
+        if (error.response && error.response.status === 401) {
+          this.isAuthenticated = false;
+          this.error = error.response.data.message; // Use the server-sent message
+        } else {
+          this.error = 'An error occurred while fetching your friends.';
+        }
       } finally {
         this.loading = false;
       }
     },
+
     searchUsers() {
       if (!this.searchQuery) {
         this.searchResults = [];

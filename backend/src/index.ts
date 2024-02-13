@@ -629,7 +629,7 @@ app.get('/user-friends', async (req, res) => {
   const user = req.user as MinimalUser | undefined;
 
   if (!user || !user.id) {
-    return res.status(400).send('Invalid data');
+    return res.status(401).json({ message: 'User not logged in.' });
   }
 
   try {
