@@ -116,20 +116,27 @@ export default {
 
     async toggleFollow() {
       try {
+        let response;
         if (this.isFollowing) {
-          await axios.post('http://localhost:3000/remove-friend', { friendId: this.userId }, { withCredentials: true });
-          this.isFollowing = false;
-          alert(`You have unfollowed ${this.userProfile.username}.`);
+          response = await axios.post('http://localhost:3000/remove-friend', { friendId: this.userId }, { withCredentials: true });
         } else {
-          await axios.post('http://localhost:3000/add-friend', { friendId: this.userId }, { withCredentials: true });
-          this.isFollowing = true;
-          alert(`You are now following ${this.userProfile.username}.`);
+          response = await axios.post('http://localhost:3000/add-friend', { friendId: this.userId }, { withCredentials: true });
         }
-        // You may also consider re-fetching the user profile here to ensure all data is up-to-date
-        // await this.fetchUserProfile();
+
+        if (response.status === 200) {
+          this.isFollowing = !this.isFollowing;
+          const action = this.isFollowing ? 'following' : 'unfollowing';
+          alert(`You are now ${action} ${this.userProfile.username}.`);
+        } else {
+          throw new Error(response.data.message || 'Failed to update follow status');
+        }
       } catch (error) {
-        console.error('Error toggling follow:', error);
-        alert('Failed to update follow status');
+        if (error.response) {
+          alert(error.response.data || 'Failed to update follow status');
+        } else {
+          console.error('Error toggling follow:', error);
+          alert('Failed to update follow status');
+        }
       }
     },
   }
