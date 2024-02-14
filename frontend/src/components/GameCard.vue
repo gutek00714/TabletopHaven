@@ -56,9 +56,8 @@ export default {
     },
 
     calculateAverageRating() {
-      if (this.gameData.rating && this.gameData.rating.length > 0) {
-        const sum = this.gameData.rating.reduce((a, b) => a + b, 0);
-        this.averageRating = sum / this.gameData.rating.length;
+      if (this.gameData.total_rating_score !== undefined && this.gameData.rating_count > 0) {
+        this.averageRating = this.gameData.total_rating_score / this.gameData.rating_count;
       } else {
         this.averageRating = null;
       }
