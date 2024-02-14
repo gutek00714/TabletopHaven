@@ -2,10 +2,11 @@
   <div class="col m11 column-background">
     <div class="section">
       <h4>Game Categories</h4>
+      <input v-model="categorySearchQuery" type="text" placeholder="Search categories" class="search-categories-container white-text">
       <div class="categories-list">
         <router-link 
           class="category-item" 
-          v-for="category in categories" 
+          v-for="category in filteredCategoryList" 
           :key="category" 
           :to="{ name: 'GamesByCategory', params: { category: category }}">
           {{ category }}
@@ -20,11 +21,22 @@ import axios from 'axios';
 export default {
   data() {
     return {
-      categories: []
+      categories: [],
+      categorySearchQuery: '',
     };
   },
   async created() {
     await this.fetchCategories();
+  },
+  computed: {
+    filteredCategoryList() {
+      if (!this.categorySearchQuery) {
+        return this.categories;
+      }
+      return this.categories.filter(category =>
+        category.toLowerCase().includes(this.categorySearchQuery.toLowerCase())
+      );
+    }
   },
   methods: {
     async fetchCategories() {
@@ -71,4 +83,7 @@ export default {
   transform: translateY(-2px);
 }
 
+.search-categories-container {
+  width: 35% !important;
+}
 </style>
