@@ -5,7 +5,7 @@ const db = require('./db');
 
 async function displayAllGames() {
     try {
-        const games = await db.any('SELECT * FROM groups, group_members');
+        const games = await db.any('SELECT * FROM games');
         console.log('All games in the database:');
         games.forEach(game => {
             console.log(game); // Adjust the output format as needed
