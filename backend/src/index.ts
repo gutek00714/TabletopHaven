@@ -692,18 +692,17 @@ app.get('/user-groups', async (req, res) => {
 
 app.post('/group/:groupId/add-member', async (req, res) => {
   const groupId = parseInt(req.params.groupId, 10);
-  interface MinimalUser {
-    id: number;
-  }
-  const user = req.user as MinimalUser | undefined;
+  const userIdToAdd = parseInt(req.body.userId, 10);
 
-  if (!groupId || !user || !user.id) {
+  if (!groupId || !userIdToAdd) {
     return res.status(400).send('Invalid data');
   }
 
   try {
     const query = 'INSERT INTO group_members (group_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING RETURNING *';
-    const result = await pool.query(query, [groupId, user.id]);
+    const result = await pool.query(query, [groupId, userIdToAdd]);
+    console.log(result);
+    console.log(groupId, userIdToAdd);
     res.json(result.rows[0]);
   } catch (error) {
     console.error('Error adding user to group:', error);
@@ -713,18 +712,15 @@ app.post('/group/:groupId/add-member', async (req, res) => {
 
 app.post('/group/:groupId/remove-member', async (req, res) => {
   const groupId = parseInt(req.params.groupId, 10);
-  interface MinimalUser {
-    id: number;
-  }
-  const user = req.user as MinimalUser | undefined;
+  const userIdToRemove = parseInt(req.body.userId, 10);
 
-  if (!groupId || !user || !user.id) {
+  if (!groupId || !userIdToRemove) {
     return res.status(400).send('Invalid data');
   }
 
   try {
     const query = 'DELETE FROM group_members WHERE group_id = $1 AND user_id = $2 RETURNING *';
-    const result = await pool.query(query, [groupId, user.id]);
+    const result = await pool.query(query, [groupId, userIdToRemove]);
     res.json(result.rows[0]);
   } catch (error) {
     console.error('Error removing user from group:', error);
