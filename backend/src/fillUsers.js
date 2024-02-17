@@ -1,8 +1,7 @@
-const db = require('./db'); // Your database module
 const path = require('path');
 const dotenvPath = path.resolve(__dirname, '../.env');
 require('dotenv').config({ path: dotenvPath });
-
+const db = require('./db');
 // Function to generate an array of random game IDs
 function generateRandomGameIds(count, maxId) {
     return Array.from({ length: count }, () => Math.floor(Math.random() * maxId) + 1);
