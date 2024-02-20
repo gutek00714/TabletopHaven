@@ -272,6 +272,7 @@ export default {
         }, 
         { withCredentials: true });
 
+        this.fetchGameData();
         alert('Rating submitted successfully');
       } catch (error) {
         if (error.response && error.response.status === 401) {
@@ -289,6 +290,7 @@ export default {
       try {
         await axios.delete(`http://localhost:3000/remove-rating/${this.gameId}`, { withCredentials: true });
         this.currentRating = 0;
+        this.fetchGameData();
         alert('Rating removed successfully');
       } catch (error) {
         console.error('Error removing rating:', error);
@@ -426,7 +428,7 @@ export default {
 .star::after {
   content: '';
   position: absolute;
-  left: -5px;
+  left: -5    px;
   right: -5px;
 }
 
