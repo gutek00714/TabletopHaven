@@ -18,7 +18,7 @@
             </ul>
           </div>
 
-          <div class="group-chat" style="margin-top: 60px;">
+          <div class="group-chat">
             <h4>Group Chat</h4>
             <div class="chat-container">
               <!-- Chat messages  -->
@@ -89,17 +89,30 @@ export default {
 
 .group-detail-container {
   margin: 33px;
-  display: flex;
-  justify-content: space-between;
 }
 
 .group-members-and-chat {
   display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.group-chat{
+  margin-top: 60px;
 }
 
 .group-members, .group-chat {
-  width: 45%;
+  width: 100%; 
+  box-sizing: border-box; 
+}
+
+@media (min-width: 768px) {
+  .group-members {
+    width: 45%; 
+  }
+
+  .group-chat {
+    width: 45%; 
+  }
 }
 
 .group-games {
