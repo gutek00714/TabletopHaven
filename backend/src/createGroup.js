@@ -8,7 +8,7 @@ async function createGroup() {
         id: 1, // Hardcoded ID
         name: "Example Group",
         description: "This is a test group.",
-        owner_id: 1 // Assuming owner_id is 1 for testing purposes
+        owner_id: 51 // Assuming owner_id is 1 for testing purposes
     };
 
     try {
@@ -19,6 +19,8 @@ async function createGroup() {
         console.log('Group created:', group.name);
     } catch (error) {
         console.error('Error creating group:', error);
+    } finally {
+      db.$pool.end();
     }
 }
 
