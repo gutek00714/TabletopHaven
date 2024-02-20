@@ -29,7 +29,7 @@
         <section class="group-games">
           <h4>Games Owned by Group</h4>
           <ul class="game-list">
-            <GameCard v-for="game in games" :key="game.id" :game="game"/>
+            <GameCard v-for="game in games" :key="game.id" :gameId="game.id"/>
           </ul>
         </section>
       </div>
