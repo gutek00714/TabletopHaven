@@ -24,39 +24,46 @@ async function fetchGameFromBGG(id) {
 }
 
 function transformGameData(gameData) {
-    // Generate random ratings
-    const ratings = Array.from({ length: Math.floor(Math.random() * 15 + 2) }, () => Math.floor(Math.random() * 10 + 1));
+  // Generate a random number of ratings (rating count)
+  const ratingCount = Math.floor(Math.random() * 15 + 2); // for example, between 2 and 16
 
-    return {
-        name: gameData.name.find(n => n.$.primary === 'true')._,
-        publisher: gameData.boardgamepublisher ? gameData.boardgamepublisher.map(pub => pub._) : [],
-        year: parseInt(gameData.yearpublished[0], 10),
-        categories: gameData.boardgamecategory ? gameData.boardgamecategory.map(cat => cat._) : [],
-        rating: ratings,
-        min_players: parseInt(gameData.minplayers[0], 10),
-        max_players: parseInt(gameData.maxplayers[0], 10),
-        play_time: gameData.playingtime[0],
-        age: parseInt(gameData.age[0], 10),
-        foreign_names: gameData.name.filter(n => !n.$.primary).map(n => n._),
-        image: gameData.image ? gameData.image[0] : null,
-        description: gameData.description ? gameData.description[0] : null,
-        bgg_id: parseInt(gameData.$.objectid, 10)
-    };
+  // Generate a total rating score
+  let totalRatingScore = 0;
+  for (let i = 0; i < ratingCount; i++) {
+      totalRatingScore += Math.floor(Math.random() * 10 + 1); // individual ratings between 1 and 10
+  }
+
+  return {
+      name: gameData.name.find(n => n.$.primary === 'true')._,
+      publisher: gameData.boardgamepublisher ? gameData.boardgamepublisher.map(pub => pub._) : [],
+      year: parseInt(gameData.yearpublished[0], 10),
+      categories: gameData.boardgamecategory ? gameData.boardgamecategory.map(cat => cat._) : [],
+      total_rating_score: totalRatingScore,
+      rating_count: ratingCount,
+      min_players: parseInt(gameData.minplayers[0], 10),
+      max_players: parseInt(gameData.maxplayers[0], 10),
+      play_time: gameData.playingtime[0],
+      age: parseInt(gameData.age[0], 10),
+      foreign_names: gameData.name.filter(n => !n.$.primary).map(n => n._),
+      image: gameData.image ? gameData.image[0] : null,
+      description: gameData.description ? gameData.description[0] : null,
+      bgg_id: parseInt(gameData.$.objectid, 10)
+  };
 }
 
 const db = require('./db'); // Your database module
 
 async function addGameToDatabase(game) {
-    try {
-        await db.none(
-            'INSERT INTO games (name, publisher, year, categories, rating, min_players, max_players, play_time, age, foreign_names, image, description, bgg_id) ' +
-            'VALUES (${name}, ${publisher}, ${year}, ${categories}, ${rating}, ${min_players}, ${max_players}, ${play_time}, ${age}, ${foreign_names}, ${image}, ${description}, ${bgg_id})',
-            game
-        );
-        console.log('Game added:', game.name);
-    } catch (error) {
-        console.error('Error adding game to database:', error);
-    }
+  try {
+      await db.none(
+          'INSERT INTO games (name, publisher, year, categories, total_rating_score, rating_count, min_players, max_players, play_time, age, foreign_names, image, description, bgg_id) ' +
+          'VALUES (${name}, ${publisher}, ${year}, ${categories}, ${total_rating_score}, ${rating_count}, ${min_players}, ${max_players}, ${play_time}, ${age}, ${foreign_names}, ${image}, ${description}, ${bgg_id})',
+          game
+      );
+      console.log('Game added:', game.name);
+  } catch (error) {
+      console.error('Error adding game to database:', error);
+  }
 }
 
 async function processGames() {

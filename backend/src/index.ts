@@ -171,11 +171,9 @@ app.get('/top-games', async (req, res) => {
   try {
     const query = `
     SELECT g.id, g.name, g.publisher, g.description, g.categories, g.min_players, g.max_players, g.play_time, g.age, g.foreign_names, g.image, g.bgg_id,
-       COALESCE(ROUND(AVG(r.rating)::numeric, 1), 0) AS average_rating
+       COALESCE(ROUND((g.total_rating_score::FLOAT / NULLIF(g.rating_count, 0))::numeric, 1), 0) AS average_rating
     FROM games g
-    LEFT JOIN LATERAL unnest(g.rating) AS r(rating) ON true
-    GROUP BY g.id
-    ORDER BY average_rating DESC
+    ORDER BY average_rating DESC, g.rating_count DESC
     LIMIT 5;
     `;
     const result = await pool.query(query);
@@ -194,11 +192,9 @@ app.get('/ranking', async (req, res) => {
   try {
     const query = `
     SELECT g.id, g.name, g.publisher, g.description, g.categories, g.min_players, g.max_players, g.play_time, g.age, g.foreign_names, g.image, g.bgg_id,
-       COALESCE(ROUND(AVG(r.rating)::numeric, 1), 0) AS average_rating
+       COALESCE(ROUND((g.total_rating_score::FLOAT / NULLIF(g.rating_count, 0))::numeric, 1), 0) AS average_rating
     FROM games g
-    LEFT JOIN LATERAL unnest(g.rating) AS r(rating) ON true
-    GROUP BY g.id
-    ORDER BY average_rating DESC
+    ORDER BY average_rating DESC, g.rating_count DESC
     LIMIT 100;
     `;
     const result = await pool.query(query);
@@ -662,6 +658,251 @@ app.get('/search-users', async (req, res) => {
     } else {
       console.error('An unknown error occurred');
     }
+  }
+});
+
+app.get('/user-groups', async (req, res) => {
+  interface MinimalUser {
+    id: number;
+  }
+  const user = req.user as MinimalUser | undefined;
+
+  if (!user || !user.id) {
+    return res.status(401).json({ message: 'User not logged in.' });
+  }
+
+  try {
+    const query = `
+      SELECT DISTINCT g.id, g.name, g.description
+      FROM groups g
+      LEFT JOIN group_members gm ON g.id = gm.group_id
+      WHERE gm.user_id = $1 OR g.owner_id = $1;
+    `;
+    const result = await pool.query(query, [user.id]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching user groups:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/group/:groupId/add-member', async (req, res) => {
+  const groupId = parseInt(req.params.groupId, 10);
+  interface MinimalUser {
+    id: number;
+  }
+  const user = req.user as MinimalUser | undefined;
+
+  if (!groupId || !user || !user.id) {
+    return res.status(400).send('Invalid data');
+  }
+
+  try {
+    const query = 'INSERT INTO group_members (group_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING RETURNING *';
+    const result = await pool.query(query, [groupId, user.id]);
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error adding user to group:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/group/:groupId/remove-member', async (req, res) => {
+  const groupId = parseInt(req.params.groupId, 10);
+  interface MinimalUser {
+    id: number;
+  }
+  const user = req.user as MinimalUser | undefined;
+
+  if (!groupId || !user || !user.id) {
+    return res.status(400).send('Invalid data');
+  }
+
+  try {
+    const query = 'DELETE FROM group_members WHERE group_id = $1 AND user_id = $2 RETURNING *';
+    const result = await pool.query(query, [groupId, user.id]);
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error removing user from group:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/group/:groupId/members', async (req, res) => {
+  const groupId = parseInt(req.params.groupId, 10);
+
+  if (!groupId) {
+    return res.status(400).send('Invalid group ID');
+  }
+
+  try {
+    const query = `
+      SELECT u.id, u.username, u.profile_image_url
+      FROM users u
+      WHERE u.id IN (
+        SELECT user_id FROM group_members WHERE group_id = $1
+        UNION
+        SELECT owner_id FROM groups WHERE id = $1
+      );
+    `;
+    const result = await pool.query(query, [groupId]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching group members:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/group/:groupId/games', async (req, res) => {
+  const groupId = parseInt(req.params.groupId, 10);
+
+  if (!groupId) {
+    return res.status(400).send('Invalid group ID');
+  }
+
+  try {
+    const query = `
+      SELECT DISTINCT g.*
+      FROM games g
+      INNER JOIN users u ON g.id = ANY(u.owned_games)
+      WHERE u.id IN (
+        SELECT user_id FROM group_members WHERE group_id = $1
+        UNION
+        SELECT owner_id FROM groups WHERE id = $1
+      );
+    `;
+    const result = await pool.query(query, [groupId]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching group games:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/rate-game', async (req, res) => {
+  interface MinimalUser {
+    id: number;
+  }
+
+  const user = req.user as MinimalUser | undefined;
+  const gameId = parseInt(req.body.gameId, 10);
+  const rating = parseInt(req.body.rating, 10);
+
+  // Check if user is not authenticated
+  if (!req.isAuthenticated() || !user) {
+    return res.status(401).send('User not logged in');
+  }
+
+  if (!user.id || !gameId || isNaN(rating) || rating < 1 || rating > 10) {
+    return res.status(400).send('Invalid data');
+  }
+
+  try {
+    // Check if user has already rated the game
+    const ratingCheckQuery = 'SELECT rating FROM user_game_ratings WHERE user_id = $1 AND game_id = $2';
+    const ratingCheckRes = await pool.query(ratingCheckQuery, [user.id, gameId]);
+    const existingRating = ratingCheckRes.rows[0]?.rating;
+
+    const upsertRatingQuery = `
+      INSERT INTO user_game_ratings (user_id, game_id, rating)
+      VALUES ($1, $2, $3)
+      ON CONFLICT (user_id, game_id) 
+      DO UPDATE SET rating = EXCLUDED.rating;
+    `;
+    await pool.query(upsertRatingQuery, [user.id, gameId, rating]);
+
+    let updateGameRatingQuery = '';
+    if (existingRating) {
+      updateGameRatingQuery = `
+        UPDATE games
+        SET total_rating_score = total_rating_score - $1 + $2
+        WHERE id = $3;
+      `;
+      await pool.query(updateGameRatingQuery, [existingRating, rating, gameId]);
+    } else {
+      updateGameRatingQuery = `
+        UPDATE games
+        SET total_rating_score = total_rating_score + $1,
+            rating_count = rating_count + 1
+        WHERE id = $2;
+      `;
+      await pool.query(updateGameRatingQuery, [rating, gameId]);
+    }
+
+    res.send('Rating updated successfully');
+  } catch (error) {
+    console.error('Error submitting rating:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/user-rating/:gameId', async (req, res) => {
+  interface MinimalUser {
+    id: number;
+  }
+  const user = req.user as MinimalUser | undefined;
+  const gameId = parseInt(req.params.gameId, 10);
+
+  if (!user || !user.id) {
+    return res.status(401).json({ message: 'User not logged in.' });
+  }
+
+  if (!gameId) {
+    return res.status(400).send('Invalid game ID');
+  }
+
+  try {
+    const ratingQuery = 'SELECT rating FROM user_game_ratings WHERE user_id = $1 AND game_id = $2';
+    const ratingRes = await pool.query(ratingQuery, [user.id, gameId]);
+    const userRating = ratingRes.rows[0] ? ratingRes.rows[0].rating : null;
+
+    res.json({ rating: userRating });
+  } catch (error) {
+    console.error('Error fetching user rating:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.delete('/remove-rating/:gameId', async (req, res) => {
+  interface MinimalUser {
+    id: number;
+  }
+  const user = req.user as MinimalUser | undefined;
+  const gameId = parseInt(req.params.gameId, 10);
+
+  if (!user || !user.id) {
+    return res.status(401).send('User not logged in');
+  }
+
+  if (!gameId) {
+    return res.status(400).send('Invalid game ID');
+  }
+
+  try {
+    // Check if user has rated the game
+    const ratingCheckQuery = 'SELECT rating FROM user_game_ratings WHERE user_id = $1 AND game_id = $2';
+    const ratingCheckRes = await pool.query(ratingCheckQuery, [user.id, gameId]);
+    const existingRating = ratingCheckRes.rows[0]?.rating;
+
+    if (existingRating) {
+      // Delete the rating
+      const deleteRatingQuery = 'DELETE FROM user_game_ratings WHERE user_id = $1 AND game_id = $2';
+      await pool.query(deleteRatingQuery, [user.id, gameId]);
+
+      // Update the game's total rating score and count
+      const updateGameRatingQuery = `
+        UPDATE games
+        SET total_rating_score = total_rating_score - $1,
+            rating_count = rating_count - 1
+        WHERE id = $2;
+      `;
+      await pool.query(updateGameRatingQuery, [existingRating, gameId]);
+    }
+
+    res.send('Rating removed successfully');
+  } catch (error) {
+    console.error('Error removing rating:', error);
+    res.status(500).send('Internal Server Error');
   }
 });
 

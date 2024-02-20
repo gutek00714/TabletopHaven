@@ -7,6 +7,9 @@ import YourShelf from '../components/YourShelf.vue';
 import Ranking from '../components/Ranking.vue';
 import UserShelf from '../components/UserShelf.vue';
 import FriendList from '../components/FriendList.vue';
+import UserGroups from '../components/UserGroups.vue';
+import GroupDetail from '../components/GroupDetail.vue';
+
 
 const routes = [
   {
@@ -51,6 +54,17 @@ const routes = [
     path: '/friends',
     name: 'FriendList',
     component: FriendList
+  },
+  {
+    path: '/groups',
+    name: 'UserGroups',
+    component: UserGroups
+  },
+  {
+    path: '/group/:groupId',
+    name: 'GroupDetail',
+    component: GroupDetail,
+    props: route => ({ groupId: parseInt(route.params.groupId, 10) })
   },
   
   // other routes...

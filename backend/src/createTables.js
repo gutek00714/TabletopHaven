@@ -9,6 +9,8 @@ async function createTables() {
             DROP TABLE IF EXISTS users CASCADE;
             DROP TABLE IF EXISTS games CASCADE;
             DROP TABLE IF EXISTS session CASCADE;
+            DROP TABLE IF EXISTS groups CASCADE;
+            DROP TABLE IF EXISTS group_members CASCADE;
 
             CREATE TABLE users (
                 id SERIAL PRIMARY KEY,
@@ -23,20 +25,41 @@ async function createTables() {
             );
 
             CREATE TABLE games (
-                id SERIAL PRIMARY KEY,
-                name VARCHAR(255) NOT NULL,
-                publisher VARCHAR(255)[],
-                year INT,
-                description TEXT,
-                categories VARCHAR(255)[],
-                rating INTEGER[],
-                min_players INT,
-                max_players INT,
-                play_time VARCHAR(20),
-                age INT,
-                foreign_names VARCHAR(255)[],
-                image VARCHAR(255),
-                bgg_id INT
+              id SERIAL PRIMARY KEY,
+              name VARCHAR(255) NOT NULL,
+              publisher VARCHAR(255)[],
+              year INT,
+              description TEXT,
+              categories VARCHAR(255)[],
+              total_rating_score INT DEFAULT 0,
+              rating_count INT DEFAULT 0,
+              min_players INT,
+              max_players INT,
+              play_time VARCHAR(20),
+              age INT,
+              foreign_names VARCHAR(255)[],
+              image VARCHAR(255),
+              bgg_id INT
+          );
+          
+          CREATE TABLE user_game_ratings (
+              user_id INTEGER REFERENCES users(id),
+              game_id INTEGER REFERENCES games(id),
+              rating INT,
+              PRIMARY KEY (user_id, game_id)
+          );
+
+            CREATE TABLE groups (
+              id SERIAL PRIMARY KEY,
+              name VARCHAR(255) UNIQUE NOT NULL,
+              description TEXT,
+              owner_id INTEGER REFERENCES users(id)
+            );
+          
+          CREATE TABLE group_members (
+              group_id INTEGER REFERENCES groups(id),
+              user_id INTEGER REFERENCES users(id),
+              PRIMARY KEY (group_id, user_id)
             );
 
             CREATE TABLE session (

@@ -8,7 +8,10 @@
         <h2 class="shelf-title">{{ userProfile.username }}'s Shelf</h2>
         <button v-if="isLoggedIn && userId !== loggedInUserId" @click="toggleFollow" :class="{ 'btn-follow': !isFollowing, 'btn-unfollow': isFollowing }">
           {{ isFollowing ? 'Unfollow' : 'Follow' }} 
-        </button>            
+        </button>
+        <button v-if="isLoggedIn && userId !== loggedInUserId" @click="addToGroup" class="btn-add-to-group">
+          Add to Group
+        </button>        
       </div>
       <div class="user-shelf">
         <section class="owned-games">
@@ -139,6 +142,25 @@ export default {
         }
       }
     },
+    async addToGroup() {
+      const groupId = 1; // Hardcoded for testing purposes
+      try {
+        let response = await axios.post(`http://localhost:3000/group/${groupId}/add-member`, { userId: this.userId }, { withCredentials: true });
+
+        if (response.status === 200) {
+          alert(`User ${this.userProfile.username} has been added to the group.`);
+        } else {
+          throw new Error(response.data.message || 'Failed to add user to the group');
+        }
+      } catch (error) {
+        if (error.response) {
+          alert(error.response.data || 'Failed to add user to the group');
+        } else {
+          console.error('Error adding user to group:', error);
+          alert('Failed to add user to the group');
+        }
+      }
+    },
   }
 };
 </script>
@@ -222,7 +244,7 @@ export default {
   font-weight: bold;
 }
 .btn-follow:hover, .btn-unfollow:hover {
-  color: #1f1d2b;
+  color: #e2e2e2;
   box-shadow: 0 4px 8px rgba(0,0,0,0.3);
   transform: translateY(-2px);
 }
@@ -242,6 +264,16 @@ export default {
 .btn-unfollow:hover {
   background-color: #7a1f1c;
 }
+
+.btn-add-to-group {
+  background-color: #4e6ef2;
+  /* Other styling similar to .btn-follow and .btn-unfollow */
+}
+
+.btn-add-to-group:hover {
+  background-color: #3b56c1;
+}
+
 
 @media (max-width: 768px) {
   .shelf-container {
