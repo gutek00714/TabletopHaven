@@ -1,7 +1,7 @@
 <template>
   <div class="col m11 column-background">
     <div class="section">
-      <h4>Games in Category: {{ $route.params.category }}</h4>
+      <h4>Games in Category: {{ decodedCategory }}</h4>
       <input v-model="gameSearchQuery" type="text" placeholder="Search games" class="search-games-container white-text">
       <div class="games-list">
         <GameCard v-for="game in filteredGamesList" :key="game.id" :gameId="game.id" />
@@ -21,9 +21,11 @@ data() {
   return {
     games: [],
     gameSearchQuery: '',
+    decodedCategory: '',
   };
 },
 async created() {
+    this.decodedCategory = decodeURIComponent(this.$route.params.category);
     await this.fetchGamesByCategory();
 },
 
