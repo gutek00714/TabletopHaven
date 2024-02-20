@@ -1,42 +1,42 @@
 <!-- Navbar.vue -->
 <template>
-  <nav class="light-blue lighten-1" role="navigation">
+  <nav class="navbar" role="navigation">
     <div class="nav-wrapper">
       <div class="row">
-                <!-- Logo on the left -->
-                <div class="col m2">
-                  <router-link to="/" class="brand-logo">TabletopHaven</router-link>
+        <!-- Logo on the left -->
+        <div class="col m2">
+          <router-link to="/" class="brand-logo">TabletopHaven</router-link>
+        </div>
+        
+        <!-- Search bar in the center -->
+        <div class="col m7">
+            <form @submit.prevent="searchBoardGames(searchQuery)">
+                <div class="input-field center-align search-bar-container" ref="searchContainer">
+                  <input v-model="searchQuery" class="input-search" id="search" type="search" @input="debouncedOnChange" required>
+                    <label class="label-icon" for="search"><i class="material-icons" style="color:#e2e2e2">search</i></label>
+                    <i class="material-icons" @click="clearSearch">close</i>
                 </div>
-                
-                <!-- Search bar in the center -->
-                <div class="col m7">
-                    <form @submit.prevent="searchBoardGames(searchQuery)">
-                        <div class="input-field center-align search-bar-container" ref="searchContainer">
-                          <input v-model="searchQuery" id="search" type="search" @input="debouncedOnChange" required>
-                            <label class="label-icon" for="search"><i class="material-icons">search</i></label>
-                            <i class="material-icons" @click="clearSearch">close</i>
-                        </div>
-                    </form>
-                </div>
+            </form>
+        </div>
 
-                <div v-if="searchResults.length" class="search-results-dropdown">
-                  <ul>
-                    <li v-for="game in searchResults" :key="game.id">
-                      <router-link :to="`/game/${game.id}`" @click="clearSearch">
-                        <img :src="game.image" class="game-image" alt="Game Image"> <!-- Game Image -->
-                        {{ game.name }}
-                      </router-link>
-                    </li>                                      
-                  </ul>
-                </div>                
-                
+        <div v-if="searchResults.length" class="search-results-dropdown">
+          <ul>
+            <li v-for="game in searchResults" :key="game.id">
+              <router-link :to="`/game/${game.id}`" @click="clearSearch">
+                <img :src="game.image" class="game-image" alt="Game Image"> <!-- Game Image -->
+                {{ game.name }}
+              </router-link>
+            </li>                                      
+          </ul>
+        </div>                
+          
 
-                <!-- Login button on the right -->
-                <div class="col m3 right-align">
-                  <button v-if="!isLoggedIn" @click="loginWithGoogle" class="waves-effect waves-light btn">Register/Login</button>
-                  <button v-else @click="logout" class="waves-effect waves-light btn">Logout</button>
-                </div>
-            </div>
+        <!-- Login button on the right -->
+        <div class="col m3 right-align">
+          <button v-if="!isLoggedIn" @click="loginWithGoogle" class="auth-buttons btn-auth">LOGIN</button>
+          <button v-else @click="logout" class="auth-buttons btn-auth">LOGOUT</button>
+        </div>
+      </div>
     </div>
   </nav>
 </template>
@@ -56,12 +56,12 @@ export default {
   },
 
   data() {
-  return {
-    searchQuery: '',
-    isLoggedIn: false, // This will be updated based on the user's login status
-    searchResults: [],
-  };
-},
+    return {
+      searchQuery: '',
+      isLoggedIn: false, // This will be updated based on the user's login status
+      searchResults: [],
+    };
+  },
 
   computed: {
     debouncedOnChange () {
@@ -134,9 +134,35 @@ export default {
 </script>
 
 <style scoped>
+.brand-logo {
+  color: #e2e2e2; /* Matching the navbar brand color */
+}
+.navbar {
+  background-color: #2c2a3e;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
 .nav-wrapper {
   padding-left: 10px;
   padding-right: 10px;
+}
+
+.input-field {
+  width: 100%;
+  background-color: #343246;
+  border: none;
+  border-radius: 4px;
+}
+
+.nav-wrapper .input-field input.input-search[type="search"]:focus {
+  color:#FFF;
+  background-color: #36344d;
+  border-radius:4px;
 }
 
 .search-bar-container {
@@ -147,12 +173,15 @@ export default {
 }
 
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+.label-icon {
+  color: #e2e2e2;
+}
 
 .search-results-dropdown {
   position: absolute;
-  background-color: #333;
-  color: #fff;
-  border: 1px solid #ddd;
+  background-color: #2c2a3e;
+  color: #e2e2e2;
+  border: 1px solid #444;
   border-radius: 4px;
   z-index: 100;
   top: 100%;
@@ -179,26 +208,45 @@ export default {
   object-fit: cover;
   margin-right: 10px;
   vertical-align: middle;
+  border-radius:2px;
 }
 
 .search-results-dropdown ul {
   list-style: none;
   padding: 0;
   margin: 0;
+  border-radius:4px;
 }
 
 .search-results-dropdown li {
   display: flex;
   align-items: center;
   padding: 10px;
+  transition: background-color 0.3s;
+  border-radius: 6px;
 }
 
 .search-results-dropdown li:last-child {
   border-bottom: none;
 }
 
-.search-results-dropdown li:hover {
-  background-color: #444;
+.search-results-dropdown li router-link:hover {
+  background-color: #38365a; /* Hover color */
 }
 
+.btn-auth {
+  background-color: #4e4c67;
+  color: #fff;
+  border: 1px solid #6e6c81;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  margin-left: 10px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-auth:hover {
+  background-color: #5e5c71;
+  border-color: #7e7c91;
+}
 </style>

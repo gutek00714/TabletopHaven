@@ -3,14 +3,14 @@
   <div class="col m2">
       <div class="section" style="width: 80%">
           <h5>MENU</h5>
-          <p><a class="waves-effect waves-teal btn-flat menu-button">Ranking</a></p>
-          <p><a class="waves-effect waves-teal btn-flat menu-button">Categories</a></p>
+          <p><router-link to="/ranking" class="waves-effect waves-teal btn-flat menu-button">Ranking</router-link></p>
+          <p><router-link to="/categories" class="waves-effect waves-teal btn-flat menu-button">Categories</router-link></p>
       </div>
       <div class="divider" style="width: 80%"></div>
       <div class="section" style="width: 80%">
           <h5>PROFILE</h5>
-          <p><a class="waves-effect waves-teal btn-flat menu-button">Your shelf</a></p>
-          <p><a class="waves-effect waves-teal btn-flat menu-button">Friends</a></p>
+          <p><router-link to="/shelf" class="waves-effect waves-teal btn-flat menu-button">Your Shelf</router-link></p>
+          <p><router-link to="/friends" class="waves-effect waves-teal btn-flat menu-button">Friends</router-link></p>
           <p><a class="waves-effect waves-teal btn-flat menu-button">Your groups</a></p>
       </div>
   </div>
@@ -25,6 +25,10 @@ export default {
 <style scoped>
 .col{
   margin-left: 0 !important;
+  position: fixed;
+  top: 64px;
+  left: 0;
+  z-index: 1000;
 }
 .section h5 {
   color: #fff;
