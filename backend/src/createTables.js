@@ -8,6 +8,7 @@ async function createTables() {
         await db.none(`
             DROP TABLE IF EXISTS users CASCADE;
             DROP TABLE IF EXISTS games CASCADE;
+            DROP TABLE IF EXISTS user_game_ratings CASCADE;
             DROP TABLE IF EXISTS session CASCADE;
             DROP TABLE IF EXISTS groups CASCADE;
             DROP TABLE IF EXISTS group_members CASCADE;
