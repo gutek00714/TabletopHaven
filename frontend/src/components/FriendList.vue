@@ -4,21 +4,21 @@
       <h4>Search Users</h4>
       <div class="col m7">
         <form @submit.prevent="searchBoardGames(searchQuery)">
-            <div class="input-field center-align search-bar-container" ref="searchContainer">
-                <i class="material-icons" style="margin-left: 10px;">search</i>
-                <input v-model="searchQuery" class="input-search" id="search" type="search" @input="debouncedOnChange" required>
-                <i class="material-icons" @click="clearSearch" style="margin-right: 10px;">close</i>
-                <div v-if="searchResults.length" class="search-results-dropdown">
-                  <ul>
-                    <li v-for="user in searchResults" :key="user.id">
-                      <router-link :to="`/user/${user.id}`" @click="clearSearch">
-                        <img :src="user.profile_image_url" class="dropdown-user-image" alt="User Image">
-                        {{ user.username }}
-                      </router-link>
-                    </li>
-                  </ul>
-                </div>
-            </div>
+          <div class="input-field center-align search-bar-container" ref="searchContainer">
+              <i class="material-icons" style="margin-left: 10px;">search</i>
+              <input v-model="searchQuery" class="input-search" id="search" type="search" @input="debouncedOnChange" required>
+              <i class="material-icons" @click="clearSearch" style="margin-right: 10px;">close</i>
+              <div v-if="searchResults.length" class="search-results-dropdown">
+                <ul>
+                  <li v-for="user in searchResults" :key="user.id">
+                    <router-link :to="`/user/${user.id}`" @click="clearSearch">
+                      <img :src="user.profile_image_url" class="dropdown-user-image" alt="User Image">
+                      {{ user.username }}
+                    </router-link>
+                  </li>
+                </ul>
+              </div>
+          </div>
         </form>
       </div>
     </div>
@@ -27,8 +27,9 @@
       <div v-if="loading" class="loading">Loading friends list...</div>
       <div v-else-if="error" class="error-message">{{ error }}</div>
       <div v-else-if="isAuthenticated">
+        <input v-model="friendSearchQuery" type="text" placeholder="Search friends" class="search-friends-container white-text">
         <ul class="friends-list">
-          <li v-for="friend in friendsList" :key="friend.id">
+          <li v-for="friend in filteredFriendsList" :key="friend.id">
             <router-link :to="`/user/${friend.id}`" class="friend-item">
               <img :src="friend.profile_image_url" class="friend-image" alt="Friend Image">
               <span class="friend-name">{{ friend.username }}</span>
@@ -39,7 +40,7 @@
       <div v-else>
         <div v-if="error" class="error">{{ error }}</div>
       </div>
-    </div> 
+    </div>
   </div>
 </template>
 
@@ -64,6 +65,7 @@ export default {
       error: null,
       searchQuery: '',
       searchResults: [],
+      friendSearchQuery: '',
     };
   },
   async created() {
@@ -73,6 +75,15 @@ export default {
   computed: {
     debouncedOnChange () {
       return _debounce(this.searchUsers, 700);
+    },
+
+    filteredFriendsList() {
+      if (!this.friendSearchQuery) {
+        return this.friendsList;
+      }
+      return this.friendsList.filter(friend =>
+        friend.username.toLowerCase().includes(this.friendSearchQuery.toLowerCase())
+      );
     }
   },
 
@@ -324,4 +335,9 @@ export default {
   font-size: 1.2rem;
   margin-top: 1rem;
 }
+
+.search-friends-container {
+  width: 35% !important;
+}
+
 </style>

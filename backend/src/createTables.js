@@ -25,21 +25,29 @@ async function createTables() {
             );
 
             CREATE TABLE games (
-                id SERIAL PRIMARY KEY,
-                name VARCHAR(255) NOT NULL,
-                publisher VARCHAR(255)[],
-                year INT,
-                description TEXT,
-                categories VARCHAR(255)[],
-                rating INTEGER[],
-                min_players INT,
-                max_players INT,
-                play_time VARCHAR(20),
-                age INT,
-                foreign_names VARCHAR(255)[],
-                image VARCHAR(255),
-                bgg_id INT
-            );
+              id SERIAL PRIMARY KEY,
+              name VARCHAR(255) NOT NULL,
+              publisher VARCHAR(255)[],
+              year INT,
+              description TEXT,
+              categories VARCHAR(255)[],
+              total_rating_score INT DEFAULT 0,
+              rating_count INT DEFAULT 0,
+              min_players INT,
+              max_players INT,
+              play_time VARCHAR(20),
+              age INT,
+              foreign_names VARCHAR(255)[],
+              image VARCHAR(255),
+              bgg_id INT
+          );
+          
+          CREATE TABLE user_game_ratings (
+              user_id INTEGER REFERENCES users(id),
+              game_id INTEGER REFERENCES games(id),
+              rating INT,
+              PRIMARY KEY (user_id, game_id)
+          );
 
             CREATE TABLE groups (
               id SERIAL PRIMARY KEY,

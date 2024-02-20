@@ -18,6 +18,18 @@
               <div style="border-left: 1px solid white; padding-left: 10px; padding-right: 10px;">Playing time: {{ gameData.play_time }} minutes</div>
               <div style="border-left: 1px solid white; padding-left: 10px; padding-right: 10px;">Age: {{ gameData.age }}</div>
               <div v-if="averageRating !== null" style="border-left: 1px solid white; padding-left: 10px;">Rating: {{ averageRating.toFixed(1) }}</div>
+              <div class="rating-container">
+                <span v-for="star in 10" :key="star" class="star" 
+                      @click="setRating(star)" 
+                      @mouseover="hoverRatingChange(star)" 
+                      @mouseleave="hoverRatingChange(0)">
+                  <img src="/star-filled.png" v-if="star <= hoverRating || (!hoverRating && star <= currentRating)" alt="Filled Star"/>
+                  <img src="/star-empty.png" v-else alt="Empty Star"/>
+                </span>
+                <button v-if="currentRating > 0" @click="removeRating" class="btn-remove-rating">
+                  <img src="/cancel.svg" alt="X"/>
+                </button>           
+              </div>
             </div>
             <div v-if="gameData.categories" class="game-categories">
               <div class="categories-title">
@@ -73,10 +85,13 @@ export default {
       loading: false,
       error: null,
       averageRating: null,
+      currentRating: 0,
+      hoverRating: 0,
     };
   },
   async created() {
     this.fetchGameData();
+    this.fetchUserRating();
   },
   methods: {
     async fetchGameData() {
@@ -100,10 +115,20 @@ export default {
       }
     },
 
+    async fetchUserRating() {
+      try {
+        const response = await axios.get(`http://localhost:3000/user-rating/${this.gameId}`, { withCredentials: true });
+        if (response.data.rating) {
+          this.currentRating = response.data.rating;
+        }
+      } catch (error) {
+        console.error("Error fetching user rating:", error);
+      }
+    },
+
     calculateAverageRating() {
-      if (this.gameData.rating && this.gameData.rating.length > 0) {
-        const sum = this.gameData.rating.reduce((a, b) => a + b, 0);
-        this.averageRating = sum / this.gameData.rating.length;
+      if (this.gameData.total_rating_score !== undefined && this.gameData.rating_count > 0) {
+        this.averageRating = this.gameData.total_rating_score / this.gameData.rating_count;
       } else {
         this.averageRating = null;
       }
@@ -228,6 +253,48 @@ export default {
         alert('Failed to remove game from favorites');
       }
     },
+
+    setRating(rating) {
+      this.currentRating = rating;
+      this.submitRating(rating);
+    },
+
+    hoverRatingChange(rating) {
+      this.hoverRating = rating;
+    },
+
+    async submitRating(rating) {
+      try {
+        await axios.post('http://localhost:3000/rate-game', 
+        { 
+          gameId: this.gameId, 
+          rating: rating 
+        }, 
+        { withCredentials: true });
+
+        alert('Rating submitted successfully');
+      } catch (error) {
+        if (error.response && error.response.status === 401) {
+          alert('You must be logged in to rate games');
+          this.currentRating = 0;
+          this.hoverRating = 0;
+        } else {
+          console.error('Error submitting rating:', error);
+          alert('Failed to submit rating');
+        }
+      }
+    },
+
+    async removeRating() {
+      try {
+        await axios.delete(`http://localhost:3000/remove-rating/${this.gameId}`, { withCredentials: true });
+        this.currentRating = 0;
+        alert('Rating removed successfully');
+      } catch (error) {
+        console.error('Error removing rating:', error);
+        alert('Failed to remove rating');
+      }
+    },
   },
 };
 </script>
@@ -333,6 +400,60 @@ export default {
 .game-categories h5 {
   font-size: 15px;
   margin: 0;
+}
+
+.rating-container {
+  margin-left: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.star {
+  cursor: pointer;
+  position: relative;
+  margin: 0 2px;
+  transition: all 0.3s ease-in-out;
+}
+
+.star img {
+  height: 20px;
+  width: 20px;
+  transition: transform 0.3s ease;
+}
+
+.star::before,
+.star::after {
+  content: '';
+  position: absolute;
+  left: -5px;
+  right: -5px;
+}
+
+.star:hover img {
+  transform: scale(1.1);
+}
+
+.btn-remove-rating {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  padding: 0;
+  margin-left: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.btn-remove-rating img {
+  height: 20px;
+  width: 20px;
+}
+
+.btn-remove-rating:hover img {
+  transform: scale(1.1);
 }
 
 </style>
