@@ -1,13 +1,13 @@
 <template>
   <div class="col m11 column-background">
-    <div class="group-detail-container">
+    <div class="section">
       <div v-if="loading" class="loading-error">Loading group details...</div>
       <div v-else-if="error" class="loading-error">{{ error }}</div>
       <div v-else>
         <div class="group-members-and-chat">
-          <div class="group-members">
+          <div class="col m5">
             <div class="group-header">
-              <h4 class="group-name">{{ groupName }}</h4>
+              <h4>{{ groupName }}</h4>
               <button @click="toggleManageMode" class="manage-group-button">
                 {{ manageMode ? 'Exit Manage Mode' : 'Manage Group' }}
               </button>
@@ -40,7 +40,7 @@
             </ul>
           </div>
 
-          <div class="group-chat">
+          <div class="col m7">
             <h4>Group Chat</h4>
             <div class="chat-container">
               <!-- Chat messages  -->
@@ -131,10 +131,6 @@ export default {
   border-radius: 5px;
 }
 
-.group-detail-container {
-  margin: 33px;
-}
-
 .group-header {
   display: flex;
   align-items: center;
@@ -143,9 +139,6 @@ export default {
   margin-bottom: 3rem;
 }
 
-.group-name {
-  margin: 0;
-}
 
 .manage-group-button {
   background-color: #4e4c67;
@@ -153,6 +146,7 @@ export default {
   border: 1px solid #6e6c81;
   border-radius: 4px;
   padding: 0.5rem 1rem;
+  margin-top: 10px;
   margin-left: 10px;
   cursor: pointer;
   transition: all 0.3s;
@@ -165,6 +159,7 @@ export default {
 
 .delete-group-button {
   margin-right: 10px;
+  margin-top: 10px;
   padding: 10px 15px;
   color: white;
   border: 2px solid #474747;
@@ -185,10 +180,6 @@ export default {
   background-color: #7a1f1c;
 }
 
-.group-members-and-chat {
-  display: flex;
-  flex-wrap: wrap;
-}
 
 .group-chat{
   margin-top: 60px;
