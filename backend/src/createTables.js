@@ -36,7 +36,7 @@ async function createTables() {
               rating_count INT DEFAULT 0,
               min_players INT,
               max_players INT,
-              play_time VARCHAR(20),
+              play_time INT,
               age INT,
               foreign_names VARCHAR(255)[],
               image VARCHAR(255),
