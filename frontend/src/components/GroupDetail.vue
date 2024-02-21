@@ -66,12 +66,13 @@ export default {
       const groupId = this.$route.params.groupId;
       this.loading = true;
       try {
-        const membersResponse = await axios.get(`http://localhost:3000/group/${groupId}/members`);
-        const gamesResponse = await axios.get(`http://localhost:3000/group/${groupId}/games`);
-        this.groupName = `Group ${groupId}`; // Replace with actual group name if available
-        this.members = membersResponse.data;
-        this.games = gamesResponse.data;
+        const response = await axios.get(`http://localhost:3000/group/${groupId}/details`);
+        const data = response.data;
+        this.groupName = data.name;
+        this.members = data.members;
+        this.games = data.games;
       } catch (error) {
+        console.error(error);
         this.error = 'An error occurred while fetching group details.';
       } finally {
         this.loading = false;
