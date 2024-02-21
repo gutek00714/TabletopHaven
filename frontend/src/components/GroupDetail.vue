@@ -6,14 +6,36 @@
       <div v-else>
         <div class="group-members-and-chat">
           <div class="group-members">
-            <h4 class="group-name">{{ groupName }}</h4>
+            <div class="group-header">
+              <h4 class="group-name">{{ groupName }}</h4>
+              <button @click="toggleManageMode" class="manage-group-button">
+                {{ manageMode ? 'Exit Manage Mode' : 'Manage Group' }}
+              </button>
+              <div v-if="manageMode" class="delete-group">
+                <button @click="deleteGroup" class="delete-group-button">Delete Group</button>
+              </div>
+            </div>
             <h4>Members</h4>
             <ul class="friends-list">
+              <li v-for="owner in owner" :key="owner.id">
+                <div class="member-container">
+                  <router-link :to="`/user/${owner.id}`" class="friend-item">
+                    <img :src="owner.profile_image_url" class="member-image" alt="Member Image">
+                    <img class="owner" src="/crown.svg" alt="Owner"/>
+                    <span class="friend-name">{{ owner.username }}</span>
+                  </router-link>  
+                </div>
+              </li>
               <li v-for="member in members" :key="member.id">
-                <router-link :to="`/user/${member.id}`" class="friend-item">
-                  <img :src="member.profile_image_url" class="member-image" alt="Member Image">
-                  <span class="friend-name">{{ member.username }}</span>
-                </router-link>
+                <div class="member-container">
+                  <router-link :to="`/user/${member.id}`" class="friend-item">
+                    <img :src="member.profile_image_url" class="member-image" alt="Member Image">
+                    <span class="friend-name">{{ member.username }}</span>
+                  </router-link>
+                  <button v-if="manageMode && !member.is_owner" @click.stop="removeMember(member.id)" class="remove-member-button">
+                    <img class="remove" src="/remove.svg" alt="X"/>
+                  </button>                  
+                </div>
               </li>
             </ul>
           </div>
@@ -55,7 +77,8 @@ export default {
       members: [],
       games: [],
       loading: false,
-      error: null
+      error: null,
+      manageMode: false,
     };
   },
   async created() {
@@ -67,16 +90,37 @@ export default {
       this.loading = true;
       try {
         const membersResponse = await axios.get(`http://localhost:3000/group/${groupId}/members`);
+        const ownerResponse = await axios.get(`http://localhost:3000/group/${groupId}/owner`);
         const gamesResponse = await axios.get(`http://localhost:3000/group/${groupId}/games`);
         this.groupName = `Group ${groupId}`; // Replace with actual group name if available
         this.members = membersResponse.data;
+        this.owner = ownerResponse.data;
         this.games = gamesResponse.data;
+        console.log(membersResponse.data);
       } catch (error) {
         this.error = 'An error occurred while fetching group details.';
       } finally {
         this.loading = false;
       }
-    }
+    },
+
+    async deleteGroup() {
+      // Implement group deletion logic here
+      // Example: axios.delete(`http://localhost:3000/group/${groupId}`)
+    },
+
+    async removeMember(memberId) {
+      const groupId = this.$route.params.groupId;
+      try {
+        await axios.post(`http://localhost:3000/group/${groupId}/remove-member`, { userId: memberId });
+        this.members = this.members.filter(member => member.id !== memberId);
+      } catch (error) {
+        this.error = 'An error occurred while removing user from group.';
+      }
+    },
+    toggleManageMode() {
+      this.manageMode = !this.manageMode;
+    },
   }
 };
 </script>
@@ -89,6 +133,56 @@ export default {
 
 .group-detail-container {
   margin: 33px;
+}
+
+.group-header {
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  gap: 10px;
+  margin-bottom: 3rem;
+}
+
+.group-name {
+  margin: 0;
+}
+
+.manage-group-button {
+  background-color: #4e4c67;
+  color: #fff;
+  border: 1px solid #6e6c81;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  margin-left: 10px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.manage-group-button:hover {
+  background-color: #5e5c71;
+  border-color: #7e7c91;
+}
+
+.delete-group-button {
+  margin-right: 10px;
+  padding: 10px 15px;
+  color: white;
+  border: 2px solid #474747;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transition: all 0.3s ease-in-out;
+  font-size: 16px;
+  font-weight: bold;
+  background-color: #e53935;
+}
+
+.delete-group-button:hover {
+  background-color: #7a1f1c;
 }
 
 .group-members-and-chat {
@@ -125,6 +219,22 @@ export default {
   gap: 1rem;
 }
 
+.member-container {
+  display: flex;
+  align-items: center;
+}
+
+.owner {
+  height: 25px;
+  width: 25px;
+  margin-right: 5px;
+}
+
+.remove {
+  height: 50px;
+  width: 50px;
+}
+
 .friend-item {
   margin: 0.5rem;
   padding: 1.5rem;
@@ -134,7 +244,7 @@ export default {
   box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.5);
   text-decoration: none;
   color: #FFF;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   text-align: left;
   min-height: 100px;
@@ -173,5 +283,18 @@ export default {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+.remove-member-button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  padding: 0;
+  margin-left: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
 }
 </style>

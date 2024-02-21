@@ -737,7 +737,28 @@ app.get('/group/:groupId/members', async (req, res) => {
       FROM users u
       WHERE u.id IN (
         SELECT user_id FROM group_members WHERE group_id = $1
-        UNION
+      );
+    `;
+    const result = await pool.query(query, [groupId]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching group members:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/group/:groupId/owner', async (req, res) => {
+  const groupId = parseInt(req.params.groupId, 10);
+
+  if (!groupId) {
+    return res.status(400).send('Invalid group ID');
+  }
+
+  try {
+    const query = `
+      SELECT u.id, u.username, u.profile_image_url
+      FROM users u
+      WHERE u.id IN (
         SELECT owner_id FROM groups WHERE id = $1
       );
     `;
