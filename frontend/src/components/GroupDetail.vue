@@ -260,22 +260,6 @@ export default {
   width: 150px !important;
 }
 
-.filters button {
-  background-color: #4e4c67;
-  color: #fff;
-  border: 1px solid #6e6c81;
-  border-radius: 4px;
-  padding: 0.5rem 1rem;
-  margin-left: 10px;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.filters button:hover {
-  background-color: #5e5c71;
-  border-color: #7e7c91;
-}
-
 /* Adjust layout for smaller screens */
 @media (max-width: 767px) {
   .games-header {
