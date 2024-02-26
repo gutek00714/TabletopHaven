@@ -8,7 +8,7 @@
           class="category-item" 
           v-for="category in filteredCategoryList" 
           :key="category" 
-          :to="{ name: 'GamesByCategory', params: { category: category }}">
+          :to="{ name: 'GamesByCategory', params: { category: encodeURIComponent(category) }}">
           {{ category }}
         </router-link>
       </div>
