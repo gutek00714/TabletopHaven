@@ -93,26 +93,28 @@ export default {
   },
   methods: {
     async applyFilters() {
+      const invalidPlayerFilter = this.minPlayersFilter && this.maxPlayersFilter && this.minPlayersFilter > this.maxPlayersFilter;
+      const invalidTimeFilter = this.minPlayTimeFilter && this.maxPlayTimeFilter && this.minPlayTimeFilter > this.maxPlayTimeFilter;
 
-    const invalidPlayerFilter = this.minPlayersFilter > this.maxPlayersFilter;
-    const invalidTimeFilter = this.minPlayTimeFilter > this.maxPlayTimeFilter;
+      if (invalidPlayerFilter || invalidTimeFilter) {
+        this.filteredGames = [];
+        return;
+      }
 
-    if (invalidPlayerFilter || invalidTimeFilter) {
-      this.filteredGames = [];
-      return;
-    }
+      this.filteredGames = this.games.filter(game => {
+        // Check player range
+        const minPlayers = this.minPlayersFilter || -Infinity;
+        const maxPlayers = this.maxPlayersFilter || Infinity;
+        const isWithinPlayerRange = (game.min_players <= maxPlayers) && (game.max_players >= minPlayers);
 
-    this.filteredGames = this.games.filter(game => {
-      const minPlayers = this.minPlayersFilter || -Infinity;
-      const maxPlayers = this.maxPlayersFilter || Infinity;
-      const isWithinPlayerRange = (game.min_players <= maxPlayers) && (game.max_players >= minPlayers);
+        // Check play time range
+        const minPlayTime = this.minPlayTimeFilter || -Infinity;
+        const maxPlayTime = this.maxPlayTimeFilter || Infinity;
+        const isWithinTimeRange = (game.play_time >= minPlayTime) && (game.play_time <= maxPlayTime);
 
-      const isWithinTimeRange = (!this.minPlayTimeFilter || game.play_time >= this.minPlayTimeFilter) &&
-                                (!this.maxPlayTimeFilter || game.play_time <= this.maxPlayTimeFilter);
-
-      return isWithinPlayerRange && isWithinTimeRange;
-    });
-  },
+        return isWithinPlayerRange && isWithinTimeRange;
+      });
+    },
 
     async fetchGroupDetails() {
       const groupId = this.$route.params.groupId;
