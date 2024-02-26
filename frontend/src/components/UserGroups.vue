@@ -49,18 +49,16 @@ export default {
     const groupName = prompt('Enter group name:');
     const groupDescription = prompt('Enter group description:');
 
-    // Send a POST request to create a new group
     const response = await axios.post(
       'http://localhost:3000/create-group',
-      { groupName, groupDescription }, // Data should be passed as part of the second argument
-      { withCredentials: true } // Include withCredentials option here
+      { groupName, groupDescription },
+      { withCredentials: true } 
     );
 
-    console.log(response.data); // Log success message or handle as needed
-    // Optionally, you can update the UI after successful creation of the group
+    console.log(response.data);
+    
   } catch (error) {
-    console.error('Error creating group:', error.response.data); // Log error message
-    // Handle error or show error message to the user
+    console.error('Error creating group:', error.response.data);
   }
 }
 ,
