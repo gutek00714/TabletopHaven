@@ -51,6 +51,11 @@
 
           <section class="group-games">
             <h4>Games Owned by Group</h4>
+            <div class="filters">
+              <input type="number" v-model.number="playersFilter" placeholder="Number of Players">
+              <input type="number" v-model.number="minPlayTimeFilter" placeholder="Min Play Time">
+              <input type="number" v-model.number="maxPlayTimeFilter" placeholder="Max Play Time">
+            </div>
             <ul class="game-list">
               <GameCard v-for="game in games" :key="game.id" :gameId="game.id"/>
             </ul>
@@ -81,8 +86,25 @@ export default {
       manageMode: false,
       owner: { id: null },
       isMemberOrOwner: false,
+      playersFilter: null,
+      minPlayTimeFilter: null,
+      maxPlayTimeFilter: null,
+      filteredGames: [],
     };
   },
+  
+  watch: {
+    playersFilter() {
+      this.applyFilters();
+    },
+    minPlayTimeFilter() {
+      this.applyFilters();
+    },
+    maxPlayTimeFilter() {
+      this.applyFilters();
+    }
+  },
+
   async created() {
     await this.fetchGroupDetails();
     await Promise.all([this.fetchGroupDetails(), this.fetchCurrentUserId()]);
@@ -95,6 +117,27 @@ export default {
   },
 
   methods: {
+    async applyFilters() {
+      const invalidPlayerFilter = this.minPlayersFilter && this.maxPlayersFilter && this.minPlayersFilter > this.maxPlayersFilter;
+      const invalidTimeFilter = this.minPlayTimeFilter && this.maxPlayTimeFilter && this.minPlayTimeFilter > this.maxPlayTimeFilter;
+
+      if (invalidPlayerFilter || invalidTimeFilter) {
+        this.filteredGames = [];
+        return;
+      }
+
+      this.filteredGames = this.games.filter(game => {
+        const isWithinPlayerRange = this.playersFilter === null || 
+                                    (game.min_players <= this.playersFilter && game.max_players >= this.playersFilter);
+
+        const minPlayTime = this.minPlayTimeFilter || -Infinity;
+        const maxPlayTime = this.maxPlayTimeFilter || Infinity;
+        const isWithinTimeRange = (game.play_time >= minPlayTime) && (game.play_time <= maxPlayTime);
+
+        return isWithinPlayerRange && isWithinTimeRange;
+      });
+    },
+
     async fetchGroupDetails() {
       const groupId = this.$route.params.groupId;
       this.loading = true;
@@ -107,7 +150,7 @@ export default {
         this.owner = ownerResponse.data;
         this.games = gamesResponse.data;
         this.isMemberOrOwner = this.members.some(member => member.id === this.userId) || this.owner?.id === this.userId;
-        console.log(membersResponse.data);
+        this.applyFilters();
       } catch (error) {
         this.error = 'An error occurred while fetching group details.';
       } finally {
@@ -225,10 +268,6 @@ export default {
   }
 }
 
-.group-games {
-  margin-top: 20px;
-}
-
 .friends-list {
   list-style-type: none;
   padding: 0;
@@ -313,4 +352,54 @@ export default {
   justify-content: center;
   margin-bottom: 4px;
 }
+.group-games {
+  margin-top: 20px;
+}
+
+.games-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+}
+
+.games-header h4 {
+  flex-shrink: 0;
+  margin-right: 2rem;
+}
+
+.filters {
+  margin-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-grow: 1;
+  color: #e2e2e2;
+}
+
+.filters input {
+  padding: 3px 5px;
+  font-size: 12px;
+  height: 30px;
+  color: #e2e2e2;
+}
+
+.filters input {
+  width: 160px !important;
+}
+
+/* Adjust layout for smaller screens */
+@media (max-width: 767px) {
+  .games-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .filters {
+    width: 100%;
+    margin-top: 10px;
+    justify-content: start; /* Align filters to the start */
+  }
+}
+
 </style>
