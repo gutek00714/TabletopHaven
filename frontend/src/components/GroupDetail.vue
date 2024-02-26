@@ -30,8 +30,7 @@
           <div class="games-header">
             <h4>Games Owned by Group</h4>
             <div class="filters">
-              <input type="number" v-model.number="minPlayersFilter" placeholder="Min Players">
-              <input type="number" v-model.number="maxPlayersFilter" placeholder="Max Players">
+              <input type="number" v-model.number="playersFilter" placeholder="Number of Players">
               <input type="number" v-model.number="minPlayTimeFilter" placeholder="Min Play Time">
               <input type="number" v-model.number="maxPlayTimeFilter" placeholder="Max Play Time">
             </div>
@@ -65,8 +64,7 @@ export default {
       games: [],
       loading: false,
       error: null,
-      minPlayersFilter: null,
-      maxPlayersFilter: null,
+      playersFilter: null,
       minPlayTimeFilter: null,
       maxPlayTimeFilter: null,
       filteredGames: [],
@@ -74,10 +72,7 @@ export default {
   },
   
   watch: {
-    minPlayersFilter() {
-      this.applyFilters();
-    },
-    maxPlayersFilter() {
+    playersFilter() {
       this.applyFilters();
     },
     minPlayTimeFilter() {
@@ -102,12 +97,9 @@ export default {
       }
 
       this.filteredGames = this.games.filter(game => {
-        // Check player range
-        const minPlayers = this.minPlayersFilter || -Infinity;
-        const maxPlayers = this.maxPlayersFilter || Infinity;
-        const isWithinPlayerRange = (game.min_players <= maxPlayers) && (game.max_players >= minPlayers);
+        const isWithinPlayerRange = this.playersFilter === null || 
+                                    (game.min_players <= this.playersFilter && game.max_players >= this.playersFilter);
 
-        // Check play time range
         const minPlayTime = this.minPlayTimeFilter || -Infinity;
         const maxPlayTime = this.maxPlayTimeFilter || Infinity;
         const isWithinTimeRange = (game.play_time >= minPlayTime) && (game.play_time <= maxPlayTime);
@@ -259,7 +251,7 @@ export default {
 }
 
 .filters input {
-  width: 150px !important;
+  width: 160px !important;
 }
 
 /* Adjust layout for smaller screens */
