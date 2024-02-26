@@ -4,56 +4,61 @@
       <div v-if="loading" class="loading-error">Loading group details...</div>
       <div v-else-if="error" class="loading-error">{{ error }}</div>
       <div v-else>
-        <div class="group-members-and-chat">
-          <div class="col m5">
-            <div class="group-header">
-              <h4>{{ groupName }}</h4>
-              <button @click="toggleManageMode" class="manage-group-button">
-                {{ manageMode ? 'Exit Manage Mode' : 'Manage Group' }}
-              </button>
-              <div v-if="manageMode" class="delete-group">
-                <button @click="deleteGroup" class="delete-group-button">Delete Group</button>
+        <div v-if="isMemberOrOwner">
+          <div class="group-members-and-chat">
+            <div class="col m5">
+              <div class="group-header">
+                <h4>{{ groupName }}</h4>
+                <div v-if="isOwner">
+                  <button @click="toggleManageMode" class="manage-group-button">
+                    {{ manageMode ? 'Exit Manage Mode' : 'Manage Group' }}
+                  </button>
+                </div>
+                <div v-if="manageMode" class="delete-group">
+                  <button @click="deleteGroup" class="delete-group-button">Delete Group</button>
+                </div>
               </div>
-            </div>
-            <h4>Members</h4>
-            <ul class="friends-list">
-              <li v-for="owner in owner" :key="owner.id">
-                <div class="member-container">
+              <h4>Members</h4>
+              <ul class="friends-list">
+                <div v-if="owner" class="member-container">
                   <router-link :to="`/user/${owner.id}`" class="friend-item">
                     <img :src="owner.profile_image_url" class="member-image" alt="Member Image">
                     <img class="owner" src="/crown.svg" alt="Owner"/>
                     <span class="friend-name">{{ owner.username }}</span>
                   </router-link>  
-                </div>
-              </li>
-              <li v-for="member in members" :key="member.id">
-                <div class="member-container">
-                  <router-link :to="`/user/${member.id}`" class="friend-item">
-                    <img :src="member.profile_image_url" class="member-image" alt="Member Image">
-                    <span class="friend-name">{{ member.username }}</span>
-                  </router-link>
-                  <button v-if="manageMode && !member.is_owner" @click.stop="removeMember(member.id)" class="remove-member-button">
-                    <img class="remove" src="/remove.svg" alt="X"/>
-                  </button>                  
-                </div>
-              </li>
-            </ul>
-          </div>
+                </div>              
+                <li v-for="member in members" :key="member.id">
+                  <div class="member-container">
+                    <router-link :to="`/user/${member.id}`" class="friend-item">
+                      <img :src="member.profile_image_url" class="member-image" alt="Member Image">
+                      <span class="friend-name">{{ member.username }}</span>
+                    </router-link>
+                    <button v-if="manageMode && !member.is_owner" @click.stop="removeMember(member.id)" class="remove-member-button">
+                      <img class="remove" src="/remove.svg" alt="X"/>
+                    </button>                  
+                  </div>
+                </li>
+              </ul>
+            </div>
 
-          <div class="col m7">
-            <h4>Group Chat</h4>
-            <div class="chat-container">
-              <!-- Chat messages  -->
+            <div class="col m7">
+              <h4>Group Chat</h4>
+              <div class="chat-container">
+                <!-- Chat messages  -->
+              </div>
             </div>
           </div>
-        </div>
 
-        <section class="group-games">
-          <h4>Games Owned by Group</h4>
-          <ul class="game-list">
-            <GameCard v-for="game in games" :key="game.id" :gameId="game.id"/>
-          </ul>
-        </section>
+          <section class="group-games">
+            <h4>Games Owned by Group</h4>
+            <ul class="game-list">
+              <GameCard v-for="game in games" :key="game.id" :gameId="game.id"/>
+            </ul>
+          </section>
+        </div>
+        <div v-else>
+          <p>You are not a member of this group.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -65,25 +70,30 @@ import GameCard from './SmallGameCard.vue';
 
 export default {
   components: { GameCard },
-  props: {
-    userId: {
-      type: Number,
-      required: true
-    }
-  },
   data() {
     return {
+      userId: null,
       groupName: '',
       members: [],
       games: [],
       loading: false,
       error: null,
       manageMode: false,
+      owner: { id: null },
+      isMemberOrOwner: false,
     };
   },
   async created() {
     await this.fetchGroupDetails();
+    await Promise.all([this.fetchGroupDetails(), this.fetchCurrentUserId()]);
   },
+
+  computed: {
+    isOwner() {
+      return this.owner?.id === this.userId;
+    }
+  },
+
   methods: {
     async fetchGroupDetails() {
       const groupId = this.$route.params.groupId;
@@ -96,11 +106,21 @@ export default {
         this.members = membersResponse.data;
         this.owner = ownerResponse.data;
         this.games = gamesResponse.data;
+        this.isMemberOrOwner = this.members.some(member => member.id === this.userId) || this.owner?.id === this.userId;
         console.log(membersResponse.data);
       } catch (error) {
         this.error = 'An error occurred while fetching group details.';
       } finally {
         this.loading = false;
+      }
+    },
+
+    async fetchCurrentUserId() {
+      try {
+        const response = await axios.get('http://localhost:3000/current-user', { withCredentials: true });
+        this.userId = response.data.userId;
+      } catch (error) {
+        console.error('Error fetching current user ID:', error);
       }
     },
 
@@ -112,12 +132,17 @@ export default {
     async removeMember(memberId) {
       const groupId = this.$route.params.groupId;
       try {
-        await axios.post(`http://localhost:3000/group/${groupId}/remove-member`, { userId: memberId });
+        await axios.post(`http://localhost:3000/group/${groupId}/remove-member`, { 
+          userId: memberId, 
+          requestingUserId: this.userId
+        });
         this.members = this.members.filter(member => member.id !== memberId);
+        await this.fetchGroupDetails();
       } catch (error) {
         this.error = 'An error occurred while removing user from group.';
       }
     },
+
     toggleManageMode() {
       this.manageMode = !this.manageMode;
     },
