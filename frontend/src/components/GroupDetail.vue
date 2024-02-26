@@ -1,45 +1,73 @@
 <template>
   <div class="col m11 column-background">
-    <div class="group-detail-container">
+    <div class="section">
       <div v-if="loading" class="loading-error">Loading group details...</div>
       <div v-else-if="error" class="loading-error">{{ error }}</div>
       <div v-else>
-        <div class="group-members-and-chat">
-          <div class="group-members">
-            <h4 class="group-name">{{ groupName }}</h4>
-            <h4>Members</h4>
-            <ul class="friends-list">
-              <li v-for="member in members" :key="member.id">
-                <router-link :to="`/user/${member.id}`" class="friend-item">
-                  <img :src="member.profile_image_url" class="member-image" alt="Member Image">
-                  <span class="friend-name">{{ member.username }}</span>
-                </router-link>
-              </li>
-            </ul>
+        <div v-if="isMemberOrOwner">
+          <div class="row">
+            <div class="group-members-and-chat">
+              <div class="col m5">
+                <div class="group-header">
+                  <h4>{{ groupName }}</h4>
+                  <div v-if="isOwner">
+                    <button @click="toggleManageMode" class="manage-group-button">
+                      {{ manageMode ? 'Exit Manage Mode' : 'Manage Group' }}
+                    </button>
+                  </div>
+                  <div v-if="manageMode" class="delete-group">
+                    <button @click="deleteGroup" class="delete-group-button">Delete Group</button>
+                  </div>
+                </div>
+                <h4>Members</h4>
+                <ul class="friends-list">
+                  <div v-if="owner" class="member-container">
+                    <router-link :to="`/user/${owner.id}`" class="friend-item">
+                      <img :src="owner.profile_image_url" class="member-image" alt="Member Image">
+                      <img class="owner" src="/crown.svg" alt="Owner"/>
+                      <span class="friend-name">{{ owner.username }}</span>
+                    </router-link>  
+                  </div>              
+                  <li v-for="member in members" :key="member.id">
+                    <div class="member-container">
+                      <router-link :to="`/user/${member.id}`" class="friend-item">
+                        <img :src="member.profile_image_url" class="member-image" alt="Member Image">
+                        <span class="friend-name">{{ member.username }}</span>
+                      </router-link>
+                      <button v-if="manageMode && !member.is_owner" @click.stop="removeMember(member.id)" class="remove-member-button">
+                        <img class="remove" src="/remove.svg" alt="X"/>
+                      </button>                  
+                    </div>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="col m7">
+                <h4>Group Chat</h4>
+                <div class="chat-container">
+                  <!-- Chat messages  -->
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div class="group-chat">
-            <h4>Group Chat</h4>
-            <div class="chat-container">
-              <!-- Chat messages  -->
-            </div>
+          <div class="row">
+            <section class="group-games">
+              <h4>Games Owned by Group</h4>
+              <div class="filters">
+                <input type="number" v-model.number="playersFilter" placeholder="Number of Players">
+                <input type="number" v-model.number="minPlayTimeFilter" placeholder="Min Play Time">
+                <input type="number" v-model.number="maxPlayTimeFilter" placeholder="Max Play Time">
+              </div>
+              <ul class="game-list">
+                <GameCard v-for="game in games" :key="game.id" :gameId="game.id"/>
+              </ul>
+            </section>
           </div>
         </div>
-
-        <section class="group-games">
-          <div class="games-header">
-            <h4>Games Owned by Group</h4>
-            <div class="filters">
-              <input type="number" v-model.number="playersFilter" placeholder="Number of Players">
-              <input type="number" v-model.number="minPlayTimeFilter" placeholder="Min Play Time">
-              <input type="number" v-model.number="maxPlayTimeFilter" placeholder="Max Play Time">
-            </div>
-          </div>
-          <ul class="game-list">
-            <GameCard v-for="game in filteredGames" :key="game.id" :gameId="game.id"/>
-          </ul>
-        </section>        
-        
+        <div v-else>
+          <p>You are not a member of this group.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -51,19 +79,17 @@ import GameCard from './SmallGameCard.vue';
 
 export default {
   components: { GameCard },
-  props: {
-    userId: {
-      type: Number,
-      required: true
-    }
-  },
   data() {
     return {
+      userId: null,
       groupName: '',
       members: [],
       games: [],
       loading: false,
       error: null,
+      manageMode: false,
+      owner: { id: null },
+      isMemberOrOwner: false,
       playersFilter: null,
       minPlayTimeFilter: null,
       maxPlayTimeFilter: null,
@@ -85,7 +111,15 @@ export default {
 
   async created() {
     await this.fetchGroupDetails();
+    await Promise.all([this.fetchGroupDetails(), this.fetchCurrentUserId()]);
   },
+
+  computed: {
+    isOwner() {
+      return this.owner?.id === this.userId;
+    }
+  },
+
   methods: {
     async applyFilters() {
       const invalidPlayerFilter = this.minPlayersFilter && this.maxPlayersFilter && this.minPlayersFilter > this.maxPlayersFilter;
@@ -113,17 +147,52 @@ export default {
       this.loading = true;
       try {
         const membersResponse = await axios.get(`http://localhost:3000/group/${groupId}/members`);
+        const ownerResponse = await axios.get(`http://localhost:3000/group/${groupId}/owner`);
         const gamesResponse = await axios.get(`http://localhost:3000/group/${groupId}/games`);
         this.groupName = `Group ${groupId}`; // Replace with actual group name if available
         this.members = membersResponse.data;
+        this.owner = ownerResponse.data;
         this.games = gamesResponse.data;
+        this.isMemberOrOwner = this.members.some(member => member.id === this.userId) || this.owner?.id === this.userId;
         this.applyFilters();
       } catch (error) {
         this.error = 'An error occurred while fetching group details.';
       } finally {
         this.loading = false;
       }
-    }
+    },
+
+    async fetchCurrentUserId() {
+      try {
+        const response = await axios.get('http://localhost:3000/current-user', { withCredentials: true });
+        this.userId = response.data.userId;
+      } catch (error) {
+        console.error('Error fetching current user ID:', error);
+      }
+    },
+
+    async deleteGroup() {
+      // Implement group deletion logic here
+      // Example: axios.delete(`http://localhost:3000/group/${groupId}`)
+    },
+
+    async removeMember(memberId) {
+      const groupId = this.$route.params.groupId;
+      try {
+        await axios.post(`http://localhost:3000/group/${groupId}/remove-member`, { 
+          userId: memberId, 
+          requestingUserId: this.userId
+        });
+        this.members = this.members.filter(member => member.id !== memberId);
+        await this.fetchGroupDetails();
+      } catch (error) {
+        this.error = 'An error occurred while removing user from group.';
+      }
+    },
+
+    toggleManageMode() {
+      this.manageMode = !this.manageMode;
+    },
   }
 };
 </script>
@@ -134,14 +203,55 @@ export default {
   border-radius: 5px;
 }
 
-.group-detail-container {
-  margin: 33px;
+.group-header {
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  gap: 10px;
+  margin-bottom: 3rem;
 }
 
-.group-members-and-chat {
-  display: flex;
-  flex-wrap: wrap;
+
+.manage-group-button {
+  background-color: #4e4c67;
+  color: #fff;
+  border: 1px solid #6e6c81;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  margin-top: 10px;
+  margin-left: 10px;
+  cursor: pointer;
+  transition: all 0.3s;
 }
+
+.manage-group-button:hover {
+  background-color: #5e5c71;
+  border-color: #7e7c91;
+}
+
+.delete-group-button {
+  margin-right: 10px;
+  margin-top: 10px;
+  padding: 10px 15px;
+  color: white;
+  border: 2px solid #474747;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transition: all 0.3s ease-in-out;
+  font-size: 16px;
+  font-weight: bold;
+  background-color: #e53935;
+}
+
+.delete-group-button:hover {
+  background-color: #7a1f1c;
+}
+
 
 .group-chat{
   margin-top: 60px;
@@ -168,6 +278,22 @@ export default {
   gap: 1rem;
 }
 
+.member-container {
+  display: flex;
+  align-items: center;
+}
+
+.owner {
+  height: 25px;
+  width: 25px;
+  margin-right: 5px;
+}
+
+.remove {
+  height: 50px;
+  width: 50px;
+}
+
 .friend-item {
   margin: 0.5rem;
   padding: 1.5rem;
@@ -177,7 +303,7 @@ export default {
   box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.5);
   text-decoration: none;
   color: #FFF;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   text-align: left;
   min-height: 100px;
@@ -218,6 +344,18 @@ export default {
   gap: 10px;
 }
 
+.remove-member-button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  padding: 0;
+  margin-left: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
 .group-games {
   margin-top: 20px;
 }
