@@ -468,6 +468,17 @@ app.get('/games/category/:category', async (req, res) => {
   }
 });
 
+app.get('/current-user', async (req, res) => {
+  interface MinimalUser {
+    id: number;
+  }
+  const user = req.user as MinimalUser | undefined;
+  if (!user) {
+    return res.status(401).send('User not logged in');
+  }
+  res.json({ userId: user.id });
+});
+
 app.get('/user-shelf', async (req, res) => {
   interface MinimalUser {
     id: number;
@@ -709,12 +720,19 @@ app.post('/group/:groupId/add-member', async (req, res) => {
 app.post('/group/:groupId/remove-member', async (req, res) => {
   const groupId = parseInt(req.params.groupId, 10);
   const userIdToRemove = parseInt(req.body.userId, 10);
+  const userIdRequesting = parseInt(req.body.requestingUserId, 10); // Add requesting user's ID
 
   if (!groupId || !userIdToRemove) {
     return res.status(400).send('Invalid data');
   }
 
   try {
+    const ownerCheckQuery = 'SELECT owner_id FROM groups WHERE id = $1';
+    const ownerCheckResult = await pool.query(ownerCheckQuery, [groupId]);
+    if (ownerCheckResult.rows[0].owner_id !== userIdRequesting) {
+      return res.status(403).send('Forbidden: Only group owner can remove members');
+    }
+
     const query = 'DELETE FROM group_members WHERE group_id = $1 AND user_id = $2 RETURNING *';
     const result = await pool.query(query, [groupId, userIdToRemove]);
     res.json(result.rows[0]);
@@ -732,19 +750,22 @@ app.get('/group/:groupId/details', async (req, res) => {
   }
 
   try {
-    const groupQuery = `SELECT name FROM groups WHERE id = $1;`;
+    const groupQuery = `SELECT name, owner_id FROM groups WHERE id = $1;`;
     const groupResult = await pool.query(groupQuery, [groupId]);
+    const groupName = groupResult.rows[0]?.name;
+    const ownerId = groupResult.rows[0]?.owner_id;
 
     const membersQuery = `
       SELECT u.id, u.username, u.profile_image_url
       FROM users u
       WHERE u.id IN (
         SELECT user_id FROM group_members WHERE group_id = $1
-        UNION
-        SELECT owner_id FROM groups WHERE id = $1
       );
     `;
     const membersResult = await pool.query(membersQuery, [groupId]);
+
+    const ownerQuery = `SELECT id, username, profile_image_url FROM users WHERE id = $1;`;
+    const ownerResult = await pool.query(ownerQuery, [ownerId]);
 
     const gamesQuery = `
       SELECT DISTINCT g.*
@@ -759,7 +780,8 @@ app.get('/group/:groupId/details', async (req, res) => {
     const gamesResult = await pool.query(gamesQuery, [groupId]);
 
     res.json({
-      name: groupResult.rows[0]?.name,
+      name: groupName,
+      owner: ownerResult.rows[0],
       members: membersResult.rows,
       games: gamesResult.rows
     });
