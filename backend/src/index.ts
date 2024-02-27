@@ -742,7 +742,7 @@ app.post('/group/:groupId/remove-member', async (req, res) => {
   }
 });
 
-app.get('/group/:groupId/members', async (req, res) => {
+app.get('/group/:groupId/details', async (req, res) => {
   const groupId = parseInt(req.params.groupId, 10);
 
   if (!groupId) {
@@ -750,54 +750,24 @@ app.get('/group/:groupId/members', async (req, res) => {
   }
 
   try {
-    const query = `
+    const groupQuery = `SELECT name, owner_id FROM groups WHERE id = $1;`;
+    const groupResult = await pool.query(groupQuery, [groupId]);
+    const groupName = groupResult.rows[0]?.name;
+    const ownerId = groupResult.rows[0]?.owner_id;
+
+    const membersQuery = `
       SELECT u.id, u.username, u.profile_image_url
       FROM users u
       WHERE u.id IN (
         SELECT user_id FROM group_members WHERE group_id = $1
       );
     `;
-    const result = await pool.query(query, [groupId]);
-    res.json(result.rows);
-  } catch (error) {
-    console.error('Error fetching group members:', error);
-    res.status(500).send('Internal Server Error');
-  }
-});
+    const membersResult = await pool.query(membersQuery, [groupId]);
 
-app.get('/group/:groupId/owner', async (req, res) => {
-  const groupId = parseInt(req.params.groupId, 10);
+    const ownerQuery = `SELECT id, username, profile_image_url FROM users WHERE id = $1;`;
+    const ownerResult = await pool.query(ownerQuery, [ownerId]);
 
-  if (!groupId) {
-    return res.status(400).send('Invalid group ID');
-  }
-
-  try {
-    const query = `
-      SELECT u.id, u.username, u.profile_image_url
-      FROM users u
-      WHERE u.id IN (
-        SELECT owner_id FROM groups WHERE id = $1
-      );
-    `;
-    const result = await pool.query(query, [groupId]);
-    const owner = result.rows[0]; 
-    res.json(owner);
-  } catch (error) {
-    console.error('Error fetching group members:', error);
-    res.status(500).send('Internal Server Error');
-  }
-});
-
-app.get('/group/:groupId/games', async (req, res) => {
-  const groupId = parseInt(req.params.groupId, 10);
-
-  if (!groupId) {
-    return res.status(400).send('Invalid group ID');
-  }
-
-  try {
-    const query = `
+    const gamesQuery = `
       SELECT DISTINCT g.*
       FROM games g
       INNER JOIN users u ON g.id = ANY(u.owned_games)
@@ -807,10 +777,16 @@ app.get('/group/:groupId/games', async (req, res) => {
         SELECT owner_id FROM groups WHERE id = $1
       );
     `;
-    const result = await pool.query(query, [groupId]);
-    res.json(result.rows);
+    const gamesResult = await pool.query(gamesQuery, [groupId]);
+
+    res.json({
+      name: groupName,
+      owner: ownerResult.rows[0],
+      members: membersResult.rows,
+      games: gamesResult.rows
+    });
   } catch (error) {
-    console.error('Error fetching group games:', error);
+    console.error('Error fetching group details:', error);
     res.status(500).send('Internal Server Error');
   }
 });

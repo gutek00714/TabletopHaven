@@ -428,7 +428,7 @@ export default {
 .star::after {
   content: '';
   position: absolute;
-  left: -5    px;
+  left: -5px;
   right: -5px;
 }
 
