@@ -172,7 +172,15 @@ export default {
     },
 
     async deleteGroup() {
-      // Implement group deletion logic here
+      const groupId = this.$route.params.groupId;
+      try {
+        const response = await axios.delete(`http://localhost:3000/delete-group/${groupId}`, { withCredentials: true } );
+        console.log(response.data); 
+        this.$router.push('/groups');
+        
+      } catch (error) {
+        console.error('Error deleting group:', error.response.data);
+      }
     },
 
     async removeMember(memberId) {

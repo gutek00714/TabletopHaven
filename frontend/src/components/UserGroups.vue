@@ -2,6 +2,9 @@
   <div class="col m11 column-background">
     <div class="section">
       <h4>User Groups</h4>
+      <button @click="createGroup" class="btn-create-group">
+          Create group
+        </button>  
       <div class="row">
         <div v-for="group in groups" :key="group.id" class="group-card col m2" @click="goToGroupDetail(group.id)">
           <router-link :to="`/group/${group.id}`" class="group-item">
@@ -41,6 +44,25 @@ export default {
         this.loading = false;
       }
     },
+    async createGroup() {
+      try {
+        const groupName = prompt('Enter group name:');
+        const groupDescription = prompt('Enter group description:');
+
+        const response = await axios.post(
+          'http://localhost:3000/create-group',
+          { groupName, groupDescription },
+          { withCredentials: true } 
+        );
+        
+        await this.fetchUserGroups();
+        console.log(response.data);
+    
+      } catch (error) {
+        console.error('Error creating group:', error.response.data);
+      }
+    },
+
     goToGroupDetail(groupId) {
       router.push({ name: 'GroupDetail', params: { groupId } });
     }

@@ -918,6 +918,71 @@ app.delete('/remove-rating/:gameId', async (req, res) => {
   }
 });
 
+app.post('/create-group', async (req, res) => {
+  interface MinimalUser {
+    id: number;
+  }
+  const user = req.user as MinimalUser | undefined;
+
+  if (!user || !user.id) {
+    return res.status(401).json({ message: 'User not logged in.' });
+  }
+
+  const { groupName, groupDescription} = req.body;
+
+  try {
+    var newGroupId = 0;
+
+    const maxGroupIdQuery = 'SELECT MAX(id) AS max_id FROM groups';
+    const maxGroupIdResult = await pool.query(maxGroupIdQuery);
+    const maxId = maxGroupIdResult.rows[0].max_id || 0;
+    newGroupId = maxId + 1;
+
+    const createGroupQuery =`
+      INSERT INTO groups (id, name, description, owner_id)
+      VALUES ($1, $2, $3, $4)
+      RETURNING *;`;
+
+    const result = await pool.query(createGroupQuery, [newGroupId, groupName, groupDescription, user.id]);
+    res.json(result.rows[0]);
+
+  } catch (error) {
+
+    console.error('Error creating group:', error);
+    res.status(500).send('Internal Server Error');
+
+  }
+});
+
+
+app.delete('/delete-group/:groupId', async (req, res) => {
+  
+  const groupId = parseInt(req.params.groupId, 10);
+
+  if (!groupId) {
+    return res.status(400).json({ message: 'Invalid group ID.' });
+  }
+
+  try {
+    const ownerCheckQuery = 'SELECT owner_id FROM groups WHERE id = $1';
+    const ownerCheckResult = await pool.query(ownerCheckQuery, [groupId]);
+
+    if (ownerCheckResult.rows.length === 0) {
+      return res.status(404).json({ message: 'Group not found.' });
+    }
+
+
+    const deleteGroupQuery = 'DELETE FROM groups WHERE id = $1';
+    await pool.query(deleteGroupQuery, [groupId]);
+
+    res.json({ message: 'Group deleted successfully.' });
+  } catch (error) {
+    console.error('Error deleting group:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+
 http.createServer(app).listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
