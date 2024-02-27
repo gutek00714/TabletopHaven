@@ -164,7 +164,7 @@ export default {
     async fetchUserGroups() {
       this.loading = true;
       try {
-        const response = await axios.get('http://localhost:3000/available-user-groups', { withCredentials: true });
+        const response = await axios.get('http://localhost:3000/user-groups', { withCredentials: true });
         this.groups = response.data;
       } catch (error) {
         this.error = error.response && error.response.data.message ? error.response.data.message : 'An error occurred while fetching groups.';
