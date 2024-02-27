@@ -57,12 +57,12 @@
             <section class="group-games">
               <h4>Games Owned by Group</h4>
               <div class="filters">
-                <input type="number" v-model.number="playersFilter" placeholder="Number of Players">
+                <input type="number" v-model.number="playersFilterComputed" placeholder="Number of Players">
                 <input type="number" v-model.number="minPlayTimeFilter" placeholder="Min Play Time">
                 <input type="number" v-model.number="maxPlayTimeFilter" placeholder="Max Play Time">
               </div>
               <ul class="game-list">
-                <GameCard v-for="game in games" :key="game.id" :gameId="game.id"/>
+                <GameCard v-for="game in filteredGames" :key="game.id" :gameId="game.id"/>
               </ul>
             </section>
           </div>
@@ -123,25 +123,33 @@ export default {
   computed: {
     isOwner() {
       return this.owner?.id === this.userId;
-    }
+    },
+    playersFilterComputed: {
+      get() {
+        return this.playersFilter;
+      },
+      set(value) {
+        this.playersFilter = value === '' ? null : Number(value);
+      }
+    },
   },
 
   methods: {
     async applyFilters() {
-      const invalidPlayerFilter = this.minPlayersFilter && this.maxPlayersFilter && this.minPlayersFilter > this.maxPlayersFilter;
-      const invalidTimeFilter = this.minPlayTimeFilter && this.maxPlayTimeFilter && this.minPlayTimeFilter > this.maxPlayTimeFilter;
+      const invalidTimeFilter = this.minPlayTimeFilter !== null && this.maxPlayTimeFilter !== null && 
+                                this.minPlayTimeFilter > this.maxPlayTimeFilter;
 
-      if (invalidPlayerFilter || invalidTimeFilter) {
+      if (invalidTimeFilter) {
         this.filteredGames = [];
         return;
       }
-
       this.filteredGames = this.games.filter(game => {
-        const isWithinPlayerRange = this.playersFilter === null || 
+        const isWithinPlayerRange = this.playersFilter === null || this.playersFilter === undefined || 
                                     (game.min_players <= this.playersFilter && game.max_players >= this.playersFilter);
 
         const minPlayTime = this.minPlayTimeFilter || -Infinity;
         const maxPlayTime = this.maxPlayTimeFilter || Infinity;
+
         const isWithinTimeRange = (game.play_time >= minPlayTime) && (game.play_time <= maxPlayTime);
 
         return isWithinPlayerRange && isWithinTimeRange;
