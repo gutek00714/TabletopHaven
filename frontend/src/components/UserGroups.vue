@@ -1,10 +1,12 @@
 <template>
   <div class="col m11 column-background">
     <div class="section">
-      <h4>User Groups</h4>
-      <button @click="createGroup" class="btn-create-group">
+      <div class="header-section">
+        <h4>User Groups</h4>
+        <button @click="createGroup" class="btn-create-group">
           Create group
         </button>  
+      </div>
       <div class="row">
         <div v-for="group in groups" :key="group.id" class="group-card col m2" @click="goToGroupDetail(group.id)">
           <router-link :to="`/group/${group.id}`" class="group-item">
@@ -70,6 +72,11 @@ export default {
 </script>
 
 <style scoped>
+.header-section {
+  display: flex;
+  align-items: center;
+}
+
 .group-card {
   cursor: pointer;
   /* Add more styles for your group card */
@@ -104,5 +111,34 @@ export default {
   background-color: #322f46;
   box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.8);
   transform: translateY(-2px);
+}
+
+.btn-create-group {
+  background-color: #4e6ef2;
+  margin-right: 10px;
+  padding: 10px 15px;
+  color: white;
+  border: 2px solid #474747;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transition: all 0.3s ease-in-out;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.btn-create-group:hover {
+  background-color: #3b56c1;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transform: translateY(-2px);
+}
+
+.btn-create-group {
+  margin-left: 20px;
+  margin-top: 15px;
 }
 </style>

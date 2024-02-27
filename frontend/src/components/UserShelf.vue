@@ -335,11 +335,26 @@ export default {
 
 .btn-add-to-group {
   background-color: #4e6ef2;
-  /* Other styling similar to .btn-follow and .btn-unfollow */
+  margin-right: 10px;
+  padding: 10px 15px;
+  color: white;
+  border: 2px solid #474747;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transition: all 0.3s ease-in-out;
+  font-size: 16px;
+  font-weight: bold;
 }
 
 .btn-add-to-group:hover {
   background-color: #3b56c1;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transform: translateY(-2px);
 }
 
 
