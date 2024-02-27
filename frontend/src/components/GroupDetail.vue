@@ -6,46 +6,48 @@
       <div v-else>
         <div v-if="isMemberOrOwner">
           <div class="row">
-            <div class="group-members-and-chat">
-              <div class="col m5">
-                <div class="group-header">
-                  <h4>{{ groupName }}</h4>
-                  <div v-if="isOwner">
-                    <button @click="toggleManageMode" class="manage-group-button">
-                      {{ manageMode ? 'Exit Manage Mode' : 'Manage Group' }}
-                    </button>
-                  </div>
-                  <div v-if="manageMode" class="delete-group">
-                    <button @click="deleteGroup" class="delete-group-button">Delete Group</button>
-                  </div>
+            <div class="group-members-and-chat">            
+              <div class="group-header">
+                <h4>{{ groupName }}</h4>
+                <div v-if="isOwner">
+                  <button @click="toggleManageMode" class="manage-group-button">
+                    {{ manageMode ? 'Exit Manage Mode' : 'Manage Group' }}
+                  </button>
                 </div>
-                <h4>Members</h4>
-                <ul class="friends-list">
-                  <div v-if="owner" class="member-container">
-                    <router-link :to="`/user/${owner.id}`" class="friend-item">
-                      <img :src="owner.profile_image_url" class="member-image" alt="Member Image">
-                      <img class="owner" src="/crown.svg" alt="Owner"/>
-                      <span class="friend-name">{{ owner.username }}</span>
-                    </router-link>  
-                  </div>              
-                  <li v-for="member in members" :key="member.id">
-                    <div class="member-container">
-                      <router-link :to="`/user/${member.id}`" class="friend-item">
-                        <img :src="member.profile_image_url" class="member-image" alt="Member Image">
-                        <span class="friend-name">{{ member.username }}</span>
-                      </router-link>
-                      <button v-if="manageMode && !member.is_owner" @click.stop="removeMember(member.id)" class="remove-member-button">
-                        <img class="remove" src="/remove.svg" alt="X"/>
-                      </button>                  
-                    </div>
-                  </li>
-                </ul>
+                <div v-if="manageMode" class="delete-group">
+                  <button @click="deleteGroup" class="delete-group-button">Delete Group</button>
+                </div>
               </div>
+              <div class="row">
+                <div class="col m5">
+                  <h4>Members</h4>
+                  <ul class="friends-list">
+                    <div v-if="owner" class="member-container">
+                      <router-link :to="`/user/${owner.id}`" class="friend-item">
+                        <img :src="owner.profile_image_url" class="member-image" alt="Member Image">
+                        <img class="owner" src="/crown.svg" alt="Owner"/>
+                        <span class="friend-name">{{ owner.username }}</span>
+                      </router-link>  
+                    </div>              
+                    <li v-for="member in members" :key="member.id">
+                      <div class="member-container">
+                        <router-link :to="`/user/${member.id}`" class="friend-item">
+                          <img :src="member.profile_image_url" class="member-image" alt="Member Image">
+                          <span class="friend-name">{{ member.username }}</span>
+                        </router-link>
+                        <button v-if="manageMode && !member.is_owner" @click.stop="removeMember(member.id)" class="remove-member-button">
+                          <img class="remove" src="/remove.svg" alt="X"/>
+                        </button>                  
+                      </div>
+                    </li>
+                  </ul>
+                </div>
 
-              <div class="col m7">
-                <h4>Group Chat</h4>
-                <div class="chat-container">
-                  <!-- Chat messages  -->
+                <div class="col m7">
+                  <h4>Group Chat</h4>
+                  <div class="chat-container">
+                    <!-- Chat messages  -->
+                  </div>
                 </div>
               </div>
             </div>
