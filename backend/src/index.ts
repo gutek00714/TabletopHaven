@@ -956,7 +956,6 @@ app.post('/create-group', async (req, res) => {
 
 
 app.delete('/delete-group/:groupId', async (req, res) => {
-  
   const groupId = parseInt(req.params.groupId, 10);
 
   if (!groupId) {
@@ -964,13 +963,8 @@ app.delete('/delete-group/:groupId', async (req, res) => {
   }
 
   try {
-    const ownerCheckQuery = 'SELECT owner_id FROM groups WHERE id = $1';
-    const ownerCheckResult = await pool.query(ownerCheckQuery, [groupId]);
-
-    if (ownerCheckResult.rows.length === 0) {
-      return res.status(404).json({ message: 'Group not found.' });
-    }
-
+    const deleteMembersQuery = 'DELETE FROM group_members WHERE group_id = $1';
+    await pool.query(deleteMembersQuery, [groupId]);
 
     const deleteGroupQuery = 'DELETE FROM groups WHERE id = $1';
     await pool.query(deleteGroupQuery, [groupId]);
