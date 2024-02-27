@@ -146,16 +146,16 @@ export default {
       const groupId = this.$route.params.groupId;
       this.loading = true;
       try {
-        const membersResponse = await axios.get(`http://localhost:3000/group/${groupId}/members`);
-        const ownerResponse = await axios.get(`http://localhost:3000/group/${groupId}/owner`);
-        const gamesResponse = await axios.get(`http://localhost:3000/group/${groupId}/games`);
-        this.groupName = `Group ${groupId}`; // Replace with actual group name if available
-        this.members = membersResponse.data;
-        this.owner = ownerResponse.data;
-        this.games = gamesResponse.data;
+        const response = await axios.get(`http://localhost:3000/group/${groupId}/details`);
+        const data = response.data;
+        this.groupName = data.name;
+        this.owner = data.owner;
+        this.members = data.members;
+        this.games = data.games;
         this.isMemberOrOwner = this.members.some(member => member.id === this.userId) || this.owner?.id === this.userId;
         this.applyFilters();
       } catch (error) {
+        console.error(error);
         this.error = 'An error occurred while fetching group details.';
       } finally {
         this.loading = false;
@@ -173,7 +173,6 @@ export default {
 
     async deleteGroup() {
       // Implement group deletion logic here
-      // Example: axios.delete(`http://localhost:3000/group/${groupId}`)
     },
 
     async removeMember(memberId) {
