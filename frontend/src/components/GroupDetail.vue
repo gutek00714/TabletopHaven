@@ -110,8 +110,12 @@ export default {
   },
 
   async created() {
-    await this.fetchGroupDetails();
-    await Promise.all([this.fetchGroupDetails(), this.fetchCurrentUserId()]);
+    try {
+      await this.fetchCurrentUserId();
+      await this.fetchGroupDetails();
+    } catch (error) {
+      console.error('Error in created hook:', error);
+    }
   },
 
   computed: {
@@ -143,6 +147,9 @@ export default {
     },
 
     async fetchGroupDetails() {
+      if (!this.userId) {
+        return;
+      }
       const groupId = this.$route.params.groupId;
       this.loading = true;
       try {

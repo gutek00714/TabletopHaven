@@ -1,5 +1,5 @@
 <template>
-  <div class="col m11 column-background">
+  <div class="col m11 column-background" v-if="isLoggedIn">
     <div class="section">
       <div class="header-section">
         <h4>User Groups</h4>
@@ -16,6 +16,9 @@
       </div>
     </div>
   </div>
+  <div class="loading-error" v-else>
+    <p>User not logged in.</p>
+  </div>
 </template>
 
 <script>
@@ -29,12 +32,24 @@ export default {
       groups: [],
       loading: false,
       error: null,
+      isLoggedIn: false,
     };
   },
   async created() {
+    await this.checkLoginStatus();
     await this.fetchUserGroups();
   },
   methods: {
+    async checkLoginStatus() {
+      try {
+        const response = await axios.get('http://localhost:3000/check-login-status', { withCredentials: true });
+        this.isLoggedIn = response.data.isLoggedIn;
+      } catch (error) {
+        console.error('Error checking login status:', error);
+        this.isLoggedIn = false;
+      }
+    },
+
     async fetchUserGroups() {
       this.loading = true;
       try {
@@ -141,5 +156,14 @@ export default {
 .btn-create-group {
   margin-left: 20px;
   margin-top: 15px;
+}
+
+.loading-error {
+  font-size: 1.5rem;
+  color: white;
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  padding-right: 2rem;
 }
 </style>
