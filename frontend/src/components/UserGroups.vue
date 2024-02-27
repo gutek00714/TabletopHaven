@@ -1,12 +1,14 @@
 <template>
-  <div class="col m11 column-background">
+  <div class="col m11 column-background" v-if="isLoggedIn">
     <div class="section">
-      <h4>User Groups</h4>
-      <button @click="createGroup" class="btn-create-group">
+      <div class="header-section">
+        <h4>User Groups</h4>
+        <button @click="createGroup" class="btn-create-group">
           Create group
         </button>  
-      <div class="row">
-        <div v-for="group in groups" :key="group.id" class="group-card col m2" @click="goToGroupDetail(group.id)">
+      </div>
+      <div class="row group-container">
+        <div v-for="group in groups" :key="group.id" @click="goToGroupDetail(group.id)">
           <router-link :to="`/group/${group.id}`" class="group-item">
             <div class="group-name">{{ group.name }}</div>
           </router-link>
@@ -14,7 +16,11 @@
       </div>
     </div>
   </div>
+  <div class="loading-error" v-else>
+    <p>User not logged in.</p>
+  </div>
 </template>
+
 
 <script>
 import axios from 'axios';
@@ -27,12 +33,24 @@ export default {
       groups: [],
       loading: false,
       error: null,
+      isLoggedIn: false,
     };
   },
   async created() {
+    await this.checkLoginStatus();
     await this.fetchUserGroups();
   },
   methods: {
+    async checkLoginStatus() {
+      try {
+        const response = await axios.get('http://localhost:3000/check-login-status', { withCredentials: true });
+        this.isLoggedIn = response.data.isLoggedIn;
+      } catch (error) {
+        console.error('Error checking login status:', error);
+        this.isLoggedIn = false;
+      }
+    },
+
     async fetchUserGroups() {
       this.loading = true;
       try {
@@ -71,14 +89,26 @@ export default {
 </script>
 
 <style scoped>
-.group-card {
-  cursor: pointer;
-  /* Add more styles for your group card */
+.header-section {
+  display: flex;
+  align-items: center;
+}
+
+.group-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.group-container > div {
+  margin: 0 50px 30px 0;
+  flex: 0 0 230px;
 }
 
 .group-item {
   text-decoration: none;
   color: inherit;
+  display: block;
+  cursor: pointer;
 }
 
 .group-name {
@@ -88,22 +118,57 @@ export default {
   background-color: #272538;
   transition: all 0.3s ease;
   box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.5);
-  text-decoration: none;
   color: #FFF;
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
   text-align: center;
   height: 100px;
-  width: 190px;
-  overflow: hidden; 
-  font-size:18px;
+  width: 100%;
+  font-size: 18px;
 }
 
-.group-name:hover {
+.group-container > div:hover .group-name {
   background-color: #322f46;
   box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.8);
   transform: translateY(-2px);
+}
+
+.btn-create-group {
+  background-color: #4e6ef2;
+  margin-right: 10px;
+  padding: 10px 15px;
+  color: white;
+  border: 2px solid #474747;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transition: all 0.3s ease-in-out;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.btn-create-group:hover {
+  background-color: #3b56c1;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transform: translateY(-2px);
+}
+
+.btn-create-group {
+  margin-left: 20px;
+  margin-top: 15px;
+}
+
+.loading-error {
+  font-size: 1.5rem;
+  color: white;
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  padding-right: 2rem;
 }
 </style>

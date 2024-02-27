@@ -697,6 +697,33 @@ app.get('/user-groups', async (req, res) => {
   }
 });
 
+app.get('/available-user-groups', async (req, res) => {
+  interface MinimalUser {
+    id: number;
+  }
+  const user = req.user as MinimalUser | undefined;
+  if (!user || !user.id) {
+    return res.status(401).json({ message: 'User not logged in.' });
+  }
+
+  try {
+    const query = `
+      SELECT g.id, g.name, g.description
+      FROM groups g
+      WHERE g.id NOT IN (
+        SELECT gm.group_id
+        FROM group_members gm
+        WHERE gm.user_id = $1
+      ) AND g.owner_id != $1;
+    `;
+    const result = await pool.query(query, [user.id]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching available user groups:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
 app.post('/group/:groupId/add-member', async (req, res) => {
   const groupId = parseInt(req.params.groupId, 10);
   const userIdToAdd = parseInt(req.body.userId, 10);
@@ -706,11 +733,16 @@ app.post('/group/:groupId/add-member', async (req, res) => {
   }
 
   try {
-    const query = 'INSERT INTO group_members (group_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING RETURNING *';
-    const result = await pool.query(query, [groupId, userIdToAdd]);
-    console.log(result);
-    console.log(groupId, userIdToAdd);
-    res.json(result.rows[0]);
+    const checkQuery = 'SELECT * FROM group_members WHERE group_id = $1 AND user_id = $2';
+    const checkResult = await pool.query(checkQuery, [groupId, userIdToAdd]);
+
+    if (checkResult.rows.length > 0) {
+      return res.status(409).send('User is already a member of this group');
+    }
+
+    const insertQuery = 'INSERT INTO group_members (group_id, user_id) VALUES ($1, $2) RETURNING *';
+    const insertResult = await pool.query(insertQuery, [groupId, userIdToAdd]);
+    res.json(insertResult.rows[0]);
   } catch (error) {
     console.error('Error adding user to group:', error);
     res.status(500).send('Internal Server Error');
@@ -956,7 +988,6 @@ app.post('/create-group', async (req, res) => {
 
 
 app.delete('/delete-group/:groupId', async (req, res) => {
-  
   const groupId = parseInt(req.params.groupId, 10);
 
   if (!groupId) {
@@ -964,13 +995,8 @@ app.delete('/delete-group/:groupId', async (req, res) => {
   }
 
   try {
-    const ownerCheckQuery = 'SELECT owner_id FROM groups WHERE id = $1';
-    const ownerCheckResult = await pool.query(ownerCheckQuery, [groupId]);
-
-    if (ownerCheckResult.rows.length === 0) {
-      return res.status(404).json({ message: 'Group not found.' });
-    }
-
+    const deleteMembersQuery = 'DELETE FROM group_members WHERE group_id = $1';
+    await pool.query(deleteMembersQuery, [groupId]);
 
     const deleteGroupQuery = 'DELETE FROM groups WHERE id = $1';
     await pool.query(deleteGroupQuery, [groupId]);

@@ -9,11 +9,23 @@
         <button v-if="isLoggedIn && userId !== loggedInUserId" @click="toggleFollow" :class="{ 'btn-follow': !isFollowing, 'btn-unfollow': isFollowing }">
           {{ isFollowing ? 'Unfollow' : 'Follow' }} 
         </button>
-        <button v-if="isLoggedIn && userId !== loggedInUserId" @click="addToGroup" class="btn-add-to-group">
+        <button v-if="isLoggedIn && userId !== loggedInUserId" @click="extendGroups" class="btn-add-to-group">
           Add to Group
-        </button>        
+        </button>
       </div>
       <div class="user-shelf">
+        <div class="row">
+          <section class="add-group">
+            <div v-if="showGroups">
+              <h3 class="section-title">Which group?</h3>
+              <div v-for="group in groups" :key="group.id" class="group-card col m2" @click="addToGroup(group.id)">
+                <div class="group-item">
+                  <div class="group-name">{{ group.name }}</div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
         <section class="owned-games">
           <h3 class="section-title">Owned Games</h3>
           <div v-if="userProfile.ownedGames.length > 0" class="games-grid">
@@ -65,11 +77,13 @@ export default {
       isLoggedIn: false,
       loading: false,
       error: null,
+      showGroups: false
     };
   },
   async created() {
     await this.checkLoginStatus();
     await this.fetchUserProfile();
+    await this.fetchUserGroups();
   },
   methods: {
     async checkLoginStatus() {
@@ -78,6 +92,7 @@ export default {
         this.isLoggedIn = response.data.isLoggedIn;
       } catch (error) {
         console.error('Error checking login status:', error);
+        this.isLoggedIn = false;
       }
     },
     async fetchUserProfile() {
@@ -142,8 +157,23 @@ export default {
         }
       }
     },
-    async addToGroup() {
-      const groupId = 1; // Hardcoded for testing purposes
+    async extendGroups() {
+      this.showGroups = true;
+    },
+    
+    async fetchUserGroups() {
+      this.loading = true;
+      try {
+        const response = await axios.get('http://localhost:3000/available-user-groups', { withCredentials: true });
+        this.groups = response.data;
+      } catch (error) {
+        this.error = error.response && error.response.data.message ? error.response.data.message : 'An error occurred while fetching groups.';
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async addToGroup(groupId) {
       try {
         let response = await axios.post(`http://localhost:3000/group/${groupId}/add-member`, { userId: this.userId }, { withCredentials: true });
 
@@ -166,11 +196,50 @@ export default {
 </script>
 
 <style scoped>
+.group-card {
+  cursor: pointer;
+}
+
+.group-item {
+  text-decoration: none;
+  color: inherit;
+}
+.group-name {
+  margin: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 10px;
+  background-color: #272538;
+  transition: all 0.3s ease;
+  box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.5);
+  text-decoration: none;
+  color: #FFF;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  height: 100px;
+  width: 190px;
+  overflow: hidden; 
+  font-size:18px;
+}
+.group-name:hover {
+  background-color: #322f46;
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.8);
+  transform: translateY(-2px);
+}
 .user-profile-container {
   padding-top: 1.5rem;
   padding-right: 2rem;
 }
 
+.centered-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Adjust this value as needed */
+  overflow-y: auto; /* Enable scrolling if content overflows */
+}
 .shelf-title, .section-title {
   color: white;
 }
@@ -267,11 +336,26 @@ export default {
 
 .btn-add-to-group {
   background-color: #4e6ef2;
-  /* Other styling similar to .btn-follow and .btn-unfollow */
+  margin-right: 10px;
+  padding: 10px 15px;
+  color: white;
+  border: 2px solid #474747;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transition: all 0.3s ease-in-out;
+  font-size: 16px;
+  font-weight: bold;
 }
 
 .btn-add-to-group:hover {
   background-color: #3b56c1;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transform: translateY(-2px);
 }
 
 

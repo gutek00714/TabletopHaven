@@ -413,6 +413,8 @@ export default {
 
 .star {
   cursor: pointer;
+  padding: 5px;
+  margin: -3px !important;
   position: relative;
   margin: 0 2px;
   transition: all 0.3s ease-in-out;
