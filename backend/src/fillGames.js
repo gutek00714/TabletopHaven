@@ -66,17 +66,23 @@ async function addGameToDatabase(game) {
   }
 }
 
-async function processGames() {
-    const startId = 1; // Start ID
-    const endId = 1000; // End ID; Amount of games you want to process
+async function processGames(endId) {
+  const startId = 1;
 
-    for (let id = startId; id <= endId; id++) {
-        const gameData = await fetchGameFromBGG(id);
-        if (gameData) {
-            const transformedGame = transformGameData(gameData);
-            await addGameToDatabase(transformedGame);
-        }
+  for (let id = startId; id <= endId; id++) {
+    const gameData = await fetchGameFromBGG(id);
+    if (gameData) {
+        const transformedGame = transformGameData(gameData);
+        await addGameToDatabase(transformedGame);
     }
+  }
 }
 
-processGames();
+const numberOfGames = parseInt(process.argv[2], 10);
+
+if (isNaN(numberOfGames) || numberOfGames <= 0) {
+    console.error('Please provide a valid number of games to process.');
+    process.exit(1);
+}
+
+processGames(numberOfGames);
