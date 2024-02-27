@@ -45,23 +45,24 @@ export default {
       }
     },
     async createGroup() {
-  try {
-    const groupName = prompt('Enter group name:');
-    const groupDescription = prompt('Enter group description:');
+      try {
+        const groupName = prompt('Enter group name:');
+        const groupDescription = prompt('Enter group description:');
 
-    const response = await axios.post(
-      'http://localhost:3000/create-group',
-      { groupName, groupDescription },
-      { withCredentials: true } 
-    );
-
-    console.log(response.data);
+        const response = await axios.post(
+          'http://localhost:3000/create-group',
+          { groupName, groupDescription },
+          { withCredentials: true } 
+        );
+        
+        await this.fetchUserGroups();
+        console.log(response.data);
     
-  } catch (error) {
-    console.error('Error creating group:', error.response.data);
-  }
-}
-,
+      } catch (error) {
+        console.error('Error creating group:', error.response.data);
+      }
+    },
+
     goToGroupDetail(groupId) {
       router.push({ name: 'GroupDetail', params: { groupId } });
     }
