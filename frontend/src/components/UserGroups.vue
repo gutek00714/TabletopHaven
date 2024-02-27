@@ -7,8 +7,8 @@
           Create group
         </button>  
       </div>
-      <div class="row">
-        <div v-for="group in groups" :key="group.id" class="group-card col m2" @click="goToGroupDetail(group.id)">
+      <div class="row group-container">
+        <div v-for="group in groups" :key="group.id" @click="goToGroupDetail(group.id)">
           <router-link :to="`/group/${group.id}`" class="group-item">
             <div class="group-name">{{ group.name }}</div>
           </router-link>
@@ -20,6 +20,7 @@
     <p>User not logged in.</p>
   </div>
 </template>
+
 
 <script>
 import axios from 'axios';
@@ -93,14 +94,21 @@ export default {
   align-items: center;
 }
 
-.group-card {
-  cursor: pointer;
-  /* Add more styles for your group card */
+.group-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.group-container > div {
+  margin: 0 50px 30px 0;
+  flex: 0 0 230px;
 }
 
 .group-item {
   text-decoration: none;
   color: inherit;
+  display: block;
+  cursor: pointer;
 }
 
 .group-name {
@@ -110,20 +118,17 @@ export default {
   background-color: #272538;
   transition: all 0.3s ease;
   box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.5);
-  text-decoration: none;
   color: #FFF;
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
   text-align: center;
   height: 100px;
-  width: 190px;
-  overflow: hidden; 
-  font-size:18px;
+  width: 100%;
+  font-size: 18px;
 }
 
-.group-name:hover {
+.group-container > div:hover .group-name {
   background-color: #322f46;
   box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.8);
   transform: translateY(-2px);
