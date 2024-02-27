@@ -980,29 +980,20 @@ app.post('/create-group', async (req, res) => {
     return res.status(401).json({ message: 'User not logged in.' });
   }
 
-  const { groupName, groupDescription} = req.body;
+  const { groupName } = req.body;
 
   try {
-    var newGroupId = 0;
-
-    const maxGroupIdQuery = 'SELECT MAX(id) AS max_id FROM groups';
-    const maxGroupIdResult = await pool.query(maxGroupIdQuery);
-    const maxId = maxGroupIdResult.rows[0].max_id || 0;
-    newGroupId = maxId + 1;
-
-    const createGroupQuery =`
-      INSERT INTO groups (id, name, description, owner_id)
-      VALUES ($1, $2, $3, $4)
+    const createGroupQuery = `
+      INSERT INTO groups (name, owner_id)
+      VALUES ($1, $2)
       RETURNING *;`;
 
-    const result = await pool.query(createGroupQuery, [newGroupId, groupName, groupDescription, user.id]);
+    const result = await pool.query(createGroupQuery, [groupName, user.id]);
     res.json(result.rows[0]);
 
   } catch (error) {
-
     console.error('Error creating group:', error);
     res.status(500).send('Internal Server Error');
-
   }
 });
 
