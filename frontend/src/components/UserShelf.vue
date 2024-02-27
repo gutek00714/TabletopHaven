@@ -14,16 +14,18 @@
         </button>
       </div>
       <div class="user-shelf">
-        <section class="add-group">
-          <div v-if="showGroups">
-            <h3 class="section-title">Which group?</h3>
-            <div v-for="group in groups" :key="group.id" class="group-card col m2" @click="addToGroup(group.id)">
-              <div class="group-item">
-                <div class="group-name">{{ group.name }}</div>
+        <div class="row">
+          <section class="add-group">
+            <div v-if="showGroups">
+              <h3 class="section-title">Which group?</h3>
+              <div v-for="group in groups" :key="group.id" class="group-card col m2" @click="addToGroup(group.id)">
+                <div class="group-item">
+                  <div class="group-name">{{ group.name }}</div>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </div>
         <section class="owned-games">
           <h3 class="section-title">Owned Games</h3>
           <div v-if="userProfile.ownedGames.length > 0" class="games-grid">
