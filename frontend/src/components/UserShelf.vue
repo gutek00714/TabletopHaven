@@ -83,6 +83,7 @@ export default {
   async created() {
     await this.checkLoginStatus();
     await this.fetchUserProfile();
+    await this.fetchUserGroups();
   },
   methods: {
     async checkLoginStatus() {
@@ -157,8 +158,8 @@ export default {
     },
     async extendGroups() {
       this.showGroups = true;
-      await this.fetchUserGroups();
     },
+    
     async fetchUserGroups() {
       this.loading = true;
       try {
