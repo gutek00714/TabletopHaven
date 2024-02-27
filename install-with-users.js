@@ -24,6 +24,7 @@ const main = async () => {
 
     await runCommand('node', ['createTables.js'], './backend/src');
     await runCommand('node', ['fillGames.js'], './backend/src');
+    await runCommand('node', ['fillUsers.js'], './backend/src');
 
     console.log('All tasks completed successfully');
   } catch (err) {
