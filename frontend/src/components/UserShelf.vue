@@ -184,7 +184,9 @@ export default {
         }
       } catch (error) {
         if (error.response) {
-          alert(error.response.data || 'Failed to add user to the group');
+          // Extracting the message property from the response data
+          const errorMessage = error.response.data.message || 'Failed to add user to the group';
+          alert(errorMessage);
         } else {
           console.error('Error adding user to group:', error);
           alert('Failed to add user to the group');
