@@ -82,7 +82,7 @@ export default {
 }
 
 .active-menu {
-  background-color: #171622;
+  background-color: #2c2a3e;
   border-radius: 4px; 
 }
 </style>
