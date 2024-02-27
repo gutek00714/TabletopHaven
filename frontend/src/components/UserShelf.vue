@@ -83,7 +83,7 @@ export default {
   async created() {
     await this.checkLoginStatus();
     await this.fetchUserProfile();
-    await this.fetchUserGroups();
+    await this.fetchEligibleGroups();
   },
   methods: {
     async checkLoginStatus() {
@@ -161,13 +161,13 @@ export default {
       this.showGroups = true;
     },
     
-    async fetchUserGroups() {
+    async fetchEligibleGroups() {
       this.loading = true;
       try {
-        const response = await axios.get('http://localhost:3000/user-groups', { withCredentials: true });
+        const response = await axios.get(`http://localhost:3000/user/${this.userId}/eligible-groups`, { withCredentials: true });
         this.groups = response.data;
       } catch (error) {
-        this.error = error.response && error.response.data.message ? error.response.data.message : 'An error occurred while fetching groups.';
+        this.error = error.response && error.response.data.message ? error.response.data.message : 'An error occurred while fetching eligible groups.';
       } finally {
         this.loading = false;
       }

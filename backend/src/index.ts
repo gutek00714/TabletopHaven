@@ -697,29 +697,37 @@ app.get('/user-groups', async (req, res) => {
   }
 });
 
-app.get('/available-user-groups', async (req, res) => {
+app.get('/user/:userId/eligible-groups', async (req, res) => {
   interface MinimalUser {
     id: number;
   }
-  const user = req.user as MinimalUser | undefined;
-  if (!user || !user.id) {
+  const loggedInUser = req.user as MinimalUser | undefined;
+  
+  // Check if loggedInUser exists and has a valid 'id' property
+  if (!loggedInUser || typeof loggedInUser.id !== 'number') {
     return res.status(401).json({ message: 'User not logged in.' });
   }
+  const loggedInUserId = loggedInUser.id;
+  console.log(`User ${loggedInUserId}`)
 
+  // Validate profileUserId
+  const profileUserId = parseInt(req.params.userId, 10);
+  console.log(`User ${profileUserId}`)
+  if (isNaN(profileUserId)) {
+    return res.status(400).json({ message: 'Invalid user ID.' });
+  }
   try {
     const query = `
       SELECT g.id, g.name, g.description
       FROM groups g
-      WHERE g.id NOT IN (
-        SELECT gm.group_id
-        FROM group_members gm
-        WHERE gm.user_id = $1
-      ) AND g.owner_id != $1;
+      WHERE g.owner_id = $1 AND NOT EXISTS (
+        SELECT 1 FROM group_members gm WHERE gm.group_id = g.id AND gm.user_id = $2
+      );
     `;
-    const result = await pool.query(query, [user.id]);
+    const result = await pool.query(query, [loggedInUserId, profileUserId]);
     res.json(result.rows);
   } catch (error) {
-    console.error('Error fetching available user groups:', error);
+    console.error('Error fetching eligible groups:', error);
     res.status(500).send('Internal Server Error');
   }
 });
