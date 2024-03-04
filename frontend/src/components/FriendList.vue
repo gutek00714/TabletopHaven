@@ -27,7 +27,7 @@
         <h4>Friends</h4>
         <div v-if="loading" class="loading">Loading friends list...</div>
         <div v-else-if="error" class="error-message">{{ error }}</div>
-        <input v-model="friendSearchQuery" type="text" placeholder="Search friends" class="search-friends-container white-text">
+        <div class="row section" v-if="hasFriends"> <input v-model="friendSearchQuery" type="text" placeholder="Search friends" class="search-friends-container white-text"> </div>
         <ul class="friends-list">
           <li v-for="friend in filteredFriendsList" :key="friend.id">
             <router-link :to="`/user/${friend.id}`" class="friend-item">
@@ -73,6 +73,10 @@ export default {
   },
 
   computed: {
+    hasFriends() {
+      return this.filteredFriendsList.length > 0;
+    },
+    
     debouncedOnChange () {
       return _debounce(this.searchUsers, 700);
     },
