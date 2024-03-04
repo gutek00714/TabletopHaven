@@ -7,7 +7,7 @@
         <img :src="userProfile.profileImageUrl" alt="Profile Image" class="profile-image">
         <h2 class="shelf-title">{{ userProfile.username }}'s Shelf</h2>
         <button v-if="isLoggedIn && userId !== loggedInUserId" @click="toggleFollow" :class="{ 'btn-follow': !isFollowing, 'btn-unfollow': isFollowing }">
-          {{ isFollowing ? 'Unfollow' : 'Follow' }} 
+          {{ isFollowing ? 'Remove Friend' : 'Add Friend' }} 
         </button>
         <button v-if="isLoggedIn && userId !== loggedInUserId" @click="extendGroups" class="btn-add-to-group">
           Add to Group
