@@ -1,32 +1,32 @@
 <template>
   <div class="col m11 column-background">
-    <div class="row section">
-      <h4>Search Users</h4>
-      <div class="col m7">
-        <form @submit.prevent="searchBoardGames(searchQuery)">
-          <div class="input-field center-align search-bar-container" ref="searchContainer">
-              <i class="material-icons" style="margin-left: 10px;">search</i>
-              <input v-model="searchQuery" class="input-search" id="search" type="search" @input="debouncedOnChange" required>
-              <i class="material-icons" @click="clearSearch" style="margin-right: 10px;">close</i>
-              <div v-if="searchResults.length" class="search-results-dropdown">
-                <ul>
-                  <li v-for="user in searchResults" :key="user.id">
-                    <router-link :to="`/user/${user.id}`" @click="clearSearch">
-                      <img :src="user.profile_image_url" class="dropdown-user-image" alt="User Image">
-                      {{ user.username }}
-                    </router-link>
-                  </li>
-                </ul>
-              </div>
-          </div>
-        </form>
+    <div v-if="isAuthenticated">
+      <div class="row section">
+        <h4>Search Users</h4>
+        <div class="col m7">
+          <form @submit.prevent="searchBoardGames(searchQuery)">
+            <div class="input-field center-align search-bar-container" ref="searchContainer">
+                <i class="material-icons" style="margin-left: 10px;">search</i>
+                <input v-model="searchQuery" class="input-search" id="search" type="search" @input="debouncedOnChange" required>
+                <i class="material-icons" @click="clearSearch" style="margin-right: 10px;">close</i>
+                <div v-if="searchResults.length" class="search-results-dropdown">
+                  <ul>
+                    <li v-for="user in searchResults" :key="user.id">
+                      <router-link :to="`/user/${user.id}`" @click="clearSearch">
+                        <img :src="user.profile_image_url" class="dropdown-user-image" alt="User Image">
+                        {{ user.username }}
+                      </router-link>
+                    </li>
+                  </ul>
+                </div>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
-    <div class="row section">
-      <h4>Friends</h4>
-      <div v-if="loading" class="loading">Loading friends list...</div>
-      <div v-else-if="error" class="error-message">{{ error }}</div>
-      <div v-else-if="isAuthenticated">
+      <div class="row section">
+        <h4>Friends</h4>
+        <div v-if="loading" class="loading">Loading friends list...</div>
+        <div v-else-if="error" class="error-message">{{ error }}</div>
         <input v-model="friendSearchQuery" type="text" placeholder="Search friends" class="search-friends-container white-text">
         <ul class="friends-list">
           <li v-for="friend in filteredFriendsList" :key="friend.id">
@@ -37,9 +37,9 @@
           </li>
         </ul>
       </div>
-      <div v-else>
-        <div v-if="error" class="error">{{ error }}</div>
-      </div>
+    </div>
+    <div v-else>
+      <div v-if="error" class="error">{{ error }}</div>
     </div>
   </div>
 </template>
@@ -334,6 +334,15 @@ export default {
   color: #9e9696;
   font-size: 1.2rem;
   margin-top: 1rem;
+}
+
+.error {
+  font-size: 1.5rem;
+  color: white;
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  padding-right: 2rem;
 }
 
 .search-friends-container {
