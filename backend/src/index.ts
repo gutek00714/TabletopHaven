@@ -684,7 +684,7 @@ app.get('/user-groups', async (req, res) => {
 
   try {
     const query = `
-      SELECT DISTINCT g.id, g.name, g.description
+      SELECT DISTINCT g.id, g.name
       FROM groups g
       LEFT JOIN group_members gm ON g.id = gm.group_id
       WHERE gm.user_id = $1 OR g.owner_id = $1;
@@ -716,7 +716,7 @@ app.get('/user/:userId/eligible-groups', async (req, res) => {
   }
   try {
     const query = `
-      SELECT g.id, g.name, g.description
+      SELECT g.id, g.name
       FROM groups g
       WHERE g.owner_id = $1 AND NOT EXISTS (
         SELECT 1 FROM group_members gm WHERE gm.group_id = g.id AND gm.user_id = $2
