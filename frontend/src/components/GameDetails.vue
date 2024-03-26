@@ -291,15 +291,18 @@ export default {
         { withCredentials: true });
 
         this.fetchGameData();
-        alert('Rating submitted successfully');
+        // eslint-disable-next-line no-undef
+        M.toast({html: 'Rating submitted successfully', displayLength: 4000});
       } catch (error) {
         if (error.response && error.response.status === 401) {
-          alert('You must be logged in to rate games');
+          // eslint-disable-next-line no-undef
+          M.toast({html: 'You must be logged in to rate games', displayLength: 4000});
           this.currentRating = 0;
           this.hoverRating = 0;
         } else {
           console.error('Error submitting rating:', error);
-          alert('Failed to submit rating');
+          // eslint-disable-next-line no-undef
+          M.toast({html: 'Failed to submit rating', displayLength: 4000});
         }
       }
     },
@@ -309,10 +312,12 @@ export default {
         await axios.delete(`http://localhost:3000/remove-rating/${this.gameId}`, { withCredentials: true });
         this.currentRating = 0;
         this.fetchGameData();
-        alert('Rating removed successfully');
+        // eslint-disable-next-line no-undef
+        M.toast({html: 'Rating removed successfully', displayLength: 4000});
       } catch (error) {
         console.error('Error removing rating:', error);
-        alert('Failed to remove rating');
+        // eslint-disable-next-line no-undef
+        M.toast({html: 'Failed to remove rating', displayLength: 4000});
       }
     },
   },
