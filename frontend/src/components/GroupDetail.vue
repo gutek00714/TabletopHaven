@@ -263,13 +263,13 @@ export default {
         });
         this.members = this.members.filter(member => member.id !== this.memberToRemove.id);
         // eslint-disable-next-line
-        M.toast({ html: `${this.memberToRemove.username} has been removed from the group.`});
+        M.toast({ html: `${this.memberToRemove.username} has been removed from the group.`, displayLength: 4000});
         this.memberToRemove = null; // Reset memberToRemove here before closing the modal
       } catch (error) {
         this.error = 'An error occurred while removing user from group.';
         console.error('Error removing member:', error.response.data);
         // eslint-disable-next-line
-        M.toast({ html: 'Failed to remove member from the group.'});
+        M.toast({ html: 'Failed to remove member from the group.', displayLength: 4000});
       } finally {
         // Close the modal after the action or on error
         if (this.removeModalInstance) { // Check if the instance is available
