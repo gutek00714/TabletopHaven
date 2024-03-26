@@ -28,6 +28,16 @@
                   <a href="#!" class="modal-close waves-effect waves-red btn-flat">No</a>
                 </div>
               </div>
+              <div id="confirmRemoveMemberModal" class="modal" ref="removeModal">
+                <div class="modal-content">
+                  <h4>Confirm Member Removal</h4>
+                  <p v-if="memberToRemove">Are you sure you want to remove {{ memberToRemove.username }} from the group?</p>
+                </div>
+                <div class="modal-footer">
+                  <a href="#!" class="modal-close waves-effect waves-green btn-flat" @click="confirmRemoveMember">Yes</a>
+                  <a href="#!" class="modal-close waves-effect waves-red btn-flat">No</a>
+                </div>
+              </div>              
               <div class="row">
                 <div class="col m5">
                   <h4>Members</h4>
@@ -45,9 +55,9 @@
                           <img :src="member.profile_image_url" class="member-image" alt="Member Image">
                           <span class="friend-name">{{ member.username }}</span>
                         </router-link>
-                        <button v-if="manageMode && !member.is_owner" @click.stop="removeMember(member.id)" class="remove-member-button">
+                        <button v-if="manageMode && !member.is_owner" @click.stop="openRemoveMemberModal(member)" class="remove-member-button">
                           <img class="remove" src="/remove.svg" alt="X"/>
-                        </button>                  
+                        </button>           
                       </div>
                     </li>
                   </ul>
@@ -106,6 +116,9 @@ export default {
       minPlayTimeFilter: null,
       maxPlayTimeFilter: null,
       filteredGames: [],
+      memberToRemove: null,
+      deleteModalInstance: null,
+      removeModalInstance: null,
     };
   },
   
@@ -209,36 +222,59 @@ export default {
     openDeleteGroupModal() {
       const modalElement = this.$refs.deleteModal;
       // eslint-disable-next-line
-      const instance = M.Modal.init(modalElement);
-      instance.open();
+      this.deleteModalInstance = M.Modal.init(modalElement); // Save the instance
+      this.deleteModalInstance.open();
     },
+
     async confirmDeleteGroup() {
       const groupId = this.$route.params.groupId;
       try {
-        const response = await axios.delete(`http://localhost:3000/delete-group/${groupId}`, { withCredentials: true });
-        console.log(response.data); 
+        await axios.delete(`http://localhost:3000/delete-group/${groupId}`, { withCredentials: true });
         this.$router.push('/groups');
       } catch (error) {
         console.error('Error deleting group:', error.response.data);
+      } finally {
+        if (this.deleteModalInstance) { // Check if the instance is available
+          this.deleteModalInstance.close(); // Use the saved instance to close the modal
+        }
       }
-      await this.deleteGroup();
-      // Close the modal after the action
-      // eslint-disable-next-line
-      const instance = M.Modal.getInstance(this.$refs.deleteModal);
-      instance.close();
     },
 
-    async removeMember(memberId) {
+    openRemoveMemberModal(member) {
+      if (member) {
+        this.memberToRemove = member;
+        const modalElement = this.$refs.removeModal;
+        // eslint-disable-next-line
+        this.removeModalInstance = M.Modal.init(modalElement); // Save the instance
+        this.removeModalInstance.open();
+      } else {
+        // Handle the case where the member is not defined
+        console.error('No member selected for removal.');
+      }
+    },
+
+    async confirmRemoveMember() {
+      if (!this.memberToRemove) return;
       const groupId = this.$route.params.groupId;
       try {
-        await axios.post(`http://localhost:3000/group/${groupId}/remove-member`, { 
-          userId: memberId, 
+        await axios.post(`http://localhost:3000/group/${groupId}/remove-member`, {
+          userId: this.memberToRemove.id,
           requestingUserId: this.userId
         });
-        this.members = this.members.filter(member => member.id !== memberId);
-        await this.fetchGroupDetails();
+        this.members = this.members.filter(member => member.id !== this.memberToRemove.id);
+        // eslint-disable-next-line
+        M.toast({ html: `${this.memberToRemove.username} has been removed from the group.`, classes: 'rounded' });
+        this.memberToRemove = null; // Reset memberToRemove here before closing the modal
       } catch (error) {
         this.error = 'An error occurred while removing user from group.';
+        console.error('Error removing member:', error.response.data);
+        // eslint-disable-next-line
+        M.toast({ html: 'Failed to remove member from the group.', classes: 'rounded' });
+      } finally {
+        // Close the modal after the action or on error
+        if (this.removeModalInstance) { // Check if the instance is available
+          this.removeModalInstance.close(); // Use the saved instance to close the modal
+        }
       }
     },
 
