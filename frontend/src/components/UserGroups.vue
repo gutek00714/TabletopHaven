@@ -7,6 +7,16 @@
           Create group
         </button>  
       </div>
+      <div id="createGroupModal" class="modal" ref="createModal">
+        <div class="modal-content">
+          <h4>Create Group</h4>
+          <input type="text" v-model="newGroupName" placeholder="Group Name" style="color:#FFFFFF" />
+        </div>
+        <div class="modal-footer">
+          <a href="#!" class="modal-close waves-effect waves-green btn-flat" @click="confirmCreateGroup">Create</a>
+          <a href="#!" class="modal-close waves-effect waves-red btn-flat">Cancel</a>
+        </div>
+      </div>
       <div class="row group-container">
         <div v-for="group in groups" :key="group.id" @click="goToGroupDetail(group.id)">
           <router-link :to="`/group/${group.id}`" class="group-item">
@@ -34,7 +44,15 @@ export default {
       loading: false,
       error: null,
       isLoggedIn: false,
+      newGroupName: '',
     };
+  },
+  mounted() {
+    this.$nextTick(() => {
+      const elems = document.querySelectorAll('.modal');
+      // eslint-disable-next-line
+      M.Modal.init(elems);
+    });
   },
   async created() {
     await this.checkLoginStatus();
@@ -63,22 +81,34 @@ export default {
       }
     },
     async createGroup() {
+      const modalElement = this.$refs.createModal;
+      // eslint-disable-next-line
+      M.Modal.init(modalElement).open();
+    },
+
+    async confirmCreateGroup() {
+      if (!this.newGroupName.trim()) {
+        // eslint-disable-next-line
+        M.toast({ html: 'Group name cannot be empty', classes: 'rounded' });
+        return;
+      }
+
       try {
-        const groupName = prompt('Enter group name:');
+        await axios.post('http://localhost:3000/create-group', {
+          groupName: this.newGroupName
+        }, { withCredentials: true });
 
-        const response = await axios.post(
-          'http://localhost:3000/create-group',
-          { groupName },
-          { withCredentials: true } 
-        );
-        
-        await this.fetchUserGroups();
-        console.log(response.data);
-
+        this.newGroupName = ''; // Reset the input field
+        await this.fetchUserGroups(); // Refresh the list of groups
+        // eslint-disable-next-line
+        M.toast({ html: 'Group created successfully!', classes: 'rounded' });
       } catch (error) {
         console.error('Error creating group:', error.response.data);
+        // eslint-disable-next-line
+        M.toast({ html: 'Failed to create group', classes: 'rounded' });
       }
     },
+
 
     goToGroupDetail(groupId) {
       router.push({ name: 'GroupDetail', params: { groupId } });
@@ -169,5 +199,66 @@ export default {
   margin-top: 2rem;
   padding-top: 1.5rem;
   padding-right: 2rem;
+}
+
+.modal {
+  background-color: #2b2d42;
+  border-radius: 8px;
+}
+
+.modal-content {
+  color: #ffffff;
+  padding: 20px;
+}
+
+.modal-footer {
+  background-color: #212136 !important;
+  border-top: 1px solid #42445a !important;
+  padding: 12px 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-footer .modal-close:first-child {
+  margin-right: 1rem;
+}
+
+.modal-close {
+  color: #FFFFFF;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 36px;
+  line-height: normal;
+  padding: 0 1rem;
+  margin: 0 10px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.modal-close.waves-effect {
+  display: inline-block;
+  padding: 10px 25px;
+  margin: 0 5px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.modal-close.waves-green {
+  background-color: #4caf50;
+}
+
+.modal-close.waves-red {
+  background-color: #e53935;
+}
+
+.modal-close:hover {
+  transition: all 0.3s ease-in-out;
+  background-color: #5c5c5c;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transform: translateY(-2px);
 }
 </style>
