@@ -89,7 +89,7 @@ export default {
     async confirmCreateGroup() {
       if (!this.newGroupName.trim()) {
         // eslint-disable-next-line
-        M.toast({ html: 'Group name cannot be empty', classes: 'rounded' });
+        M.toast({ html: 'Group name cannot be empty', displayLength: 4000});
         return;
       }
 
@@ -101,11 +101,11 @@ export default {
         this.newGroupName = ''; // Reset the input field
         await this.fetchUserGroups(); // Refresh the list of groups
         // eslint-disable-next-line
-        M.toast({ html: 'Group created successfully!', classes: 'rounded' });
+        M.toast({ html: 'Group created successfully!', displayLength: 4000});
       } catch (error) {
         console.error('Error creating group:', error.response.data);
         // eslint-disable-next-line
-        M.toast({ html: 'Failed to create group', classes: 'rounded' });
+        M.toast({ html: 'Failed to create group', displayLength: 4000});
       }
     },
 
