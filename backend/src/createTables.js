@@ -53,7 +53,6 @@ async function createTables() {
             CREATE TABLE groups (
               id SERIAL PRIMARY KEY,
               name VARCHAR(255) UNIQUE NOT NULL,
-              description TEXT,
               owner_id INTEGER REFERENCES users(id)
             );
           

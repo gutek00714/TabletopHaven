@@ -684,7 +684,7 @@ app.get('/user-groups', async (req, res) => {
 
   try {
     const query = `
-      SELECT DISTINCT g.id, g.name, g.description
+      SELECT DISTINCT g.id, g.name
       FROM groups g
       LEFT JOIN group_members gm ON g.id = gm.group_id
       WHERE gm.user_id = $1 OR g.owner_id = $1;
@@ -697,29 +697,35 @@ app.get('/user-groups', async (req, res) => {
   }
 });
 
-app.get('/available-user-groups', async (req, res) => {
+app.get('/user/:userId/eligible-groups', async (req, res) => {
   interface MinimalUser {
     id: number;
   }
-  const user = req.user as MinimalUser | undefined;
-  if (!user || !user.id) {
+  const loggedInUser = req.user as MinimalUser | undefined;
+  
+  if (!loggedInUser || typeof loggedInUser.id !== 'number') {
     return res.status(401).json({ message: 'User not logged in.' });
   }
+  const loggedInUserId = loggedInUser.id;
+  console.log(`User ${loggedInUserId}`)
 
+  const profileUserId = parseInt(req.params.userId, 10);
+  console.log(`User ${profileUserId}`)
+  if (isNaN(profileUserId)) {
+    return res.status(400).json({ message: 'Invalid user ID.' });
+  }
   try {
     const query = `
-      SELECT g.id, g.name, g.description
+      SELECT g.id, g.name
       FROM groups g
-      WHERE g.id NOT IN (
-        SELECT gm.group_id
-        FROM group_members gm
-        WHERE gm.user_id = $1
-      ) AND g.owner_id != $1;
+      WHERE g.owner_id = $1 AND NOT EXISTS (
+        SELECT 1 FROM group_members gm WHERE gm.group_id = g.id AND gm.user_id = $2
+      );
     `;
-    const result = await pool.query(query, [user.id]);
+    const result = await pool.query(query, [loggedInUserId, profileUserId]);
     res.json(result.rows);
   } catch (error) {
-    console.error('Error fetching available user groups:', error);
+    console.error('Error fetching eligible groups:', error);
     res.status(500).send('Internal Server Error');
   }
 });
@@ -728,14 +734,28 @@ app.post('/group/:groupId/add-member', async (req, res) => {
   const groupId = parseInt(req.params.groupId, 10);
   const userIdToAdd = parseInt(req.body.userId, 10);
 
-  if (!groupId || !userIdToAdd) {
+  if (isNaN(groupId) || isNaN(userIdToAdd)) {
     return res.status(400).send('Invalid data');
   }
+  interface MinimalUser {
+    id: number;
+  }
+  const loggedInUser = req.user as MinimalUser | undefined;
+  
+  if (!loggedInUser || typeof loggedInUser.id !== 'number') {
+    return res.status(401).json({ message: 'User not logged in.' });
+  }
+  const loggedInUserId = loggedInUser.id;
 
   try {
+    const ownerCheckQuery = 'SELECT owner_id FROM groups WHERE id = $1';
+    const ownerCheckResult = await pool.query(ownerCheckQuery, [groupId]);
+    if (ownerCheckResult.rows.length === 0 || ownerCheckResult.rows[0].owner_id !== loggedInUserId) {
+      return res.status(403).json({ message: 'Only the group owner can add members.' });
+    }
+
     const checkQuery = 'SELECT * FROM group_members WHERE group_id = $1 AND user_id = $2';
     const checkResult = await pool.query(checkQuery, [groupId, userIdToAdd]);
-
     if (checkResult.rows.length > 0) {
       return res.status(409).send('User is already a member of this group');
     }
@@ -960,29 +980,20 @@ app.post('/create-group', async (req, res) => {
     return res.status(401).json({ message: 'User not logged in.' });
   }
 
-  const { groupName, groupDescription} = req.body;
+  const { groupName } = req.body;
 
   try {
-    var newGroupId = 0;
-
-    const maxGroupIdQuery = 'SELECT MAX(id) AS max_id FROM groups';
-    const maxGroupIdResult = await pool.query(maxGroupIdQuery);
-    const maxId = maxGroupIdResult.rows[0].max_id || 0;
-    newGroupId = maxId + 1;
-
-    const createGroupQuery =`
-      INSERT INTO groups (id, name, description, owner_id)
-      VALUES ($1, $2, $3, $4)
+    const createGroupQuery = `
+      INSERT INTO groups (name, owner_id)
+      VALUES ($1, $2)
       RETURNING *;`;
 
-    const result = await pool.query(createGroupQuery, [newGroupId, groupName, groupDescription, user.id]);
+    const result = await pool.query(createGroupQuery, [groupName, user.id]);
     res.json(result.rows[0]);
 
   } catch (error) {
-
     console.error('Error creating group:', error);
     res.status(500).send('Internal Server Error');
-
   }
 });
 

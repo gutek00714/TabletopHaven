@@ -6,46 +6,48 @@
       <div v-else>
         <div v-if="isMemberOrOwner">
           <div class="row">
-            <div class="group-members-and-chat">
-              <div class="col m5">
-                <div class="group-header">
-                  <h4>{{ groupName }}</h4>
-                  <div v-if="isOwner">
-                    <button @click="toggleManageMode" class="manage-group-button">
-                      {{ manageMode ? 'Exit Manage Mode' : 'Manage Group' }}
-                    </button>
-                  </div>
-                  <div v-if="manageMode" class="delete-group">
-                    <button @click="deleteGroup" class="delete-group-button">Delete Group</button>
-                  </div>
+            <div class="group-members-and-chat">            
+              <div class="group-header">
+                <h4>{{ groupName }}</h4>
+                <div v-if="isOwner">
+                  <button @click="toggleManageMode" class="manage-group-button">
+                    {{ manageMode ? 'Exit Manage Mode' : 'Manage Group' }}
+                  </button>
                 </div>
-                <h4>Members</h4>
-                <ul class="friends-list">
-                  <div v-if="owner" class="member-container">
-                    <router-link :to="`/user/${owner.id}`" class="friend-item">
-                      <img :src="owner.profile_image_url" class="member-image" alt="Member Image">
-                      <img class="owner" src="/crown.svg" alt="Owner"/>
-                      <span class="friend-name">{{ owner.username }}</span>
-                    </router-link>  
-                  </div>              
-                  <li v-for="member in members" :key="member.id">
-                    <div class="member-container">
-                      <router-link :to="`/user/${member.id}`" class="friend-item">
-                        <img :src="member.profile_image_url" class="member-image" alt="Member Image">
-                        <span class="friend-name">{{ member.username }}</span>
-                      </router-link>
-                      <button v-if="manageMode && !member.is_owner" @click.stop="removeMember(member.id)" class="remove-member-button">
-                        <img class="remove" src="/remove.svg" alt="X"/>
-                      </button>                  
-                    </div>
-                  </li>
-                </ul>
+                <div v-if="manageMode" class="delete-group">
+                  <button @click="deleteGroup" class="delete-group-button">Delete Group</button>
+                </div>
               </div>
+              <div class="row">
+                <div class="col m5">
+                  <h4>Members</h4>
+                  <ul class="friends-list">
+                    <div v-if="owner" class="member-container">
+                      <router-link :to="`/user/${owner.id}`" class="friend-item">
+                        <img :src="owner.profile_image_url" class="member-image" alt="Member Image">
+                        <img class="owner" src="/crown.svg" alt="Owner"/>
+                        <span class="friend-name">{{ owner.username }}</span>
+                      </router-link>  
+                    </div>              
+                    <li v-for="member in members" :key="member.id">
+                      <div class="member-container">
+                        <router-link :to="`/user/${member.id}`" class="friend-item">
+                          <img :src="member.profile_image_url" class="member-image" alt="Member Image">
+                          <span class="friend-name">{{ member.username }}</span>
+                        </router-link>
+                        <button v-if="manageMode && !member.is_owner" @click.stop="removeMember(member.id)" class="remove-member-button">
+                          <img class="remove" src="/remove.svg" alt="X"/>
+                        </button>                  
+                      </div>
+                    </li>
+                  </ul>
+                </div>
 
-              <div class="col m7">
-                <h4>Group Chat</h4>
-                <div class="chat-container">
-                  <!-- Chat messages  -->
+                <div class="col m7">
+                  <h4>Group Chat</h4>
+                  <div class="chat-container">
+                    <!-- Chat messages  -->
+                  </div>
                 </div>
               </div>
             </div>
@@ -55,12 +57,12 @@
             <section class="group-games">
               <h4>Games Owned by Group</h4>
               <div class="filters">
-                <input type="number" v-model.number="playersFilter" placeholder="Number of Players">
+                <input type="number" v-model.number="playersFilterComputed" placeholder="Number of Players">
                 <input type="number" v-model.number="minPlayTimeFilter" placeholder="Min Play Time">
                 <input type="number" v-model.number="maxPlayTimeFilter" placeholder="Max Play Time">
               </div>
               <ul class="game-list">
-                <GameCard v-for="game in games" :key="game.id" :gameId="game.id"/>
+                <GameCard v-for="game in filteredGames" :key="game.id" :gameId="game.id"/>
               </ul>
             </section>
           </div>
@@ -121,25 +123,33 @@ export default {
   computed: {
     isOwner() {
       return this.owner?.id === this.userId;
-    }
+    },
+    playersFilterComputed: {
+      get() {
+        return this.playersFilter;
+      },
+      set(value) {
+        this.playersFilter = value === '' ? null : Number(value);
+      }
+    },
   },
 
   methods: {
     async applyFilters() {
-      const invalidPlayerFilter = this.minPlayersFilter && this.maxPlayersFilter && this.minPlayersFilter > this.maxPlayersFilter;
-      const invalidTimeFilter = this.minPlayTimeFilter && this.maxPlayTimeFilter && this.minPlayTimeFilter > this.maxPlayTimeFilter;
+      const invalidTimeFilter = this.minPlayTimeFilter !== null && this.maxPlayTimeFilter !== null && 
+                                this.minPlayTimeFilter > this.maxPlayTimeFilter;
 
-      if (invalidPlayerFilter || invalidTimeFilter) {
+      if (invalidTimeFilter) {
         this.filteredGames = [];
         return;
       }
-
       this.filteredGames = this.games.filter(game => {
-        const isWithinPlayerRange = this.playersFilter === null || 
+        const isWithinPlayerRange = this.playersFilter === null || this.playersFilter === undefined || 
                                     (game.min_players <= this.playersFilter && game.max_players >= this.playersFilter);
 
         const minPlayTime = this.minPlayTimeFilter || -Infinity;
         const maxPlayTime = this.maxPlayTimeFilter || Infinity;
+
         const isWithinTimeRange = (game.play_time >= minPlayTime) && (game.play_time <= maxPlayTime);
 
         return isWithinPlayerRange && isWithinTimeRange;

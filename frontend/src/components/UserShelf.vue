@@ -7,7 +7,7 @@
         <img :src="userProfile.profileImageUrl" alt="Profile Image" class="profile-image">
         <h2 class="shelf-title">{{ userProfile.username }}'s Shelf</h2>
         <button v-if="isLoggedIn && userId !== loggedInUserId" @click="toggleFollow" :class="{ 'btn-follow': !isFollowing, 'btn-unfollow': isFollowing }">
-          {{ isFollowing ? 'Unfollow' : 'Follow' }} 
+          {{ isFollowing ? 'Remove Friend' : 'Add Friend' }} 
         </button>
         <button v-if="isLoggedIn && userId !== loggedInUserId" @click="extendGroups" class="btn-add-to-group">
           Add to Group
@@ -83,7 +83,7 @@ export default {
   async created() {
     await this.checkLoginStatus();
     await this.fetchUserProfile();
-    await this.fetchUserGroups();
+    await this.fetchEligibleGroups();
   },
   methods: {
     async checkLoginStatus() {
@@ -161,13 +161,13 @@ export default {
       this.showGroups = true;
     },
     
-    async fetchUserGroups() {
+    async fetchEligibleGroups() {
       this.loading = true;
       try {
-        const response = await axios.get('http://localhost:3000/user-groups', { withCredentials: true });
+        const response = await axios.get(`http://localhost:3000/user/${this.userId}/eligible-groups`, { withCredentials: true });
         this.groups = response.data;
       } catch (error) {
-        this.error = error.response && error.response.data.message ? error.response.data.message : 'An error occurred while fetching groups.';
+        this.error = error.response && error.response.data.message ? error.response.data.message : 'An error occurred while fetching eligible groups.';
       } finally {
         this.loading = false;
       }
@@ -184,7 +184,9 @@ export default {
         }
       } catch (error) {
         if (error.response) {
-          alert(error.response.data || 'Failed to add user to the group');
+          // Extracting the message property from the response data
+          const errorMessage = error.response.data.message || 'Failed to add user to the group';
+          alert(errorMessage);
         } else {
           console.error('Error adding user to group:', error);
           alert('Failed to add user to the group');
