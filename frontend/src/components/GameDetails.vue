@@ -10,7 +10,7 @@
     <div class="section">
       <div class="game-details">
         <img :src="gameData.image" style="border-radius:4px;" alt="Game image" width="200" height="200" />
-        <div class="game-info">
+        <div class="game-info"> 
           <h2 style="color: white;">{{ gameData.name }} ({{ gameData.year}})</h2>
           <div style="display: flex; flex-direction: column;">
             <div style="display: flex; color: white;">
@@ -144,11 +144,13 @@ export default {
             this.removeFromShelf();
           }
         } else {
-          alert('You must be logged in to add games to your shelf');
+          // eslint-disable-next-line no-undef
+          M.toast({html: 'You must be logged in to add games to shelf', displayLength: 4000});
         }
       } catch (error) {
         console.error('Error checking login status:', error);
-        alert('Unable to check login status');
+        // eslint-disable-next-line no-undef
+        M.toast({html: 'Unable to check login status', displayLength: 4000});
       }
     },
 
@@ -156,21 +158,25 @@ export default {
       try {
         await axios.post('http://localhost:3000/add-to-shelf', { gameId: this.gameId }, { withCredentials: true });
         this.isGameInShelf = true;
-        alert('Game added to your shelf!');
+        // eslint-disable-next-line no-undef
+        M.toast({html: 'Game added to shelf', displayLength: 4000});
       } catch (error) {
         console.error('Error adding game to shelf:', error);
-        alert('Failed to add game to shelf');
+        // eslint-disable-next-line no-undef
+        M.toast({html: 'Failed to add game to shelf', displayLength: 4000});
       }
     },
 
-    async removeFromShelf() {
-      try {
+      async removeFromShelf() {
+        try {
         await axios.post('http://localhost:3000/remove-from-shelf', { gameId: this.gameId }, { withCredentials: true });
         this.isGameInShelf = false;
-        alert('Game removed from your shelf!');
+        // eslint-disable-next-line no-undef
+        M.toast({html: 'Game removed from shelf', displayLength: 4000});
       } catch (error) {
         console.error('Error removing game from shelf:', error);
-        alert('Failed to remove game from shelf');
+        // eslint-disable-next-line no-undef
+        M.toast({html: 'Failed to remove game from shelf', displayLength: 4000});
       }
     },
 
@@ -184,11 +190,13 @@ export default {
             this.removeFromWishlist();
           }
         } else {
-          alert('You must be logged in to add games to your wishlist');
+          // eslint-disable-next-line no-undef
+          M.toast({html: 'You must be logged in to add games to wishlist', displayLength: 4000});
         }
       } catch (error) {
         console.error('Error checking login status:', error);
-        alert('Unable to check login status');
+        // eslint-disable-next-line no-undef
+        M.toast({html: 'Unable to check login status', displayLength: 4000});
       }
     },
 
@@ -196,10 +204,12 @@ export default {
       try {
         await axios.post('http://localhost:3000/add-to-wishlist', { gameId: this.gameId }, { withCredentials: true });
         this.isGameInWishlist = true;
-        alert('Game added to wishlist!');
+        // eslint-disable-next-line no-undef
+        M.toast({html: 'Game added to wishlist', displayLength: 4000});
       } catch (error) {
         console.error('Error adding game to wishlist:', error);
-        alert('Failed to add game to wishlist');
+        // eslint-disable-next-line no-undef
+        M.toast({html: 'Failed to add game to wishlist', displayLength: 4000});
       }
     },
 
@@ -207,10 +217,12 @@ export default {
       try {
         await axios.post('http://localhost:3000/remove-from-wishlist', { gameId: this.gameId }, { withCredentials: true });
         this.isGameInWishlist = false;
-        alert('Game removed from wishlist!');
+        // eslint-disable-next-line no-undef
+        M.toast({html: 'Game removed from wishlist', displayLength: 4000});
       } catch (error) {
         console.error('Error removing game from wishlist:', error);
-        alert('Failed to remove game from wishlist');
+        // eslint-disable-next-line no-undef
+        M.toast({html: 'Failed to remove game from wishlist', displayLength: 4000});
       }
     },
 
@@ -224,11 +236,13 @@ export default {
             this.removeFromFavorites();
           }
         } else {
-          alert('You must be logged in to add games to favorites');
+          // eslint-disable-next-line no-undef
+          M.toast({html: 'You must be logged in to add games to favorites', displayLength: 4000});
         }
       } catch (error) {
         console.error('Error checking login status:', error);
-        alert('Unable to check login status');
+        // eslint-disable-next-line no-undef
+        M.toast({html: 'Unable to check login status', displayLength: 4000});
       }
     },
 
@@ -236,10 +250,12 @@ export default {
       try {
         await axios.post('http://localhost:3000/add-to-favorites', { gameId: this.gameId }, { withCredentials: true });
         this.isGameInFavorites = true;
-        alert('Game added to favorites!');
+        // eslint-disable-next-line no-undef
+        M.toast({html: 'Game added to favorites', displayLength: 4000});
       } catch (error) {
         console.error('Error adding game to favorites:', error);
-        alert('Failed to add game to favorites');
+        // eslint-disable-next-line no-undef
+        M.toast({html: 'Failed to add game to favorites', displayLength: 4000});
       }
     },
 
@@ -247,10 +263,12 @@ export default {
       try {
         await axios.post('http://localhost:3000/remove-from-favorites', { gameId: this.gameId }, { withCredentials: true });
         this.isGameInFavorites = false;
-        alert('Game removed from favorites!');
+        // eslint-disable-next-line no-undef
+        M.toast({html: 'Game removed from favorites', displayLength: 4000});
       } catch (error) {
         console.error('Error removing game from favorites:', error);
-        alert('Failed to remove game from favorites');
+        // eslint-disable-next-line no-undef
+        M.toast({html: 'Failed to remove game from favorites', displayLength: 4000});
       }
     },
 

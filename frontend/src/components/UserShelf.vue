@@ -18,12 +18,22 @@
           <section class="add-group">
             <div v-if="showGroups">
               <h3 class="section-title">Which group?</h3>
-              <div v-for="group in groups" :key="group.id" class="group-card col m2" @click="addToGroup(group.id)">
+              <div v-for="group in groups" :key="group.id" class="group-card col m2" @click="openAddToGroupModal(group.id)">
                 <div class="group-item">
                   <div class="group-name">{{ group.name }}</div>
                 </div>
               </div>
             </div>
+            <div id="confirmAddToGroupModal" class="modal" ref="confirmModal">
+              <div class="modal-content">
+                <h4>Confirm Action</h4>
+                <p>Are you sure you want to add {{ userProfile.username }} to the group?</p>
+              </div>
+              <div class="modal-footer">
+                <a href="#!" class="modal-close waves-effect waves-green btn-flat" @click="confirmAddToGroup">Yes</a>
+                <a href="#!" class="modal-close waves-effect waves-red btn-flat">Cancel</a>
+              </div>
+            </div>            
           </section>
         </div>
         <section class="owned-games">
@@ -77,13 +87,21 @@ export default {
       isLoggedIn: false,
       loading: false,
       error: null,
-      showGroups: false
+      showGroups: false,
+      selectedGroupId: null,
     };
   },
   async created() {
     await this.checkLoginStatus();
     await this.fetchUserProfile();
     await this.fetchEligibleGroups();
+  },
+  mounted() {
+    this.$nextTick(() => {
+      const elems = document.querySelectorAll('.modal');
+      // eslint-disable-next-line
+      M.Modal.init(elems);
+    });
   },
   methods: {
     async checkLoginStatus() {
@@ -143,17 +161,20 @@ export default {
 
         if (response.status === 200) {
           this.isFollowing = !this.isFollowing;
-          const action = this.isFollowing ? 'following' : 'unfollowing';
-          alert(`You are now ${action} ${this.userProfile.username}.`);
+          const action = this.isFollowing ? 'following' : 'not following';
+          // eslint-disable-next-line no-undef
+          M.toast({html: `You are now ${action} ${this.userProfile.username}.`, displayLength: 4000});
         } else {
           throw new Error(response.data.message || 'Failed to update follow status');
         }
       } catch (error) {
         if (error.response) {
-          alert(error.response.data || 'Failed to update follow status');
+          // eslint-disable-next-line no-undef
+          M.toast({html: `${error.response.data || 'Failed to update follow status'}`, displayLength: 4000});
         } else {
           console.error('Error toggling follow:', error);
-          alert('Failed to update follow status');
+          // eslint-disable-next-line no-undef
+          M.toast({html: 'Failed to update follow status', displayLength: 4000});
         }
       }
     },
@@ -173,26 +194,36 @@ export default {
       }
     },
 
-    async addToGroup(groupId) {
+    openAddToGroupModal(groupId) {
+      this.selectedGroupId = groupId;
+      const modalElement = this.$refs.confirmModal;
+      // eslint-disable-next-line
+      const instance = M.Modal.init(modalElement);
+      instance.open();
+    },
+
+
+    async confirmAddToGroup() {
+      if (!this.selectedGroupId) return;
+      
       try {
-        let response = await axios.post(`http://localhost:3000/group/${groupId}/add-member`, { userId: this.userId }, { withCredentials: true });
+        // Your axios request to add the user to the group
+        let response = await axios.post(`http://localhost:3000/group/${this.selectedGroupId}/add-member`, { userId: this.userId }, { withCredentials: true });
 
         if (response.status === 200) {
-          alert(`User ${this.userProfile.username} has been added to the group.`);
+          // eslint-disable-next-line
+          M.toast({html: `User ${this.userProfile.username} has been added to the group.`, displayLength: 4000});
         } else {
           throw new Error(response.data.message || 'Failed to add user to the group');
-        }
-      } catch (error) {
-        if (error.response) {
-          // Extracting the message property from the response data
-          const errorMessage = error.response.data.message || 'Failed to add user to the group';
-          alert(errorMessage);
-        } else {
-          console.error('Error adding user to group:', error);
-          alert('Failed to add user to the group');
-        }
+          }
+        } catch (error) {
+        // Handle error
+        const errorMessage = error.response && error.response.data.message ? error.response.data.message : 'Failed to add user to the group';
+        // eslint-disable-next-line
+        M.toast({html: errorMessage, displayLength: 4000});
       }
-    },
+    }
+
   }
 };
 </script>
@@ -366,4 +397,66 @@ export default {
     margin-left: 1rem;
   }
 }
+
+.modal {
+  background-color: #2b2d42; /* A dark shade taken from the screenshot background */
+  border-radius: 8px;
+}
+
+.modal-content {
+  color: #ffffff; /* White text for the content */
+  padding: 20px; /* Space inside the modal */
+}
+
+.modal-footer {
+  background-color: #212136 !important;
+  border-top: 1px solid #42445a !important;
+  padding: 12px 24px;
+  display: flex; /* Ensures that buttons are flex items */
+  justify-content: center; /* Centers the buttons in the footer */
+  align-items: center; /* Vertically centers the buttons */
+}
+
+.modal-footer .modal-close:first-child {
+  margin-right: 1rem;
+}
+
+.modal-close {
+  color: #FFFFFF;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 36px; /* Adjust the height as needed */
+  line-height: normal;
+  padding: 0 1rem; /* Adjusted padding for left and right */
+  margin: 0 10px; /* Added margin between buttons */
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+  text-transform: uppercase; /* Optional: if you want to match the button text style to the theme */
+  font-weight: bold; /* Optional: if you want the text to be bold */
+}
+
+.modal-close.waves-effect {
+  display: inline-block;
+  padding: 10px 25px;
+  margin: 0 5px;
+  border-radius: 4px; /* Rounded borders for the buttons */
+  transition: background-color 0.3s ease;
+}
+
+.modal-close.waves-green {
+  background-color: #4caf50; /* Green from your button styles */
+}
+
+.modal-close.waves-red {
+  background-color: #e53935; /* Red from your button styles */
+}
+
+.modal-close:hover {
+  transition: all 0.3s ease-in-out;
+  background-color: #5c5c5c; /* A hover effect to match your other buttons */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transform: translateY(-2px);
+}
+
 </style>
