@@ -399,22 +399,22 @@ export default {
 }
 
 .modal {
-  background-color: #2b2d42; /* A dark shade taken from the screenshot background */
+  background-color: #2b2d42;
   border-radius: 8px;
 }
 
 .modal-content {
-  color: #ffffff; /* White text for the content */
-  padding: 20px; /* Space inside the modal */
+  color: #ffffff;
+  padding: 20px;
 }
 
 .modal-footer {
   background-color: #212136 !important;
   border-top: 1px solid #42445a !important;
   padding: 12px 24px;
-  display: flex; /* Ensures that buttons are flex items */
-  justify-content: center; /* Centers the buttons in the footer */
-  align-items: center; /* Vertically centers the buttons */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .modal-footer .modal-close:first-child {
@@ -426,35 +426,35 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 36px; /* Adjust the height as needed */
+  height: 36px;
   line-height: normal;
-  padding: 0 1rem; /* Adjusted padding for left and right */
-  margin: 0 10px; /* Added margin between buttons */
+  padding: 0 1rem;
+  margin: 0 10px;
   border-radius: 4px;
   transition: background-color 0.3s ease;
-  text-transform: uppercase; /* Optional: if you want to match the button text style to the theme */
-  font-weight: bold; /* Optional: if you want the text to be bold */
+  text-transform: uppercase;
+  font-weight: bold;
 }
 
 .modal-close.waves-effect {
   display: inline-block;
   padding: 10px 25px;
   margin: 0 5px;
-  border-radius: 4px; /* Rounded borders for the buttons */
+  border-radius: 4px;
   transition: background-color 0.3s ease;
 }
 
 .modal-close.waves-green {
-  background-color: #4caf50; /* Green from your button styles */
+  background-color: #4caf50;
 }
 
 .modal-close.waves-red {
-  background-color: #e53935; /* Red from your button styles */
+  background-color: #e53935;
 }
 
 .modal-close:hover {
   transition: all 0.3s ease-in-out;
-  background-color: #5c5c5c; /* A hover effect to match your other buttons */
+  background-color: #5c5c5c;
   box-shadow: 0 4px 8px rgba(0,0,0,0.3);
   transform: translateY(-2px);
 }
