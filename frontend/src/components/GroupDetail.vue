@@ -39,7 +39,7 @@
                 </div>
               </div>              
               <div class="row">
-                <div class="col m5">
+                <div class="col m4">
                   <h4>Members</h4>
                   <ul class="friends-list">
                     <div v-if="owner" class="member-container">
@@ -63,10 +63,15 @@
                   </ul>
                 </div>
 
-                <div class="col m7">
+                <div class="col m4">
                   <h4>Group Chat</h4>
                   <div class="chat-container">
-                    <!-- Chat messages  -->
+                  </div>
+                </div>
+                <div class="col m4">
+                  <h4>Calendar</h4>
+                  <div>
+                    <iframe src="https://calendar.google.com/calendar/embed?height=450&wkst=2&ctz=Europe%2FWarsaw&bgcolor=%23ffffff&showTitle=0&showPrint=0&showCalendars=0&showTz=0&mode=WEEK&showTabs=0&src=YzcxYWNiZGYzMWY1NGJkZjdhZDUwZDVkZWZiNzQ3OTNlODBiMDhjNDJkZmM5ZTY1YjliYTU0MDIzNTllZmQ1MkBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&color=%23795548" style="border:solid 1px #777" width="430" height="450" frameborder="0" scrolling="no"></iframe>
                   </div>
                 </div>
               </div>
@@ -351,12 +356,17 @@ export default {
 }
 
 @media (min-width: 768px) {
-  .group-members {
-    width: 45%; 
+  .group-members, .group-chat, .calendar {
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .group-chat {
-    width: 45%; 
+    width: calc(50% - 10px); 
+  }
+
+  .calendar {
+    width: calc(50% - 10px); 
   }
 }
 
