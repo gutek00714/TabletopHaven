@@ -46,11 +46,15 @@
                 <div class="col m7">
                   <h4>Group Chat</h4>
                   <div class="chat-container">
-                    <div v-for="msg in messages" :key="msg.id" class="message">
-                      <strong>{{ msg.username }}</strong>: {{ msg.message }}
+                    <div class="messages-container">
+                      <div v-for="msg in messages" :key="msg.id" class="message">
+                        <strong>{{ msg.username }}</strong>: {{ msg.message }}
+                      </div>
                     </div>
-                    <input v-model="message" @keyup.enter="sendMessage" placeholder="Type a message..." class="message-input">
-                    <button @click="sendMessage" class="send-message-button">Send</button>
+                    <div class="chat-message-input-container">
+                      <input v-model="message" @keyup.enter="sendMessage" placeholder="Type a message..." class="message-input">
+                      <button @click="sendMessage" class="send-message-button">Send</button>
+                    </div>
                   </div>
                 </div>                
               </div>
@@ -132,8 +136,8 @@ export default {
       this.messages = messages;
     });
 
-    socket.on('receiveMessage', (message, userId) => {
-      this.messages.push({ message, userId });
+    socket.on('receiveMessage', (messageObject) => {
+      this.messages.push(messageObject);
     });
   },
 
@@ -452,6 +456,64 @@ export default {
     margin-top: 10px;
     justify-content: start; /* Align filters to the start */
   }
+}
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 400px;
+}
+
+.chat-message-input-container {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.message-input {
+  flex-grow: 1;
+  padding: 0.5rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px 0 0 4px;
+  margin: 0;
+  color: #FAFAFA;
+}
+
+.send-message-button {
+  padding: 0.5rem 1rem;
+  background-color: #4e4c67;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  box-sizing: border-box;
+  font-size: 1rem;
+}
+
+.send-message-button:hover {
+  background-color: #5e5c71;
+}
+
+.message {
+  padding: 0.5rem;
+  background-color: #2f2c3d; /* Default background for all messages */
+}
+
+.message:nth-child(even) {
+  background-color: #272538; /* Alternate background for messages */
+}
+
+/* Add a max-width to the chat input and button container to prevent stretching on larger screens */
+.chat-message-input-container {
+  max-width: 100%;
+}
+
+/* You might need to adjust the container of the messages to allow for scrolling */
+.messages-container {
+  flex-grow: 1;
+  overflow-y: auto;
 }
 
 </style>

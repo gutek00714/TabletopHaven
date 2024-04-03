@@ -1045,6 +1045,21 @@ async function saveMessage(groupId: number, userId: number, message: string) {
   }
 }
 
+async function getUserById(userId: number) {
+  const query = `SELECT username FROM users WHERE id = $1;`;
+  try {
+    const result = await pool.query(query, [userId]);
+    if (result.rows.length > 0) {
+      return result.rows[0]; // returns the user object
+    } else {
+      return null; // user not found
+    }
+  } catch (error) {
+    console.error('Error fetching user by ID:', error);
+    throw error;
+  }
+}
+
 io.on('connection', (socket) => {
   console.log('A user connected');
 
@@ -1058,9 +1073,22 @@ io.on('connection', (socket) => {
   });
 
   socket.on('sendMessage', async (message, groupId, userId) => {
-    await saveMessage(groupId, userId, message); // Save message to database
-    io.to(groupId).emit('receiveMessage', message, userId);
+    try {
+      const savedMessage = await saveMessage(groupId, userId, message); // Save message to database
+      
+      // Assuming you have a function to get a username by userId
+      const user = await getUserById(userId); // You need to implement this
+      const username = user ? user.username : "Unknown User";
+  
+      const messageWithUsername = { ...savedMessage, username };
+      
+      io.to(groupId).emit('receiveMessage', messageWithUsername);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      // Handle error appropriately
+    }
   });
+  
 
   socket.on('disconnect', () => {
     console.log('User disconnected');
@@ -1069,17 +1097,19 @@ io.on('connection', (socket) => {
 
 async function fetchGroupMessages(groupId: number) {
   const selectQuery = `
-    SELECT * FROM group_messages
-    WHERE group_id = $1
-    ORDER BY timestamp ASC;`; // Retrieve messages in ascending order by timestamp
+    SELECT gm.message, gm.timestamp, u.username
+    FROM group_messages gm
+    JOIN users u ON gm.user_id = u.id
+    WHERE gm.group_id = $1
+    ORDER BY gm.timestamp ASC;`; // Adjusted to include username from the users table
 
   try {
     const result = await pool.query(selectQuery, [groupId]);
     console.log('Fetched messages for group:', groupId);
-    return result.rows; // Return the array of messages
+    return result.rows; // Returns an array of messages with usernames
   } catch (error) {
     console.error('Error fetching group messages:', error);
-    throw error; // Rethrow the error for upstream error handling
+    throw error;
   }
 }
 
