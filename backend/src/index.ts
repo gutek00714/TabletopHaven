@@ -1076,8 +1076,7 @@ io.on('connection', (socket) => {
     try {
       const savedMessage = await saveMessage(groupId, userId, message); // Save message to database
       
-      // Assuming you have a function to get a username by userId
-      const user = await getUserById(userId); // You need to implement this
+      const user = await getUserById(userId);
       const username = user ? user.username : "Unknown User";
   
       const messageWithUsername = { ...savedMessage, username };
@@ -1085,7 +1084,6 @@ io.on('connection', (socket) => {
       io.to(groupId).emit('receiveMessage', messageWithUsername);
     } catch (error) {
       console.error('Error sending message:', error);
-      // Handle error appropriately
     }
   });
   
