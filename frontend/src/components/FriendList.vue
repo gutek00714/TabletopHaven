@@ -25,10 +25,14 @@
       </div>
       <div class="row section">
         <h4>Friends</h4>
+        <!-- Always show the search input -->
+        <div class="row section"> 
+          <input v-model="friendSearchQuery" type="text" placeholder="Search friends" class="search-friends-container white-text"> 
+        </div>
         <div v-if="loading" class="loading">Loading friends list...</div>
         <div v-else-if="error" class="error-message">{{ error }}</div>
-        <div class="row section" v-if="hasFriends"> <input v-model="friendSearchQuery" type="text" placeholder="Search friends" class="search-friends-container white-text"> </div>
-        <ul class="friends-list">
+        <!-- Only display the friends list if there are friends to show -->
+        <ul class="friends-list" v-if="hasFriends">
           <li v-for="friend in filteredFriendsList" :key="friend.id">
             <router-link :to="`/user/${friend.id}`" class="friend-item">
               <img :src="friend.profile_image_url" class="friend-image" alt="Friend Image">
@@ -36,7 +40,11 @@
             </router-link>
           </li>
         </ul>
-      </div>
+        <!-- Optionally, display a message if no friends match the search -->
+        <div v-if="!hasFriends && friendSearchQuery" class="no-friends-message">
+          No friends match your search.
+        </div>
+      </div>      
     </div>
     <div v-else>
       <div v-if="error" class="error">{{ error }}</div>
