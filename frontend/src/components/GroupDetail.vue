@@ -46,9 +46,13 @@
                 <div class="col m7">
                   <h4>Group Chat</h4>
                   <div class="chat-container">
-                    <!-- Chat messages  -->
+                    <div v-for="msg in messages" :key="msg.id" class="message">
+                      <strong>{{ msg.username }}</strong>: {{ msg.message }}
+                    </div>
+                    <input v-model="message" @keyup.enter="sendMessage" placeholder="Type a message..." class="message-input">
+                    <button @click="sendMessage" class="send-message-button">Send</button>
                   </div>
-                </div>
+                </div>                
               </div>
             </div>
           </div>
@@ -78,6 +82,8 @@
 <script>
 import axios from 'axios';
 import GameCard from './SmallGameCard.vue';
+import io from 'socket.io-client';
+const socket = io('http://localhost:3000');
 
 export default {
   components: { GameCard },
@@ -96,6 +102,8 @@ export default {
       minPlayTimeFilter: null,
       maxPlayTimeFilter: null,
       filteredGames: [],
+      messages: [],
+      message: ''
     };
   },
   
@@ -118,6 +126,15 @@ export default {
     } catch (error) {
       console.error('Error in created hook:', error);
     }
+    socket.emit('joinGroup', this.$route.params.groupId, this.userId);
+
+    socket.on('chatHistory', (messages) => {
+      this.messages = messages;
+    });
+
+    socket.on('receiveMessage', (message, userId) => {
+      this.messages.push({ message, userId });
+    });
   },
 
   computed: {
@@ -135,6 +152,14 @@ export default {
   },
 
   methods: {
+    sendMessage() {
+      if (!this.message.trim()) return; // Prevent sending empty messages
+
+      socket.emit('sendMessage', this.message, this.$route.params.groupId, this.userId);
+      this.message = ''; // Clear the message input after sending
+    },
+
+
     async applyFilters() {
       const invalidTimeFilter = this.minPlayTimeFilter !== null && this.maxPlayTimeFilter !== null && 
                                 this.minPlayTimeFilter > this.maxPlayTimeFilter;

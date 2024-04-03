@@ -12,6 +12,7 @@
     "core-js": "^3.8.3",
     "cors": "^2.8.5",
     "materialize-css": "^1.0.0",
+    "socket.io-client": "^4.7.5",
     "vue": "^3.2.13",
     "vue-router": "^4.2.5"
   },

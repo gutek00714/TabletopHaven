@@ -1,4 +1,5 @@
-import http from "node:http";
+import http from 'http';
+import { Server as SocketIOServer } from 'socket.io';
 import express from "express";
 import session from 'express-session';
 import passport from 'passport';
@@ -28,6 +29,15 @@ const sessionSecret = process.env.SESSION_SECRET;
 if (!sessionSecret) {
   throw new Error('SESSION_SECRET is not set');
 }
+const server = http.createServer(app);
+const io = new SocketIOServer(server, {
+  cors: {
+    origin: "http://localhost:8081", // Match this to the frontend URL
+    methods: ["GET", "POST"], // Adjust according to the methods you need
+    credentials: true
+  }
+});
+
 
 app.use(express.static('public'));
 app.use(express.json());
@@ -1019,7 +1029,60 @@ app.delete('/delete-group/:groupId', async (req, res) => {
   }
 });
 
+async function saveMessage(groupId: number, userId: number, message: string) {
+  const insertQuery = `
+    INSERT INTO group_messages (group_id, user_id, message)
+    VALUES ($1, $2, $3)
+    RETURNING *;`; // Returning the inserted row for confirmation
 
-http.createServer(app).listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
+  try {
+    const result = await pool.query(insertQuery, [groupId, userId, message]);
+    console.log('Message saved:', result.rows[0]);
+    return result.rows[0]; // Return the saved message
+  } catch (error) {
+    console.error('Error saving message:', error);
+    throw error; // Rethrow the error for upstream error handling
+  }
+}
+
+io.on('connection', (socket) => {
+  console.log('A user connected');
+
+  socket.on('joinGroup', async (groupId, userId) => {
+    socket.join(groupId);
+    console.log(`User ${userId} joined group ${groupId}`);
+
+    // Optionally, send chat history to the user
+    const messages = await fetchGroupMessages(groupId);
+    socket.emit('chatHistory', messages);
+  });
+
+  socket.on('sendMessage', async (message, groupId, userId) => {
+    await saveMessage(groupId, userId, message); // Save message to database
+    io.to(groupId).emit('receiveMessage', message, userId);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected');
+  });
+});
+
+async function fetchGroupMessages(groupId: number) {
+  const selectQuery = `
+    SELECT * FROM group_messages
+    WHERE group_id = $1
+    ORDER BY timestamp ASC;`; // Retrieve messages in ascending order by timestamp
+
+  try {
+    const result = await pool.query(selectQuery, [groupId]);
+    console.log('Fetched messages for group:', groupId);
+    return result.rows; // Return the array of messages
+  } catch (error) {
+    console.error('Error fetching group messages:', error);
+    throw error; // Rethrow the error for upstream error handling
+  }
+}
+
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
