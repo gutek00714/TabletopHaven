@@ -14,13 +14,29 @@
       <button type="submit">Create Event</button>
     </form>
 
+    <!-- Other HTML content -->
     <h2>Calendar Events</h2>
     <ul>
       <li v-for="event in events" :key="event.id">
-        {{ event.name }} - {{ event.date }}
+        <a href="#" @click="openEventVoteModal">
+          {{ event.name }} - {{ event.date }}
+        </a>
       </li>
-
     </ul>
+
+    <!-- Modal HTML -->
+    <div id="confirmDeleteGroupModal" class="modal" ref="voteModal">
+      <div class="modal-content">
+        <h4>Vote for Game</h4>
+        <ul class="game-list">
+          <GameCard v-for="game in filteredGames" :key="game.id" :gameId="game.id"/>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-red btn-flat">No</a>
+      </div>
+    </div>
+    
   </div>
         <div v-if="isMemberOrOwner">
           <div class="row">
@@ -89,7 +105,7 @@
                 <div class="col m4">
                   <h4>Calendar</h4>
                   <div>
-                    <iframe src="https://calendar.google.com/calendar/embed?height=450&wkst=2&ctz=Europe%2FWarsaw&bgcolor=%23ffffff&showTitle=0&showPrint=0&showCalendars=0&showTz=0&mode=WEEK&showTabs=0&src=YzcxYWNiZGYzMWY1NGJkZjdhZDUwZDVkZWZiNzQ3OTNlODBiMDhjNDJkZmM5ZTY1YjliYTU0MDIzNTllZmQ1MkBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&color=%23795548" style="border:solid 1px #777" width="430" height="450" frameborder="0" scrolling="no"></iframe>
+                    <!-- <iframe src="https://calendar.google.com/calendar/embed?height=450&wkst=2&ctz=Europe%2FWarsaw&bgcolor=%23ffffff&showTitle=0&showPrint=0&showCalendars=0&showTz=0&mode=WEEK&showTabs=0&src=YzcxYWNiZGYzMWY1NGJkZjdhZDUwZDVkZWZiNzQ3OTNlODBiMDhjNDJkZmM5ZTY1YjliYTU0MDIzNTllZmQ1MkBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&color=%23795548" style="border:solid 1px #777" width="430" height="450" frameborder="0" scrolling="no"></iframe> -->
                   </div>
                 </div>
               </div>
@@ -142,6 +158,7 @@ export default {
       memberToRemove: null,
       deleteModalInstance: null,
       removeModalInstance: null,
+      voteModalInstance: null,
       eventName: '',
       eventDate: '',
       events: [],
@@ -193,6 +210,15 @@ export default {
   },
 
   methods: {
+
+    // async eventVote(event) {
+    //   // Open the modal
+    //   this.openEventVoteModal();
+    //   // Fetch the user's games
+    //   await this.fetchUserGames();
+    // },
+
+
     async createEvent() {
       const groupId = this.$route.params.groupId;
       try {
@@ -295,6 +321,13 @@ export default {
           this.deleteModalInstance.close(); // Use the saved instance to close the modal
         }
       }
+    },
+
+    openEventVoteModal() {
+      const modalElement = this.$refs.voteModal;
+      // eslint-disable-next-line
+      this.voteModalInstance = M.Modal.init(modalElement); // Save the instance
+      this.voteModalInstance.open();
     },
 
     openRemoveMemberModal(member) {
