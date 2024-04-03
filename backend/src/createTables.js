@@ -12,6 +12,7 @@ async function createTables() {
             DROP TABLE IF EXISTS session CASCADE;
             DROP TABLE IF EXISTS groups CASCADE;
             DROP TABLE IF EXISTS group_members CASCADE;
+            DROP TABLE IF EXISTS calendar_events CASCADE;
 
             CREATE TABLE users (
                 id SERIAL PRIMARY KEY,
@@ -55,11 +56,18 @@ async function createTables() {
               name VARCHAR(255) UNIQUE NOT NULL,
               owner_id INTEGER REFERENCES users(id)
             );
-          
+
           CREATE TABLE group_members (
               group_id INTEGER REFERENCES groups(id),
               user_id INTEGER REFERENCES users(id),
               PRIMARY KEY (group_id, user_id)
+            );
+
+            CREATE TABLE calendar_events (
+                id SERIAL PRIMARY KEY,
+                group_id INTEGER REFERENCES groups(id),
+                name VARCHAR(255),
+                date DATE
             );
 
             CREATE TABLE session (
@@ -70,6 +78,7 @@ async function createTables() {
             WITH (OIDS=FALSE);
 
             ALTER TABLE session ADD CONSTRAINT session_pkey PRIMARY KEY (sid) NOT DEFERRABLE INITIALLY IMMEDIATE;
+
         `);
         console.log('Tables created successfully.');
     } catch (error) {

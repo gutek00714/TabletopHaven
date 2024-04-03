@@ -4,6 +4,24 @@
       <div v-if="loading" class="loading-error">Loading group details...</div>
       <div v-else-if="error" class="loading-error">{{ error }}</div>
       <div v-else>
+        <div>
+    <h2>Create Calendar Event</h2>
+    <form @submit.prevent="createEvent">
+      <label for="eventName">Event Name:</label>
+      <input type="text" id="eventName" v-model="eventName" required>
+      <label for="eventDate">Event Date:</label>
+      <input type="date" id="eventDate" v-model="eventDate" required>
+      <button type="submit">Create Event</button>
+    </form>
+
+    <h2>Calendar Events</h2>
+    <ul>
+      <li v-for="event in events" :key="event.id">
+        {{ event.name }} - {{ event.date }}
+      </li>
+
+    </ul>
+  </div>
         <div v-if="isMemberOrOwner">
           <div class="row">
             <div class="group-members-and-chat">            
@@ -124,6 +142,9 @@ export default {
       memberToRemove: null,
       deleteModalInstance: null,
       removeModalInstance: null,
+      eventName: '',
+      eventDate: '',
+      events: [],
     };
   },
   
@@ -143,6 +164,7 @@ export default {
     try {
       await this.fetchCurrentUserId();
       await this.fetchGroupDetails();
+      await this.fetchEvents();
     } catch (error) {
       console.error('Error in created hook:', error);
     }
@@ -171,6 +193,36 @@ export default {
   },
 
   methods: {
+    async createEvent() {
+      const groupId = this.$route.params.groupId;
+      try {
+        await axios.post(`http://localhost:3000/group/${groupId}/create-event`, {
+          eventName: this.eventName,
+          eventDate: this.eventDate,
+          // Additional data if needed
+        }, {
+          withCredentials: true
+        });
+        this.eventName = '';
+        this.eventDate = '';
+        await this.fetchEvents();
+      } catch (error) {
+        console.error('Error creating event:', error);
+      }
+    },
+    async fetchEvents() {
+      const groupId = this.$route.params.groupId;
+      try {
+        const response = await axios.get(`http://localhost:3000/group/${groupId}/events`, { withCredentials: true });
+        response.data.forEach(event => {
+          event.date = new Date(event.date).toLocaleDateString('pl-PL'); // Format date to dd.MM.yyyy
+        });
+        this.events = response.data;
+      } catch (error) {
+        console.error('Error fetching events:', error);
+      }
+    },
+
     async applyFilters() {
       const invalidTimeFilter = this.minPlayTimeFilter !== null && this.maxPlayTimeFilter !== null && 
                                 this.minPlayTimeFilter > this.maxPlayTimeFilter;
