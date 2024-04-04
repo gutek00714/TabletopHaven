@@ -15,9 +15,29 @@
                   </button>
                 </div>
                 <div v-if="manageMode" class="delete-group">
-                  <button @click="deleteGroup" class="delete-group-button">Delete Group</button>
+                  <button @click="openDeleteGroupModal" class="delete-group-button">Delete Group</button>
+                </div>
+              </div>  
+              <div id="confirmDeleteGroupModal" class="modal" ref="deleteModal">
+                <div class="modal-content">
+                  <h4>Confirm Delete</h4>
+                  <p>Are you sure you want to delete group {{ groupName }}?</p>
+                </div>
+                <div class="modal-footer">
+                  <a href="#!" class="modal-close waves-effect waves-green btn-flat" @click="confirmDeleteGroup">Yes</a>
+                  <a href="#!" class="modal-close waves-effect waves-red btn-flat">No</a>
                 </div>
               </div>
+              <div id="confirmRemoveMemberModal" class="modal" ref="removeModal">
+                <div class="modal-content">
+                  <h4>Confirm Member Removal</h4>
+                  <p v-if="memberToRemove">Are you sure you want to remove {{ memberToRemove.username }} from the group?</p>
+                </div>
+                <div class="modal-footer">
+                  <a href="#!" class="modal-close waves-effect waves-green btn-flat" @click="confirmRemoveMember">Yes</a>
+                  <a href="#!" class="modal-close waves-effect waves-red btn-flat">No</a>
+                </div>
+              </div>              
               <div class="row">
                 <div class="col m5">
                   <h4>Members</h4>
@@ -35,9 +55,9 @@
                           <img :src="member.profile_image_url" class="member-image" alt="Member Image">
                           <span class="friend-name">{{ member.username }}</span>
                         </router-link>
-                        <button v-if="manageMode && !member.is_owner" @click.stop="removeMember(member.id)" class="remove-member-button">
+                        <button v-if="manageMode && !member.is_owner" @click.stop="openRemoveMemberModal(member)" class="remove-member-button">
                           <img class="remove" src="/remove.svg" alt="X"/>
-                        </button>                  
+                        </button>           
                       </div>
                     </li>
                   </ul>
@@ -96,6 +116,9 @@ export default {
       minPlayTimeFilter: null,
       maxPlayTimeFilter: null,
       filteredGames: [],
+      memberToRemove: null,
+      deleteModalInstance: null,
+      removeModalInstance: null,
     };
   },
   
@@ -132,6 +155,14 @@ export default {
         this.playersFilter = value === '' ? null : Number(value);
       }
     },
+  },
+
+  mounted() {
+    this.$nextTick(() => {
+      const elems = document.querySelectorAll('.modal');
+      // eslint-disable-next-line
+      M.Modal.init(elems);
+    });
   },
 
   methods: {
@@ -188,28 +219,62 @@ export default {
       }
     },
 
-    async deleteGroup() {
+    openDeleteGroupModal() {
+      const modalElement = this.$refs.deleteModal;
+      // eslint-disable-next-line
+      this.deleteModalInstance = M.Modal.init(modalElement); // Save the instance
+      this.deleteModalInstance.open();
+    },
+
+    async confirmDeleteGroup() {
       const groupId = this.$route.params.groupId;
       try {
-        const response = await axios.delete(`http://localhost:3000/delete-group/${groupId}`, { withCredentials: true });
-        console.log(response.data); 
+        await axios.delete(`http://localhost:3000/delete-group/${groupId}`, { withCredentials: true });
         this.$router.push('/groups');
       } catch (error) {
         console.error('Error deleting group:', error.response.data);
+      } finally {
+        if (this.deleteModalInstance) { // Check if the instance is available
+          this.deleteModalInstance.close(); // Use the saved instance to close the modal
+        }
       }
     },
 
-    async removeMember(memberId) {
+    openRemoveMemberModal(member) {
+      if (member) {
+        this.memberToRemove = member;
+        const modalElement = this.$refs.removeModal;
+        // eslint-disable-next-line
+        this.removeModalInstance = M.Modal.init(modalElement); // Save the instance
+        this.removeModalInstance.open();
+      } else {
+        // Handle the case where the member is not defined
+        console.error('No member selected for removal.');
+      }
+    },
+
+    async confirmRemoveMember() {
+      if (!this.memberToRemove) return;
       const groupId = this.$route.params.groupId;
       try {
-        await axios.post(`http://localhost:3000/group/${groupId}/remove-member`, { 
-          userId: memberId, 
+        await axios.post(`http://localhost:3000/group/${groupId}/remove-member`, {
+          userId: this.memberToRemove.id,
           requestingUserId: this.userId
         });
-        this.members = this.members.filter(member => member.id !== memberId);
-        await this.fetchGroupDetails();
+        this.members = this.members.filter(member => member.id !== this.memberToRemove.id);
+        // eslint-disable-next-line
+        M.toast({ html: `${this.memberToRemove.username} has been removed from the group.`, displayLength: 4000});
+        this.memberToRemove = null; // Reset memberToRemove here before closing the modal
       } catch (error) {
         this.error = 'An error occurred while removing user from group.';
+        console.error('Error removing member:', error.response.data);
+        // eslint-disable-next-line
+        M.toast({ html: 'Failed to remove member from the group.', displayLength: 4000});
+      } finally {
+        // Close the modal after the action or on error
+        if (this.removeModalInstance) { // Check if the instance is available
+          this.removeModalInstance.close(); // Use the saved instance to close the modal
+        }
       }
     },
 
@@ -427,6 +492,67 @@ export default {
     margin-top: 10px;
     justify-content: start; /* Align filters to the start */
   }
+}
+
+.modal {
+  background-color: #2b2d42;
+  border-radius: 8px;
+}
+
+.modal-content {
+  color: #ffffff;
+  padding: 20px;
+}
+
+.modal-footer {
+  background-color: #212136 !important;
+  border-top: 1px solid #42445a !important;
+  padding: 12px 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-footer .modal-close:first-child {
+  margin-right: 1rem;
+}
+
+.modal-close {
+  color: #FFFFFF;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 36px;
+  line-height: normal;
+  padding: 0 1rem;
+  margin: 0 10px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.modal-close.waves-effect {
+  display: inline-block;
+  padding: 10px 25px;
+  margin: 0 5px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.modal-close.waves-green {
+  background-color: #4caf50;
+}
+
+.modal-close.waves-red {
+  background-color: #e53935;
+}
+
+.modal-close:hover {
+  transition: all 0.3s ease-in-out;
+  background-color: #5c5c5c;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transform: translateY(-2px);
 }
 
 </style>
