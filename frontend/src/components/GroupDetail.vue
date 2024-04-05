@@ -66,9 +66,17 @@
                 <div class="col m7">
                   <h4>Group Chat</h4>
                   <div class="chat-container">
-                    <!-- Chat messages  -->
+                    <div class="messages-container">
+                      <div v-for="msg in messages" :key="msg.id" class="message">
+                        <strong>{{ msg.username }}</strong>: {{ msg.message }}
+                      </div>
+                    </div>
+                    <div class="chat-message-input-container">
+                      <input v-model="message" @keyup.enter="sendMessage" placeholder="Type a message..." class="message-input">
+                      <button @click="sendMessage" class="send-message-button">Send</button>
+                    </div>
                   </div>
-                </div>
+                </div>                
               </div>
             </div>
           </div>
@@ -98,6 +106,8 @@
 <script>
 import axios from 'axios';
 import GameCard from './SmallGameCard.vue';
+import io from 'socket.io-client';
+const socket = io('http://localhost:3000');
 
 export default {
   components: { GameCard },
@@ -119,6 +129,8 @@ export default {
       memberToRemove: null,
       deleteModalInstance: null,
       removeModalInstance: null,
+      messages: [],
+      message: ''
     };
   },
   
@@ -141,6 +153,15 @@ export default {
     } catch (error) {
       console.error('Error in created hook:', error);
     }
+    socket.emit('joinGroup', this.$route.params.groupId, this.userId);
+
+    socket.on('chatHistory', (messages) => {
+      this.messages = messages;
+    });
+
+    socket.on('receiveMessage', (messageObject) => {
+      this.messages.push(messageObject);
+    });
   },
 
   computed: {
@@ -166,6 +187,14 @@ export default {
   },
 
   methods: {
+    sendMessage() {
+      if (!this.message.trim()) return; // Prevent sending empty messages
+
+      socket.emit('sendMessage', this.message, this.$route.params.groupId, this.userId);
+      this.message = ''; // Clear the message input after sending
+    },
+
+
     async applyFilters() {
       const invalidTimeFilter = this.minPlayTimeFilter !== null && this.maxPlayTimeFilter !== null && 
                                 this.minPlayTimeFilter > this.maxPlayTimeFilter;
@@ -553,6 +582,64 @@ export default {
   background-color: #5c5c5c;
   box-shadow: 0 4px 8px rgba(0,0,0,0.3);
   transform: translateY(-2px);
+}
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 400px;
+}
+
+.chat-message-input-container {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.message-input {
+  flex-grow: 1;
+  padding: 0.5rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px 0 0 4px;
+  margin: 0;
+  color: #FAFAFA;
+}
+
+.send-message-button {
+  padding: 0.5rem 1rem;
+  background-color: #4e4c67;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  box-sizing: border-box;
+  font-size: 1rem;
+}
+
+.send-message-button:hover {
+  background-color: #5e5c71;
+}
+
+.message {
+  padding: 0.5rem;
+  background-color: #2f2c3d; /* Default background for all messages */
+}
+
+.message:nth-child(even) {
+  background-color: #272538; /* Alternate background for messages */
+}
+
+/* Add a max-width to the chat input and button container to prevent stretching on larger screens */
+.chat-message-input-container {
+  max-width: 100%;
+}
+
+/* You might need to adjust the container of the messages to allow for scrolling */
+.messages-container {
+  flex-grow: 1;
+  overflow-y: auto;
 }
 
 </style>

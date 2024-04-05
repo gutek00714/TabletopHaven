@@ -1,4 +1,5 @@
-import http from "node:http";
+import http from 'http';
+import { Server as SocketIOServer } from 'socket.io';
 import express from "express";
 import session from 'express-session';
 import passport from 'passport';
@@ -28,6 +29,15 @@ const sessionSecret = process.env.SESSION_SECRET;
 if (!sessionSecret) {
   throw new Error('SESSION_SECRET is not set');
 }
+const server = http.createServer(app);
+const io = new SocketIOServer(server, {
+  cors: {
+    origin: "http://localhost:8081", // Match this to the frontend URL
+    methods: ["GET", "POST"], // Adjust according to the methods you need
+    credentials: true
+  }
+});
+
 
 app.use(express.static('public'));
 app.use(express.json());
@@ -1009,6 +1019,9 @@ app.delete('/delete-group/:groupId', async (req, res) => {
     const deleteMembersQuery = 'DELETE FROM group_members WHERE group_id = $1';
     await pool.query(deleteMembersQuery, [groupId]);
 
+    const deleteMessagesQuery = 'DELETE FROM group_messages WHERE group_id = $1';
+    await pool.query(deleteMessagesQuery, [groupId]);
+
     const deleteGroupQuery = 'DELETE FROM groups WHERE id = $1';
     await pool.query(deleteGroupQuery, [groupId]);
 
@@ -1019,7 +1032,88 @@ app.delete('/delete-group/:groupId', async (req, res) => {
   }
 });
 
+async function saveMessage(groupId: number, userId: number, message: string) {
+  const insertQuery = `
+    INSERT INTO group_messages (group_id, user_id, message)
+    VALUES ($1, $2, $3)
+    RETURNING *;`; // Returning the inserted row for confirmation
 
-http.createServer(app).listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
+  try {
+    const result = await pool.query(insertQuery, [groupId, userId, message]);
+    console.log('Message saved:', result.rows[0]);
+    return result.rows[0]; // Return the saved message
+  } catch (error) {
+    console.error('Error saving message:', error);
+    throw error; // Rethrow the error for upstream error handling
+  }
+}
+
+async function getUserById(userId: number) {
+  const query = `SELECT username FROM users WHERE id = $1;`;
+  try {
+    const result = await pool.query(query, [userId]);
+    if (result.rows.length > 0) {
+      return result.rows[0]; // returns the user object
+    } else {
+      return null; // user not found
+    }
+  } catch (error) {
+    console.error('Error fetching user by ID:', error);
+    throw error;
+  }
+}
+
+io.on('connection', (socket) => {
+  console.log('A user connected');
+
+  socket.on('joinGroup', async (groupId, userId) => {
+    socket.join(groupId);
+    console.log(`User ${userId} joined group ${groupId}`);
+
+    // Optionally, send chat history to the user
+    const messages = await fetchGroupMessages(groupId);
+    socket.emit('chatHistory', messages);
+  });
+
+  socket.on('sendMessage', async (message, groupId, userId) => {
+    try {
+      const savedMessage = await saveMessage(groupId, userId, message); // Save message to database
+      
+      const user = await getUserById(userId);
+      const username = user ? user.username : "Unknown User";
+  
+      const messageWithUsername = { ...savedMessage, username };
+      
+      io.to(groupId).emit('receiveMessage', messageWithUsername);
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
+  });
+  
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected');
+  });
+});
+
+async function fetchGroupMessages(groupId: number) {
+  const selectQuery = `
+    SELECT gm.message, gm.timestamp, u.username
+    FROM group_messages gm
+    JOIN users u ON gm.user_id = u.id
+    WHERE gm.group_id = $1
+    ORDER BY gm.timestamp ASC;`; // Adjusted to include username from the users table
+
+  try {
+    const result = await pool.query(selectQuery, [groupId]);
+    console.log('Fetched messages for group:', groupId);
+    return result.rows; // Returns an array of messages with usernames
+  } catch (error) {
+    console.error('Error fetching group messages:', error);
+    throw error;
+  }
+}
+
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
