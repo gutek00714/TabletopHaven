@@ -365,7 +365,7 @@ app.post('/remove-from-shelf', async (req, res) => {
     const userQuery = 'SELECT owned_games FROM users WHERE id = $1';
     const userRes = await pool.query(userQuery, [user.id]);
     let ownedGames = userRes.rows[0]?.owned_games || [];
-
+    
     // Remove the game from the owned games list
     ownedGames = ownedGames.filter((g: number) => g !== gameId);
 
