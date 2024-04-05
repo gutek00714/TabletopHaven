@@ -1019,6 +1019,9 @@ app.delete('/delete-group/:groupId', async (req, res) => {
     const deleteMembersQuery = 'DELETE FROM group_members WHERE group_id = $1';
     await pool.query(deleteMembersQuery, [groupId]);
 
+    const deleteMessagesQuery = 'DELETE FROM group_messages WHERE group_id = $1';
+    await pool.query(deleteMessagesQuery, [groupId]);
+
     const deleteGroupQuery = 'DELETE FROM groups WHERE id = $1';
     await pool.query(deleteGroupQuery, [groupId]);
 
