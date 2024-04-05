@@ -5,38 +5,6 @@
       <div v-else-if="error" class="loading-error">{{ error }}</div>
       <div v-else>
         <div>
-    <h2>Create Calendar Event</h2>
-    <form @submit.prevent="createEvent">
-      <label for="eventName">Event Name:</label>
-      <input type="text" id="eventName" v-model="eventName" required>
-      <label for="eventDate">Event Date:</label>
-      <input type="date" id="eventDate" v-model="eventDate" required>
-      <button type="submit">Create Event</button>
-    </form>
-
-    <!-- Other HTML content -->
-    <h2>Calendar Events</h2>
-    <ul>
-      <li v-for="event in events" :key="event.id">
-        <a href="#" @click="openEventVoteModal">
-          {{ event.name }} - {{ event.date }}
-        </a>
-      </li>
-    </ul>
-
-    <!-- Modal HTML -->
-    <div id="confirmDeleteGroupModal" class="modal" ref="voteModal">
-      <div class="modal-content">
-        <h4>Vote for Game</h4>
-        <ul class="game-list">
-          <GameCard v-for="game in filteredGames" :key="game.id" :gameId="game.id"/>
-        </ul>
-      </div>
-      <div class="modal-footer">
-        <a href="#!" class="modal-close waves-effect waves-red btn-flat">No</a>
-      </div>
-    </div>
-    
   </div>
         <div v-if="isMemberOrOwner">
           <div class="row">
@@ -103,10 +71,49 @@
                   </div>
                 </div>
                 <div class="col m4">
-                  <h4>Calendar</h4>
-                  <div>
-                    <!-- <iframe src="https://calendar.google.com/calendar/embed?height=450&wkst=2&ctz=Europe%2FWarsaw&bgcolor=%23ffffff&showTitle=0&showPrint=0&showCalendars=0&showTz=0&mode=WEEK&showTabs=0&src=YzcxYWNiZGYzMWY1NGJkZjdhZDUwZDVkZWZiNzQ3OTNlODBiMDhjNDJkZmM5ZTY1YjliYTU0MDIzNTllZmQ1MkBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&color=%23795548" style="border:solid 1px #777" width="430" height="450" frameborder="0" scrolling="no"></iframe> -->
+                  <div class="calendar-header">
+                    <h4>Calendar</h4>
+                    <button @click="openCreateEventModal" class="btn-create-event">Create Event</button>
                   </div>
+                
+                  <div id="createEventModal" class="modal" ref="createModal">
+                    <div class="modal-content">
+                      <h2>Create Calendar Event</h2>
+                      <form>
+                        <label for="eventName">Event Name:</label>
+                        <input type="text" id="eventName" v-model="eventName" required style="color:#FFFFFF">
+                        <label for="eventDate">Event Date:</label>
+                        <input type="date" id="eventDate" v-model="eventDate" required style="color:#FFFFFF">
+                      </form>
+                    </div>
+                    <div class="modal-footer">
+                      <a href="#!" class="modal-close waves-effect waves-green btn-flat" @click="confirmCreateEvent">Create</a>
+                      <a href="#!" class="modal-close waves-effect waves-red btn-flat">Cancel</a>
+                    </div>
+                  </div>
+                
+                    <div v-for="event in events" :key="event.id" class="event-container">
+                      <a href="#" @click="openEventVoteModal">
+                        {{ event.name }} - {{ event.date }}
+                      </a>
+                    </div>
+
+                    <div id="gamesModal" class="modal" ref="gamesModal">
+                      <div class="modal-content">
+                        <h4>Vote for game</h4>
+                        <ul class="game-list">
+                          <li v-for="game in games" :key="game.id">
+                            <GameCard :gameId="game.id"/>
+                            <button class="vote-button" @click="voteForGame(game.id)">
+                              {{ game.voted ? 'Voted (' + game.votes + ')' : 'Vote' }}
+                            </button>
+                          </li>
+                        </ul>
+                      </div>
+                      <div class="modal-footer">
+                        <a href="#!" class="modal-close waves-effect waves-green btn-flat">Close</a>
+                      </div>
+                    </div>                                       
                 </div>
               </div>
             </div>
@@ -218,8 +225,13 @@ export default {
     //   await this.fetchUserGames();
     // },
 
-
-    async createEvent() {
+    async openCreateEventModal() {
+      const modalElement = this.$refs.createModal;
+      // eslint-disable-next-line
+      M.Modal.init(modalElement).open();
+    },
+    
+    async confirmCreateEvent() {
       const groupId = this.$route.params.groupId;
       try {
         await axios.post(`http://localhost:3000/group/${groupId}/create-event`, {
@@ -232,6 +244,8 @@ export default {
         this.eventName = '';
         this.eventDate = '';
         await this.fetchEvents();
+        const modalInstance = this.Modal.getInstance(this.$refs.createModal);
+        modalInstance.close();
       } catch (error) {
         console.error('Error creating event:', error);
       }
@@ -275,6 +289,7 @@ export default {
         return;
       }
       const groupId = this.$route.params.groupId;
+      this.groupId = groupId;
       this.loading = true;
       try {
         const response = await axios.get(`http://localhost:3000/group/${groupId}/details`);
@@ -323,11 +338,10 @@ export default {
       }
     },
 
-    openEventVoteModal() {
-      const modalElement = this.$refs.voteModal;
+    async openEventVoteModal() {
+      const modalElement = this.$refs.gamesModal;
       // eslint-disable-next-line
-      this.voteModalInstance = M.Modal.init(modalElement); // Save the instance
-      this.voteModalInstance.open();
+      M.Modal.init(modalElement).open();
     },
 
     openRemoveMemberModal(member) {
@@ -365,6 +379,21 @@ export default {
         if (this.removeModalInstance) { // Check if the instance is available
           this.removeModalInstance.close(); // Use the saved instance to close the modal
         }
+      }
+    },
+
+    async voteForGame(gameId) {
+      try {
+        await axios.post(`http://localhost:3000/group/${this.groupId}/vote-for-game`, {
+          gameId: gameId
+        });
+        const gameIndex = this.games.findIndex(game => game.id === gameId);
+        if (gameIndex !== -1) {
+          this.games[gameIndex].voted = true;
+          this.games[gameIndex].votes++;
+        }
+      } catch (error) {
+        console.error('Error voting for game:', error);
       }
     },
 
@@ -650,4 +679,74 @@ export default {
   transform: translateY(-2px);
 }
 
+.calendar-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.btn-create-event {
+  background-color: #4e6ef2;
+  margin-right: 10px;
+  padding: 10px 15px;
+  color: white;
+  border: 2px solid #474747;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transition: all 0.3s ease-in-out;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.btn-create-event:hover {
+  background-color: #3b56c1;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transform: translateY(-2px);
+}
+
+.event-container {
+  margin-bottom: 10px; 
+  background-color: #272538;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease;
+  display: block; 
+  width: 75%; 
+  color: #ffffff !important;
+  font-size: 1.2em;
+}
+
+.event-container:hover {
+  background-color: #322f46;
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.8);
+  transform: translateY(-2px);
+}
+
+a {
+  color: white;
+}
+
+.vote-button {
+  background-color: #4caf50;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.vote-button.voted {
+  background-color: #e53935;
+}
+
+.vote-button:hover {
+  background-color: #388e3c;
+}
 </style>
