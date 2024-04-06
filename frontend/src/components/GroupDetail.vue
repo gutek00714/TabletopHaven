@@ -243,6 +243,10 @@ export default {
       }
     },
 
+    toggleManageMode() {
+      this.manageMode = !this.manageMode;
+    },
+
     async openCreateEventModal() {
       const modalElement = this.$refs.createModal;
       // eslint-disable-next-line

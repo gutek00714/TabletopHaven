@@ -1005,18 +1005,30 @@ app.delete('/delete-group/:groupId', async (req, res) => {
   }
 
   try {
+    const deleteVotesQuery = `
+      DELETE FROM event_game_votes
+      USING calendar_events
+      WHERE calendar_events.id = event_game_votes.event_id
+      AND calendar_events.group_id = $1;
+    `;
+    await pool.query(deleteVotesQuery, [groupId]);
+
+    const deleteEventsQuery = 'DELETE FROM calendar_events WHERE group_id = $1';
+    await pool.query(deleteEventsQuery, [groupId]);
+
     const deleteMembersQuery = 'DELETE FROM group_members WHERE group_id = $1';
     await pool.query(deleteMembersQuery, [groupId]);
 
     const deleteGroupQuery = 'DELETE FROM groups WHERE id = $1';
     await pool.query(deleteGroupQuery, [groupId]);
 
-    res.json({ message: 'Group deleted successfully.' });
+    res.json({ message: 'Group and related data deleted successfully.' });
   } catch (error) {
-    console.error('Error deleting group:', error);
+    console.error('Error deleting group and related data:', error);
     res.status(500).send('Internal Server Error');
   }
 });
+
 
 app.post('/group/:groupId/create-event', async (req, res) => {
   interface MinimalUser {
