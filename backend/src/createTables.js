@@ -53,7 +53,7 @@ async function createTables() {
 
             CREATE TABLE groups (
               id SERIAL PRIMARY KEY,
-              name VARCHAR(255) UNIQUE NOT NULL,
+              name VARCHAR(30) UNIQUE NOT NULL,
               owner_id INTEGER REFERENCES users(id)
             );
 
@@ -66,7 +66,7 @@ async function createTables() {
             CREATE TABLE calendar_events (
                 id SERIAL PRIMARY KEY,
                 group_id INTEGER REFERENCES groups(id),
-                name VARCHAR(255),
+                name VARCHAR(30),
                 date DATE
             );
 

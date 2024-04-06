@@ -81,9 +81,9 @@
                       <h2>Create Calendar Event</h2>
                       <form>
                         <label for="eventName">Event Name:</label>
-                        <input type="text" id="eventName" v-model="eventName" required style="color:#FFFFFF">
+                        <input type="text" id="eventName" v-model="eventName" maxlength="30" required style="color:#FAFAFA">
                         <label for="eventDate">Event Date:</label>
-                        <input type="date" id="eventDate" v-model="eventDate" required style="color:#FFFFFF">
+                        <input type="date" id="eventDate" v-model="eventDate" required style="color:#FAFAFA">
                       </form>
                     </div>
                     <div class="modal-footer">
@@ -624,7 +624,7 @@ export default {
 }
 
 .modal-content {
-  color: #ffffff;
+  color: #FAFAFA;
   padding: 20px;
 }
 
@@ -642,7 +642,7 @@ export default {
 }
 
 .modal-close {
-  color: #FFFFFF;
+  color: #FAFAFA;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -718,7 +718,7 @@ export default {
   transition: all 0.3s ease;
   display: block; 
   width: 75%; 
-  color: #ffffff !important;
+  color: #FAFAFA !important;
   font-size: 1.2em;
 }
 
