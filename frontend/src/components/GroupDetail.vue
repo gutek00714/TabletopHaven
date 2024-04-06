@@ -5,7 +5,7 @@
       <div v-else-if="error" class="loading-error">{{ error }}</div>
       <div v-else>
         <div>
-  </div>
+    </div>
         <div v-if="isMemberOrOwner">
           <div class="row">
             <div class="group-members-and-chat">            
@@ -93,27 +93,29 @@
                   </div>
                 
                     <div v-for="event in events" :key="event.id" class="event-container">
-                      <a href="#" @click="openEventVoteModal">
+                      <a @click="openEventVoteModal(event)">
                         {{ event.name }} - {{ event.date }}
                       </a>
                     </div>
+                  
+                  
 
                     <div id="gamesModal" class="modal" ref="gamesModal">
                       <div class="modal-content">
-                        <h4>Vote for game</h4>
+                        <h4>Vote for game in "{{ currentEvent?.name }} - {{ currentEvent?.date }}"</h4>
                         <ul class="game-list">
                           <li v-for="game in games" :key="game.id">
                             <GameCard :gameId="game.id"/>
                             <button class="vote-button" @click="voteForGame(game.id)">
-                              {{ game.voted ? 'Voted (' + game.votes + ')' : 'Vote' }}
-                            </button>
+                              {{ game.voted ? `Voted (${game.votes})` : `Vote (${game.votes})` }}
+                            </button>                                                      
                           </li>
                         </ul>
                       </div>
                       <div class="modal-footer">
                         <a href="#!" class="modal-close waves-effect waves-green btn-flat">Close</a>
                       </div>
-                    </div>                                       
+                    </div>
                 </div>
               </div>
             </div>
@@ -169,6 +171,7 @@ export default {
       eventName: '',
       eventDate: '',
       events: [],
+      currentEvent: null,
     };
   },
   
@@ -218,12 +221,27 @@ export default {
 
   methods: {
 
-    // async eventVote(event) {
-    //   // Open the modal
-    //   this.openEventVoteModal();
-    //   // Fetch the user's games
-    //   await this.fetchUserGames();
-    // },
+    async voteForGame(gameId) {
+      if (!this.currentEvent) {
+        console.error('No event selected');
+        return;
+      }
+
+      const eventId = this.currentEvent.id;
+
+      try {
+        await axios.post(`http://localhost:3000/event/${eventId}/vote-for-game`, {
+          eventId, // Include eventId in the   request body
+          gameId
+        }, {
+          withCredentials: true
+        });
+        // Add logic here to handle a successful vote (e.g., fetching updated votes)
+      } catch (error) {
+        console.error('Error voting for game:', error);
+        // Handle error (e.g., display a message to the user)
+      }
+    },
 
     async openCreateEventModal() {
       const modalElement = this.$refs.createModal;
@@ -338,7 +356,20 @@ export default {
       }
     },
 
-    async openEventVoteModal() {
+    async openEventVoteModal(event) {
+      this.currentEvent = event;
+      try {
+        const response = await axios.get(`http://localhost:3000/event/${event.id}/games-votes`, { withCredentials: true });
+        const votes = response.data;
+        // Update the games list with vote counts
+        this.games = this.games.map(game => ({
+          ...game,
+          votes: votes.find(vote => vote.game_id === game.id)?.vote_count || 0
+        }));
+      } catch (error) {
+        console.error('Error fetching votes:', error);
+      }
+      
       const modalElement = this.$refs.gamesModal;
       // eslint-disable-next-line
       M.Modal.init(modalElement).open();
@@ -380,25 +411,6 @@ export default {
           this.removeModalInstance.close(); // Use the saved instance to close the modal
         }
       }
-    },
-
-    async voteForGame(gameId) {
-      try {
-        await axios.post(`http://localhost:3000/group/${this.groupId}/vote-for-game`, {
-          gameId: gameId
-        });
-        const gameIndex = this.games.findIndex(game => game.id === gameId);
-        if (gameIndex !== -1) {
-          this.games[gameIndex].voted = true;
-          this.games[gameIndex].votes++;
-        }
-      } catch (error) {
-        console.error('Error voting for game:', error);
-      }
-    },
-
-    toggleManageMode() {
-      this.manageMode = !this.manageMode;
     },
   }
 };
