@@ -794,6 +794,22 @@ app.post('/group/:groupId/remove-member', async (req, res) => {
   }
 });
 
+// app.post('/group/remove-event', async (req, res) => {
+//   const eventIdToRemove = parseInt(req.body.eventId, 10);
+
+//   try {
+//     const ownerCheckQuery = 'SELECT owner_id FROM groups WHERE id = $1';
+//     const ownerCheckResult = await pool.query(ownerCheckQuery, [groupId]);
+
+//     const query = 'DELETE FROM group_members WHERE group_id = $1 AND user_id = $2 RETURNING *';
+//     const result = await pool.query(query, [groupId, userIdToRemove]);
+//     res.json(result.rows[0]);
+//   } catch (error) {
+//     console.error('Error removing user from group:', error);
+//     res.status(500).send('Internal Server Error');
+//   }
+// });
+
 app.get('/group/:groupId/details', async (req, res) => {
   const groupId = parseInt(req.params.groupId, 10);
 
@@ -1035,7 +1051,6 @@ app.post('/group/:groupId/create-event', async (req, res) => {
     id: number;
   }
   const user = req.user as MinimalUser | undefined;
-console.log("wchodzimy");
   if (!user || !user.id) {
     return res.status(401).json({ message: 'User not logged in.' });
   }
@@ -1109,6 +1124,38 @@ app.post('/event/:eventId/vote-for-game', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
+
+app.delete('/event/:eventId/delete-vote/:gameId', async (req, res) => {
+  interface MinimalUser {
+    id: number;
+  }
+  
+  const user = req.user as MinimalUser | undefined;
+  const { eventId, gameId } = req.params;
+
+  if (!req.isAuthenticated() || !user) {
+    return res.status(401).send('User not logged in');
+  }
+
+  if (!eventId || !gameId) {
+    return res.status(400).send('Invalid data');
+  }
+
+  try {
+    const deleteVoteQuery = 'DELETE FROM event_game_votes WHERE event_id = $1 AND game_id = $2 AND user_id = $3';
+    const deleteVoteRes = await pool.query(deleteVoteQuery, [eventId, gameId, user.id]);
+    
+    if (deleteVoteRes.rowCount === 0) {
+      return res.status(404).send('Vote not found');
+    }
+
+    res.send('Vote deleted successfully');
+  } catch (error) {
+    console.error('Error deleting vote:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
 
 app.get('/event/:eventId/games-votes', async (req, res) => {
   const eventId = parseInt(req.params.eventId, 10);

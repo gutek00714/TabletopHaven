@@ -39,7 +39,17 @@
                   <a href="#!" class="modal-close waves-effect waves-green btn-flat" @click="confirmRemoveMember">Yes</a>
                   <a href="#!" class="modal-close waves-effect waves-red btn-flat">No</a>
                 </div>
-              </div>              
+              </div>      
+              <div id="confirmRemoveMemberModal" class="modal" ref="eventModal">
+                <div class="modal-content">
+                  <h4>Confirm Event Removal</h4>
+                  <p v-if="eventToRemove">Are you sure you want to remove {{ eventToRemove.username }} from the group?</p>
+                </div>
+                <div class="modal-footer">
+                  <a href="#!" class="modal-close waves-effect waves-green btn-flat" @click="confirmRemoveEvent">Yes</a>
+                  <a href="#!" class="modal-close waves-effect waves-red btn-flat">No</a>
+                </div>
+              </div>                  
               <div class="row">
                 <div class="col m4">
                   <h4>Members</h4>
@@ -94,9 +104,13 @@
                 
                     <div v-for="event in events" :key="event.id" class="event-container">
                       <a @click="openEventVoteModal(event)">
-                        {{ event.name }} - {{ event.date }}
+                        {{ event.name }} - {{ event.date }} 
                       </a>
+                      <button v-if="manageMode" @click.stop="openRemoveEventModal(member)" class="remove-event-button">
+                          <img class="remove" src="/remove.svg" alt="X"/>
+                        </button>  
                     </div>
+                    
                   
                   
 
@@ -108,7 +122,8 @@
                             <GameCard :gameId="game.id"/>
                             <button class="vote-button" @click="voteForGame(game.id)">
                               {{ game.voted ? `Voted (${game.votes})` : `Vote (${game.votes})` }}
-                            </button>                                                      
+                            </button>                                                    
+                            <button class="test-button" @click="deleteVoteForGame(game.id)">Delete Vote</button>  
                           </li>
                         </ul>
                       </div>
@@ -242,6 +257,31 @@ export default {
         // Handle error (e.g., display a message to the user)
       }
     },
+    async deleteVoteForGame(gameId) {
+  if (!this.currentEvent) {
+    console.error('No event selected');
+    return;
+  }
+
+  const eventId = this.currentEvent.id;
+
+  try {
+    const response = await axios.delete(`http://localhost:3000/event/${eventId}/delete-vote/${gameId}`, {
+      withCredentials: true
+    });
+    
+    if (response.status === 200) {
+      const index = this.games.findIndex(game => game.id === gameId);
+      if (index !== -1) {
+        this.$set(this.games[index], 'votes', 0);
+      }
+    }
+    
+  } catch (error) {
+    console.error('Error deleting vote for game:', error);
+
+  }
+},
 
     toggleManageMode() {
       this.manageMode = !this.manageMode;
@@ -391,6 +431,18 @@ export default {
         console.error('No member selected for removal.');
       }
     },
+    openRemoveEventModal(event) {
+      if (event) {
+        this.memberToRemove = event;
+        const modalElement = this.$refs.removeModal;
+        // eslint-disable-next-line
+        this.removeModalInstance = M.Modal.init(modalElement); // Save the instance
+        this.removeModalInstance.open();
+      } else {
+        // Handle the case where the member is not defined
+        console.error('No event selected for removal.');
+      }
+    },
 
     async confirmRemoveMember() {
       if (!this.memberToRemove) return;
@@ -416,6 +468,29 @@ export default {
         }
       }
     },
+    // async confirmRemoveEvent() {
+    //   if (!this.eventToRemove) return;
+    //   try {
+    //     await axios.post(`http://localhost:3000/group/${groupId}/remove-member`, {
+    //       userId: this.memberToRemove.id,
+    //       requestingUserId: this.userId
+    //     });
+    //     this.members = this.members.filter(member => member.id !== this.memberToRemove.id);
+    //     // eslint-disable-next-line
+    //     M.toast({ html: `${this.memberToRemove.username} has been removed from the group.`, displayLength: 4000});
+    //     this.memberToRemove = null; // Reset memberToRemove here before closing the modal
+    //   } catch (error) {
+    //     this.error = 'An error occurred while removing user from group.';
+    //     console.error('Error removing member:', error.response.data);
+    //     // eslint-disable-next-line
+    //     M.toast({ html: 'Failed to remove member from the group.', displayLength: 4000});
+    //   } finally {
+    //     // Close the modal after the action or on error
+    //     if (this.removeModalInstance) { // Check if the instance is available
+    //       this.removeModalInstance.close(); // Use the saved instance to close the modal
+    //     }
+    //   }
+    // },
   }
 };
 </script>
