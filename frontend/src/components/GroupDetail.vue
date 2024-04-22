@@ -93,7 +93,7 @@
                         <label for="eventName">Event Name:</label>
                         <input type="text" id="eventName" v-model="eventName" maxlength="30" required style="color:#FAFAFA">
                         <label for="eventDate">Event Date:</label>
-                        <input type="date" id="eventDate" v-model="eventDate" required style="color:#FAFAFA">
+                        <input type="datetime-local" id="eventDate" v-model="eventDate" required style="color:#FAFAFA">
                       </form>
                     </div>
                     <div class="modal-footer">
@@ -317,8 +317,17 @@ export default {
       try {
         const response = await axios.get(`http://localhost:3000/group/${groupId}/events`, { withCredentials: true });
         response.data.forEach(event => {
-          event.date = new Date(event.date).toLocaleDateString('pl-PL'); // Format date to dd.MM.yyyy
+        const eventDate = new Date(event.date);
+        const formattedDate = eventDate.toLocaleDateString('pl-PL', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
         });
+    event.date = formattedDate;
+});
+
         this.events = response.data;
       } catch (error) {
         console.error('Error fetching events:', error);
@@ -468,29 +477,6 @@ export default {
         }
       }
     },
-    // async confirmRemoveEvent() {
-    //   if (!this.eventToRemove) return;
-    //   try {
-    //     await axios.post(`http://localhost:3000/group/${groupId}/remove-member`, {
-    //       userId: this.memberToRemove.id,
-    //       requestingUserId: this.userId
-    //     });
-    //     this.members = this.members.filter(member => member.id !== this.memberToRemove.id);
-    //     // eslint-disable-next-line
-    //     M.toast({ html: `${this.memberToRemove.username} has been removed from the group.`, displayLength: 4000});
-    //     this.memberToRemove = null; // Reset memberToRemove here before closing the modal
-    //   } catch (error) {
-    //     this.error = 'An error occurred while removing user from group.';
-    //     console.error('Error removing member:', error.response.data);
-    //     // eslint-disable-next-line
-    //     M.toast({ html: 'Failed to remove member from the group.', displayLength: 4000});
-    //   } finally {
-    //     // Close the modal after the action or on error
-    //     if (this.removeModalInstance) { // Check if the instance is available
-    //       this.removeModalInstance.close(); // Use the saved instance to close the modal
-    //     }
-    //   }
-    // },
   }
 };
 </script>

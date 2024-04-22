@@ -13,6 +13,8 @@ async function createTables() {
               DROP TABLE IF EXISTS groups CASCADE;
               DROP TABLE IF EXISTS group_members CASCADE;
               DROP TABLE IF EXISTS calendar_events CASCADE;
+              DROP TABLE IF EXISTS event_game_votes CASCADE;
+
 
               CREATE TABLE users (
                   id SERIAL PRIMARY KEY,
@@ -67,7 +69,7 @@ async function createTables() {
                   id SERIAL PRIMARY KEY,
                   group_id INTEGER REFERENCES groups(id),
                   name VARCHAR(30),
-                  date DATE
+                  date TIMESTAMP
               );
 
             CREATE TABLE event_game_votes (
