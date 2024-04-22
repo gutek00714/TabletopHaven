@@ -93,7 +93,7 @@
                         <label for="eventName">Event Name:</label>
                         <input type="text" id="eventName" v-model="eventName" maxlength="30" required style="color:#FAFAFA">
                         <label for="eventDate">Event Date:</label>
-                        <input type="datetime-local" id="eventDate" v-model="eventDate" required style="color:#FAFAFA">
+                        <input type="datetime-local" id="eventDate" v-model="eventDate" required style="color:#FAFAFA" :min="minDate" :max="maxDate">
                       </form>
                     </div>
                     <div class="modal-footer">
@@ -185,6 +185,8 @@ export default {
       voteModalInstance: null,
       eventName: '',
       eventDate: '',
+      minDate:'',
+      maxDate:'',
       events: [],
       currentEvent: null,
     };
@@ -207,9 +209,15 @@ export default {
       await this.fetchCurrentUserId();
       await this.fetchGroupDetails();
       await this.fetchEvents();
-    } catch (error) {
-      console.error('Error in created hook:', error);
-    }
+      const today = new Date();
+    const nextYear = today.getFullYear() + 1;
+    const minDate = today.toISOString().substring(0, 16); // Minimum date is today
+    const maxDate = new Date(nextYear, today.getMonth(), today.getDate()).toISOString().substring(0, 16); // Maximum date is one year from today
+    this.minDate = minDate;
+    this.maxDate = maxDate;
+  } catch (error) {
+    console.error('Error in created hook:', error);
+  }
   },
 
   computed: {
@@ -294,24 +302,45 @@ export default {
     },
     
     async confirmCreateEvent() {
-      const groupId = this.$route.params.groupId;
-      try {
-        await axios.post(`http://localhost:3000/group/${groupId}/create-event`, {
-          eventName: this.eventName,
-          eventDate: this.eventDate,
-          // Additional data if needed
-        }, {
-          withCredentials: true
-        });
-        this.eventName = '';
-        this.eventDate = '';
-        await this.fetchEvents();
-        const modalInstance = this.Modal.getInstance(this.$refs.createModal);
-        modalInstance.close();
-      } catch (error) {
-        console.error('Error creating event:', error);
-      }
-    },
+  const groupId = this.$route.params.groupId;
+  const selectedDate = new Date(this.eventDate); 
+  const today = new Date();
+  const nextYear = today.getFullYear() + 1;
+  const minDate = new Date(today.getTime() + (24 * 60 * 60 * 1000)); 
+
+  if (selectedDate < minDate || selectedDate.getFullYear() > nextYear) {
+    // eslint-disable-next-line
+    M.toast({ html: 'Invalid date', displayLength: 4000});
+
+    return; 
+  }
+
+  if (isNaN(selectedDate.getTime())) {
+
+        // eslint-disable-next-line
+    M.toast({ html: 'Invalid date', displayLength: 4000});
+    return; 
+  }
+
+  try {
+    await axios.post(`http://localhost:3000/group/${groupId}/create-event`, {
+      eventName: this.eventName,
+      eventDate: this.eventDate,
+      // Additional data if needed
+    }, {
+      withCredentials: true
+    });
+    this.eventName = '';
+    this.eventDate = '';
+    await this.fetchEvents();
+    const modalInstance = this.Modal.getInstance(this.$refs.createModal);
+    modalInstance.close();
+  } catch (error) {
+    console.error('Error creating event:', error);
+  }
+}
+
+,
     async fetchEvents() {
       const groupId = this.$route.params.groupId;
       try {
