@@ -1111,50 +1111,55 @@ app.post('/event/:eventId/vote-for-game', async (req, res) => {
     const voteCheckRes = await pool.query(voteCheckQuery, [eventId, gameId, user.id]);
     
     if ((voteCheckRes.rowCount as number) > 0) {
-      return res.status(409).send('Already voted');
+      const deleteVoteQuery = 'DELETE FROM event_game_votes WHERE event_id = $1 AND game_id = $2 AND user_id = $3';
+      await pool.query(deleteVoteQuery, [eventId, gameId, user.id]);
+      res.send('Vote deleted successfully');
     }
-    
+    else{
+      const insertVoteQuery = 'INSERT INTO event_game_votes (event_id, game_id, user_id) VALUES ($1, $2, $3)';
+      await pool.query(insertVoteQuery, [eventId, gameId, user.id]);
+      res.send('Vote registered successfully');
+    }
 
-    const insertVoteQuery = 'INSERT INTO event_game_votes (event_id, game_id, user_id) VALUES ($1, $2, $3)';
-    await pool.query(insertVoteQuery, [eventId, gameId, user.id]);
 
-    res.send('Vote registered successfully');
+
+
   } catch (error) {
     console.error('Error registering vote:', error);
     res.status(500).send('Internal Server Error');
   }
 });
 
-app.delete('/event/:eventId/delete-vote/:gameId', async (req, res) => {
-  interface MinimalUser {
-    id: number;
-  }
+// app.delete('/event/:eventId/delete-vote/:gameId', async (req, res) => {
+//   interface MinimalUser {
+//     id: number;
+//   }
   
-  const user = req.user as MinimalUser | undefined;
-  const { eventId, gameId } = req.params;
+//   const user = req.user as MinimalUser | undefined;
+//   const { eventId, gameId } = req.params;
 
-  if (!req.isAuthenticated() || !user) {
-    return res.status(401).send('User not logged in');
-  }
+//   if (!req.isAuthenticated() || !user) {
+//     return res.status(401).send('User not logged in');
+//   }
 
-  if (!eventId || !gameId) {
-    return res.status(400).send('Invalid data');
-  }
+//   if (!eventId || !gameId) {
+//     return res.status(400).send('Invalid data');
+//   }
 
-  try {
-    const deleteVoteQuery = 'DELETE FROM event_game_votes WHERE event_id = $1 AND game_id = $2 AND user_id = $3';
-    const deleteVoteRes = await pool.query(deleteVoteQuery, [eventId, gameId, user.id]);
+//   try {
+//     const deleteVoteQuery = 'DELETE FROM event_game_votes WHERE event_id = $1 AND game_id = $2 AND user_id = $3';
+//     const deleteVoteRes = await pool.query(deleteVoteQuery, [eventId, gameId, user.id]);
     
-    if (deleteVoteRes.rowCount === 0) {
-      return res.status(404).send('Vote not found');
-    }
+//     if (deleteVoteRes.rowCount === 0) {
+//       return res.status(404).send('Vote not found');
+//     }
 
-    res.send('Vote deleted successfully');
-  } catch (error) {
-    console.error('Error deleting vote:', error);
-    res.status(500).send('Internal Server Error');
-  }
-});
+//     res.send('Vote deleted successfully');
+//   } catch (error) {
+//     console.error('Error deleting vote:', error);
+//     res.status(500).send('Internal Server Error');
+//   }
+// });
 
 
 app.get('/event/:eventId/games-votes', async (req, res) => {

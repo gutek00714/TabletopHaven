@@ -122,8 +122,7 @@
                             <GameCard :gameId="game.id"/>
                             <button class="vote-button" @click="voteForGame(game.id)">
                               {{ game.voted ? `Voted (${game.votes})` : `Vote (${game.votes})` }}
-                            </button>                                                    
-                            <button class="test-button" @click="deleteVoteForGame(game.id)">Delete Vote</button>  
+                            </button>                                                     
                           </li>
                         </ul>
                       </div>
@@ -259,37 +258,52 @@ export default {
         }, {
           withCredentials: true
         });
-        // Add logic here to handle a successful vote (e.g., fetching updated votes)
+        await this.fetchVotes(this.currentEvent);
+        // eslint-disable-next-line
+        M.toast({ html: 'Voted successfully', displayLength: 4000});
       } catch (error) {
         console.error('Error voting for game:', error);
         // Handle error (e.g., display a message to the user)
       }
     },
-    async deleteVoteForGame(gameId) {
-  if (!this.currentEvent) {
-    console.error('No event selected');
-    return;
-  }
-
-  const eventId = this.currentEvent.id;
-
+    async fetchVotes(event){
   try {
-    const response = await axios.delete(`http://localhost:3000/event/${eventId}/delete-vote/${gameId}`, {
-      withCredentials: true
-    });
-    
-    if (response.status === 200) {
-      const index = this.games.findIndex(game => game.id === gameId);
-      if (index !== -1) {
-        this.$set(this.games[index], 'votes', 0);
+        const response = await axios.get(`http://localhost:3000/event/${event.id}/games-votes`, { withCredentials: true });
+        const votes = response.data;
+        // Update the games list with vote counts
+        this.games = this.games.map(game => ({
+          ...game,
+          votes: votes.find(vote => vote.game_id === game.id)?.vote_count || 0
+        }));
+      } catch (error) {
+        console.error('Error fetching votes:', error);
       }
-    }
-    
-  } catch (error) {
-    console.error('Error deleting vote for game:', error);
-
-  }
 },
+//     async deleteVoteForGame(gameId) {
+//   if (!this.currentEvent) {
+//     console.error('No event selected');
+//     return;
+//   }
+
+//   const eventId = this.currentEvent.id;
+
+//   try {
+//     const response = await axios.delete(`http://localhost:3000/event/${eventId}/delete-vote/${gameId}`, {
+//       withCredentials: true
+//     });
+    
+//     if (response.status === 200) {
+//       const index = this.games.findIndex(game => game.id === gameId);
+//       if (index !== -1) {
+//         this.$set(this.games[index], 'votes', 0);
+//       }
+//     }
+    
+//   } catch (error) {
+//     console.error('Error deleting vote for game:', error);
+
+//   }
+// },
 
     toggleManageMode() {
       this.manageMode = !this.manageMode;
