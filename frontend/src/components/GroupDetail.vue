@@ -108,20 +108,18 @@
                       </a>
                       <button v-if="manageMode" @click.stop="openRemoveEventModal(member)" class="remove-event-button">
                           <img class="remove" src="/remove.svg" alt="X"/>
-                        </button>  
+                      </button>  
                     </div>
                     
-                  
-                  
-
                     <div id="gamesModal" class="modal" ref="gamesModal">
                       <div class="modal-content">
                         <h4>Vote for game in "{{ currentEvent?.name }} - {{ currentEvent?.date }}"</h4>
                         <ul class="game-list">
                           <li v-for="game in games" :key="game.id">
                             <GameCard :gameId="game.id"/>
-                            <button class="vote-button" @click="voteForGame(game.id)">
-                              {{ game.voted ? `Voted (${game.votes})` : `Vote (${game.votes})` }}
+                            <button class="vote-button centered" @click="toggleVote(game)">
+                              <span v-if="game.voted" class="voted">✓ Voted ({{ game.votes }})</span>
+                              <span v-else>Vote ({{ game.votes }})</span>
                             </button>                                                     
                           </li>
                         </ul>
@@ -496,6 +494,15 @@ export default {
       }
     },
 
+    toggleVote(game) {
+    game.voted = !game.voted;
+    if (game.voted) {
+      game.votes++;
+    } else {
+      game.votes--;
+    }
+  },
+
     async confirmRemoveMember() {
       if (!this.memberToRemove) return;
       const groupId = this.$route.params.groupId;
@@ -688,6 +695,20 @@ export default {
   justify-content: center;
   margin-bottom: 4px;
 }
+
+.remove-event-button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  padding: 0;
+  margin-left: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
 .group-games {
   margin-top: 20px;
 }
@@ -860,13 +881,22 @@ a {
   padding: 5px 10px;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  margin-top: 10px;
+  
 }
 
-.vote-button.voted {
-  background-color: #e53935;
+.vote-button.centered {
+  display: block;
+  margin: 0 auto;
+  margin-top: 10px;
 }
 
 .vote-button:hover {
   background-color: #388e3c;
+}
+
+.vote-button.voted {
+  background-color: green;
+  color: white;
 }
 </style>
