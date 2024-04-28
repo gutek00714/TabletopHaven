@@ -117,10 +117,12 @@
                         <ul class="game-list">
                           <li v-for="game in games" :key="game.id">
                             <GameCard :gameId="game.id"/>
-                            <button class="vote-button centered" @click="toggleVote(game)">
-                              <span v-if="game.voted" class="voted">✓ Voted ({{ game.votes }})</span>
-                              <span v-else>Vote ({{ game.votes }})</span>
-                            </button>                                                     
+                            <button class="vote-button centered" @click="voteForGame(game)" v-if="!game.voted">
+  Vote ({{ game.votes }})
+</button>
+<button class="vote-button centered" @click="voteForGame(game)" v-else>
+  Voted ({{ game.votes }})
+</button>                                                   
                           </li>
                         </ul>
                       </div>
@@ -207,6 +209,10 @@ export default {
       await this.fetchGroupDetails();
       await this.fetchEvents();
       const today = new Date();
+      this.games.forEach(game => {
+      const voted = localStorage.getItem(`voted_${game.id}`);
+      game.voted = voted === 'true';
+    });
     const nextYear = today.getFullYear() + 1;
     const minDate = today.toISOString().substring(0, 16); // Minimum date is today
     const maxDate = new Date(nextYear, today.getMonth(), today.getDate()).toISOString().substring(0, 16); // Maximum date is one year from today
@@ -241,29 +247,58 @@ export default {
 
   methods: {
 
-    async voteForGame(gameId) {
-      if (!this.currentEvent) {
-        console.error('No event selected');
-        return;
-      }
+    async voteForGame(game) {
+  if (!this.currentEvent) {
+    console.error('No event selected');
+    return;
+  }
 
-      const eventId = this.currentEvent.id;
+  const eventId = this.currentEvent.id;
 
-      try {
-        await axios.post(`http://localhost:3000/event/${eventId}/vote-for-game`, {
-          eventId, // Include eventId in the   request body
-          gameId
-        }, {
-          withCredentials: true
-        });
-        await this.fetchVotes(this.currentEvent);
-        // eslint-disable-next-line
-        M.toast({ html: 'Voted successfully', displayLength: 4000});
-      } catch (error) {
-        console.error('Error voting for game:', error);
-        // Handle error (e.g., display a message to the user)
-      }
-    },
+  try {
+    if(game.voted){
+    await axios.post(`http://localhost:3000/event/${eventId}/vote-for-game`, {
+      eventId,
+      gameId: game.id
+    }, {
+      withCredentials: true
+    });
+
+    localStorage.setItem(`voted_${game.id}`, true);
+    game.voted = false;
+
+    await this.fetchVotes(this.currentEvent);
+
+    // eslint-disable-next-line
+    M.toast({ html: 'Voted successfully', displayLength: 4000 });
+  }
+  else {
+    await axios.post(`http://localhost:3000/event/${eventId}/vote-for-game`, {
+        eventId, // Include eventId in the request body
+        gameId: game.id
+      }, {
+        withCredentials: true
+      });
+
+      // Update the voted status in localStorage
+      localStorage.setItem(`voted_${game.id}`, false);
+      
+    // Toggle the voted property of the game
+    game.voted = true;
+
+// Fetch votes again to update the votes count
+await this.fetchVotes(this.currentEvent);
+
+// eslint-disable-next-line
+M.toast({ html:'Vote removed', displayLength: 4000 });
+    }
+
+ 
+
+  } catch (error) {
+    console.error('Error voting for game:', error);
+  }
+},
     async fetchVotes(event){
   try {
         const response = await axios.get(`http://localhost:3000/event/${event.id}/games-votes`, { withCredentials: true });
