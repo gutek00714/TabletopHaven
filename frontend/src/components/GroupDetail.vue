@@ -106,9 +106,9 @@
                       <a @click="openEventVoteModal(event)">
                         {{ event.name }} - {{ event.date }} 
                       </a>
-                      <button v-if="manageMode" @click.stop="openRemoveEventModal(member)" class="remove-event-button">
+                      <!-- <button v-if="manageMode" @click.stop="openRemoveEventModal(member)" class="remove-event-button">
                           <img class="remove" src="/remove.svg" alt="X"/>
-                      </button>  
+                      </button>   -->
                     </div>
                     
                     <div id="gamesModal" class="modal" ref="gamesModal">
@@ -118,11 +118,11 @@
                           <li v-for="game in games" :key="game.id">
                             <GameCard :gameId="game.id"/>
                             <button class="vote-button centered" @click="voteForGame(game)" v-if="!game.voted">
-  Vote ({{ game.votes }})
-</button>
-<button class="vote-button centered" @click="voteForGame(game)" v-else>
-  Voted ({{ game.votes }})
-</button>                                                   
+                              Vote ({{ game.votes }})
+                            </button>
+                            <button class="vote-button centered" @click="voteForGame(game)" v-else>
+                              Voted ({{ game.votes }})
+                            </button>                                                   
                           </li>
                         </ul>
                       </div>
@@ -210,9 +210,9 @@ export default {
       await this.fetchEvents();
       const today = new Date();
       this.games.forEach(game => {
-      const voted = localStorage.getItem(`voted_${game.id}`);
-      game.voted = voted === 'true';
-    });
+        const voted = localStorage.getItem(`voted_${game.id}`);
+        game.voted = voted === 'true'; // Ensure this matches the set logic
+      });
     const nextYear = today.getFullYear() + 1;
     const minDate = today.toISOString().substring(0, 16); // Minimum date is today
     const maxDate = new Date(nextYear, today.getMonth(), today.getDate()).toISOString().substring(0, 16); // Maximum date is one year from today
@@ -248,70 +248,57 @@ export default {
   methods: {
 
     async voteForGame(game) {
-  if (!this.currentEvent) {
-    console.error('No event selected');
-    return;
-  }
+      if (!this.currentEvent) {
+        console.error('No event selected');
+        return;
+      }
 
-  const eventId = this.currentEvent.id;
+      const eventId = this.currentEvent.id;
+      const wasVoted = game.voted; // Store original vote state to revert if needed
 
-  try {
-    if(game.voted){
-    await axios.post(`http://localhost:3000/event/${eventId}/vote-for-game`, {
-      eventId,
-      gameId: game.id
-    }, {
-      withCredentials: true
-    });
+      try {
+        // Optimistically toggle the vote for immediate UI update
+        game.voted = !game.voted;
+        localStorage.setItem(`voted_${game.id}`, game.voted);
 
-    localStorage.setItem(`voted_${game.id}`, true);
-    game.voted = false;
+        // Post the vote change to the server
+        await axios.post(`http://localhost:3000/event/${eventId}/vote-for-game`, {
+          eventId,
+          gameId: game.id
+        }, {
+          withCredentials: true
+        });
 
-    await this.fetchVotes(this.currentEvent);
+        // Always refetch the latest votes to ensure UI consistency
+        await this.fetchVotes(this.currentEvent);
 
-    // eslint-disable-next-line
-    M.toast({ html: 'Voted successfully', displayLength: 4000 });
-  }
-  else {
-    await axios.post(`http://localhost:3000/event/${eventId}/vote-for-game`, {
-        eventId, // Include eventId in the request body
-        gameId: game.id
-      }, {
-        withCredentials: true
-      });
+        // Success toast message based on new voted state
+        // eslint-disable-next-line
+        M.toast({ html: game.voted ? 'Voted successfully' : 'Vote removed', displayLength: 4000 });
+      } catch (error) {
+        console.error('Error voting for game:', error);
+        // Revert vote state on error
+        game.voted = wasVoted;
+        localStorage.setItem(`voted_${game.id}`, wasVoted);
+      }
+    },
 
-      // Update the voted status in localStorage
-      localStorage.setItem(`voted_${game.id}`, false);
-      
-    // Toggle the voted property of the game
-    game.voted = true;
-
-// Fetch votes again to update the votes count
-await this.fetchVotes(this.currentEvent);
-
-// eslint-disable-next-line
-M.toast({ html:'Vote removed', displayLength: 4000 });
-    }
-
- 
-
-  } catch (error) {
-    console.error('Error voting for game:', error);
-  }
-},
-    async fetchVotes(event){
-  try {
+    async fetchVotes(event) {
+      try {
         const response = await axios.get(`http://localhost:3000/event/${event.id}/games-votes`, { withCredentials: true });
         const votes = response.data;
-        // Update the games list with vote counts
-        this.games = this.games.map(game => ({
-          ...game,
-          votes: votes.find(vote => vote.game_id === game.id)?.vote_count || 0
-        }));
+        this.games = this.games.map(game => {
+          const voteData = votes.find(vote => vote.game_id === game.id);
+          return {
+            ...game,
+            votes: voteData ? voteData.vote_count : 0 // Ensure vote count resets if not present
+          };
+        });
       } catch (error) {
         console.error('Error fetching votes:', error);
       }
-},
+    },
+
 //     async deleteVoteForGame(gameId) {
 //   if (!this.currentEvent) {
 //     console.error('No event selected');
