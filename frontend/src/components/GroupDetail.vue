@@ -211,8 +211,8 @@ export default {
       await this.fetchEvents();
       const today = new Date();
       this.games.forEach(game => {
-        const voted = localStorage.getItem(`voted_${game.id}`);
-        game.voted = voted === 'true'; // Ensure this matches the set logic
+        const voted = localStorage.getItem(`voted_${event.id}_${game.id}`);
+        game.voted = voted === 'true';
       });
     const nextYear = today.getFullYear() + 1;
     const minDate = today.toISOString().substring(0, 16); // Minimum date is today
@@ -255,14 +255,13 @@ export default {
       }
 
       const eventId = this.currentEvent.id;
-      const wasVoted = game.voted; // Store original vote state to revert if needed
+      const originallyVoted = game.voted;
+
+      // Optimistically update UI
+      game.voted = !game.voted;
+      game.votes += game.voted ? 1 : -1; // Adjust votes count based on new voted status
 
       try {
-        // Optimistically toggle the vote for immediate UI update
-        game.voted = !game.voted;
-        localStorage.setItem(`voted_${game.id}`, game.voted);
-
-        // Post the vote change to the server
         await axios.post(`http://localhost:3000/event/${eventId}/vote-for-game`, {
           eventId,
           gameId: game.id
@@ -270,19 +269,15 @@ export default {
           withCredentials: true
         });
 
-        // Always refetch the latest votes to ensure UI consistency
-        await this.fetchVotes(this.currentEvent);
-
-        // Success toast message based on new voted state
-        // eslint-disable-next-line
-        M.toast({ html: game.voted ? 'Voted successfully' : 'Vote removed', displayLength: 4000 });
+        await this.fetchVotes(this.currentEvent); // Refetch votes to ensure data consistency
       } catch (error) {
         console.error('Error voting for game:', error);
-        // Revert vote state on error
-        game.voted = wasVoted;
-        localStorage.setItem(`voted_${game.id}`, wasVoted);
+        // Revert changes if there was an error
+        game.voted = originallyVoted;
+        game.votes += originallyVoted ? -1 : 1; // Revert votes count
       }
     },
+
 
     async fetchVotes(event) {
       try {
@@ -478,11 +473,15 @@ export default {
       try {
         const response = await axios.get(`http://localhost:3000/event/${event.id}/games-votes`, { withCredentials: true });
         const votes = response.data;
-        // Update the games list with vote counts
-        this.games = this.games.map(game => ({
-          ...game,
-          votes: votes.find(vote => vote.game_id === game.id)?.vote_count || 0
-        }));
+        // Update the games list with vote counts and determine voted status
+        this.games = this.games.map(game => {
+          const voteData = votes.find(vote => vote.game_id === game.id);
+          return {
+            ...game,
+            votes: voteData ? voteData.vote_count : 0,
+            voted: !!voteData // Set voted true if there is vote data
+          };
+        });
       } catch (error) {
         console.error('Error fetching votes:', error);
       }
@@ -491,6 +490,7 @@ export default {
       // eslint-disable-next-line
       M.Modal.init(modalElement).open();
     },
+
 
     openRemoveMemberModal(member) {
       if (member) {
@@ -518,13 +518,27 @@ export default {
     },
 
     toggleVote(game) {
-    game.voted = !game.voted;
-    if (game.voted) {
-      game.votes++;
-    } else {
-      game.votes--;
-    }
-  },
+      game.voted = !game.voted;
+      if (game.voted) {
+        game.votes++;
+      } else {
+        game.votes--;
+      }
+    },
+
+    clearVotedStates() {
+      this.games = this.games.map(game => ({
+        ...game,
+        voted: false
+      }));
+    },
+
+    closeModal() {
+      const modalElement = this.$refs.gamesModal;
+      // eslint-disable-next-line
+      M.Modal.getInstance(modalElement).close();
+      this.clearVotedStates();
+    },
 
     async confirmRemoveMember() {
       if (!this.memberToRemove) return;
