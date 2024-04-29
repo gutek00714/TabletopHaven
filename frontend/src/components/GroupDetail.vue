@@ -102,14 +102,15 @@
                     </div>
                   </div>
                 
-                    <div v-for="event in events" :key="event.id" class="event-container">
-                      <a @click="openEventVoteModal(event)">
-                        {{ event.name }} - {{ event.date }} 
-                      </a>
+                  <div v-for="event in events" :key="event.id" class="event-container">
+                    <a @click="openEventVoteModal(event)" class="full-width-link">
+                      {{ event.name }} - {{ event.date }}
                       <!-- <button v-if="manageMode" @click.stop="openRemoveEventModal(member)" class="remove-event-button">
                           <img class="remove" src="/remove.svg" alt="X"/>
                       </button>   -->
-                    </div>
+                    </a>
+                  </div>
+                  
                     
                     <div id="gamesModal" class="modal" ref="gamesModal">
                       <div class="modal-content">
@@ -876,20 +877,35 @@ export default {
   margin-bottom: 10px; 
   background-color: #272538;
   border-radius: 10px;
-  padding: 1.5rem;
   box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.5);
   transition: all 0.3s ease;
   display: block; 
   width: 75%; 
   color: #FAFAFA !important;
   font-size: 1.2em;
+  padding: 0; /* Remove padding here */
 }
 
 .event-container:hover {
+  cursor: pointer;
   background-color: #322f46;
   box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.8);
   transform: translateY(-2px);
 }
+
+.full-width-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 1.5rem; /* Apply padding here for the child anchor */
+  color: white; /* Ensure text color is white */
+  text-decoration: none; /* Optional: Removes underline from links */
+}
+
+a {
+  color: white;
+}
+
 
 a {
   color: white;
