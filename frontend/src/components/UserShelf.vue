@@ -404,7 +404,7 @@ export default {
 }
 
 .modal-content {
-  color: #ffffff;
+  color: #FAFAFA;
   padding: 20px;
 }
 
@@ -422,7 +422,7 @@ export default {
 }
 
 .modal-close {
-  color: #FFFFFF;
+  color: #FAFAFA;
   display: flex;
   justify-content: center;
   align-items: center;

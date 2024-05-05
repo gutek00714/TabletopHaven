@@ -4,6 +4,8 @@
       <div v-if="loading" class="loading-error">Loading group details...</div>
       <div v-else-if="error" class="loading-error">{{ error }}</div>
       <div v-else>
+        <div>
+    </div>
         <div v-if="isMemberOrOwner">
           <div class="row">
             <div class="group-members-and-chat">            
@@ -37,9 +39,19 @@
                   <a href="#!" class="modal-close waves-effect waves-green btn-flat" @click="confirmRemoveMember">Yes</a>
                   <a href="#!" class="modal-close waves-effect waves-red btn-flat">No</a>
                 </div>
-              </div>              
+              </div>      
+              <div id="confirmRemoveMemberModal" class="modal" ref="eventModal">
+                <div class="modal-content">
+                  <h4>Confirm Event Removal</h4>
+                  <p v-if="eventToRemove">Are you sure you want to remove {{ eventToRemove.username }} from the group?</p>
+                </div>
+                <div class="modal-footer">
+                  <a href="#!" class="modal-close waves-effect waves-green btn-flat" @click="confirmRemoveEvent">Yes</a>
+                  <a href="#!" class="modal-close waves-effect waves-red btn-flat">No</a>
+                </div>
+              </div>                  
               <div class="row">
-                <div class="col m5">
+                <div class="col m4">
                   <h4>Members</h4>
                   <ul class="friends-list">
                     <div v-if="owner" class="member-container">
@@ -63,7 +75,7 @@
                   </ul>
                 </div>
 
-                <div class="col m7">
+                <div class="col m4">
                   <h4>Group Chat</h4>
                   <div class="chat-container">
                     <div class="messages-container">
@@ -76,7 +88,60 @@
                       <button @click="sendMessage" class="send-message-button">Send</button>
                     </div>
                   </div>
-                </div>                
+                </div>
+
+                <div class="col m4">
+                  <div class="calendar-header">
+                    <h4>Calendar</h4>
+                    <button @click="openCreateEventModal" class="btn-create-event">Create Event</button>
+                  </div>
+                
+                  <div id="createEventModal" class="modal" ref="createModal">
+                    <div class="modal-content">
+                      <h2>Create Calendar Event</h2>
+                      <form>
+                        <label for="eventName">Event Name:</label>
+                        <input type="text" id="eventName" v-model="eventName" maxlength="30" required style="color:#FAFAFA">
+                        <label for="eventDate">Event Date:</label>
+                        <input type="datetime-local" id="eventDate" v-model="eventDate" required style="color:#FAFAFA" :min="minDate" :max="maxDate">
+                      </form>
+                    </div>
+                    <div class="modal-footer">
+                      <a href="#!" class="modal-close waves-effect waves-green btn-flat" @click="confirmCreateEvent">Create</a>
+                      <a href="#!" class="modal-close waves-effect waves-red btn-flat">Cancel</a>
+                    </div>
+                  </div>
+                
+                  <div v-for="event in events" :key="event.id" class="event-container">
+                    <a @click="openEventVoteModal(event)" class="full-width-link">
+                      {{ event.name }} - {{ event.date }}
+                      <!-- <button v-if="manageMode" @click.stop="openRemoveEventModal(member)" class="remove-event-button">
+                          <img class="remove" src="/remove.svg" alt="X"/>
+                      </button>   -->
+                    </a>
+                  </div>
+                  
+                    
+                    <div id="gamesModal" class="modal" ref="gamesModal">
+                      <div class="modal-content">
+                        <h4>Vote for game in "{{ currentEvent?.name }} - {{ currentEvent?.date }}"</h4>
+                        <ul class="game-list">
+                          <li v-for="game in games" :key="game.id">
+                            <GameCard :gameId="game.id"/>
+                            <button class="vote-button centered" @click="voteForGame(game)" v-if="!game.voted">
+                              Vote ({{ game.votes }})
+                            </button>
+                            <button class="vote-button centered" @click="voteForGame(game)" v-else>
+                              Voted ({{ game.votes }})
+                            </button>                                                   
+                          </li>
+                        </ul>
+                      </div>
+                      <div class="modal-footer">
+                        <a href="#!" class="modal-close waves-effect waves-green btn-flat">Close</a>
+                      </div>
+                    </div>
+                </div>
               </div>
             </div>
           </div>
@@ -130,7 +195,14 @@ export default {
       deleteModalInstance: null,
       removeModalInstance: null,
       messages: [],
-      message: ''
+      message: '',
+      voteModalInstance: null,
+      eventName: '',
+      eventDate: '',
+      minDate:'',
+      maxDate:'',
+      events: [],
+      currentEvent: null,
     };
   },
   
@@ -150,6 +222,17 @@ export default {
     try {
       await this.fetchCurrentUserId();
       await this.fetchGroupDetails();
+      await this.fetchEvents();
+      const today = new Date();
+      this.games.forEach(game => {
+        const voted = localStorage.getItem(`voted_${event.id}_${game.id}`);
+        game.voted = voted === 'true';
+      });
+    const nextYear = today.getFullYear() + 1;
+    const minDate = today.toISOString().substring(0, 16); // Minimum date is today
+    const maxDate = new Date(nextYear, today.getMonth(), today.getDate()).toISOString().substring(0, 16); // Maximum date is one year from today
+    this.minDate = minDate;
+    this.maxDate = maxDate;
     } catch (error) {
       console.error('Error in created hook:', error);
     }
@@ -195,6 +278,152 @@ export default {
     },
 
 
+
+    async voteForGame(game) {
+      if (!this.currentEvent) {
+        console.error('No event selected');
+        return;
+      }
+
+      const eventId = this.currentEvent.id;
+      const originallyVoted = game.voted;
+
+      // Optimistically update UI
+      game.voted = !game.voted;
+      game.votes += game.voted ? 1 : -1; // Adjust votes count based on new voted status
+
+      try {
+        await axios.post(`http://localhost:3000/event/${eventId}/vote-for-game`, {
+          eventId,
+          gameId: game.id
+        }, {
+          withCredentials: true
+        });
+
+        await this.fetchVotes(this.currentEvent); // Refetch votes to ensure data consistency
+      } catch (error) {
+        console.error('Error voting for game:', error);
+        // Revert changes if there was an error
+        game.voted = originallyVoted;
+        game.votes += originallyVoted ? -1 : 1; // Revert votes count
+      }
+    },
+
+
+    async fetchVotes(event) {
+      try {
+        const response = await axios.get(`http://localhost:3000/event/${event.id}/games-votes`, { withCredentials: true });
+        const votes = response.data;
+        this.games = this.games.map(game => {
+          const voteData = votes.find(vote => vote.game_id === game.id);
+          return {
+            ...game,
+            votes: voteData ? voteData.vote_count : 0 // Ensure vote count resets if not present
+          };
+        });
+      } catch (error) {
+        console.error('Error fetching votes:', error);
+      }
+    },
+
+//     async deleteVoteForGame(gameId) {
+//   if (!this.currentEvent) {
+//     console.error('No event selected');
+//     return;
+//   }
+
+//   const eventId = this.currentEvent.id;
+
+//   try {
+//     const response = await axios.delete(`http://localhost:3000/event/${eventId}/delete-vote/${gameId}`, {
+//       withCredentials: true
+//     });
+    
+//     if (response.status === 200) {
+//       const index = this.games.findIndex(game => game.id === gameId);
+//       if (index !== -1) {
+//         this.$set(this.games[index], 'votes', 0);
+//       }
+//     }
+    
+//   } catch (error) {
+//     console.error('Error deleting vote for game:', error);
+
+//   }
+// },
+
+    toggleManageMode() {
+      this.manageMode = !this.manageMode;
+    },
+
+    async openCreateEventModal() {
+      const modalElement = this.$refs.createModal;
+      // eslint-disable-next-line
+      M.Modal.init(modalElement).open();
+    },
+    
+    async confirmCreateEvent() {
+  const groupId = this.$route.params.groupId;
+  const selectedDate = new Date(this.eventDate); 
+  const today = new Date();
+  const nextYear = today.getFullYear() + 1;
+  const minDate = new Date(today.getTime() + (24 * 60 * 60 * 1000)); 
+
+  if (selectedDate < minDate || selectedDate.getFullYear() > nextYear) {
+    // eslint-disable-next-line
+    M.toast({ html: 'Invalid date', displayLength: 4000});
+
+    return; 
+  }
+
+  if (isNaN(selectedDate.getTime())) {
+
+        // eslint-disable-next-line
+    M.toast({ html: 'Invalid date', displayLength: 4000});
+    return; 
+  }
+
+  try {
+    await axios.post(`http://localhost:3000/group/${groupId}/create-event`, {
+      eventName: this.eventName,
+      eventDate: this.eventDate,
+      // Additional data if needed
+    }, {
+      withCredentials: true
+    });
+    this.eventName = '';
+    this.eventDate = '';
+    await this.fetchEvents();
+    const modalInstance = this.Modal.getInstance(this.$refs.createModal);
+    modalInstance.close();
+  } catch (error) {
+    console.error('Error creating event:', error);
+  }
+}
+
+,
+    async fetchEvents() {
+      const groupId = this.$route.params.groupId;
+      try {
+        const response = await axios.get(`http://localhost:3000/group/${groupId}/events`, { withCredentials: true });
+        response.data.forEach(event => {
+        const eventDate = new Date(event.date);
+        const formattedDate = eventDate.toLocaleDateString('pl-PL', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+    event.date = formattedDate;
+});
+
+        this.events = response.data;
+      } catch (error) {
+        console.error('Error fetching events:', error);
+      }
+    },
+
     async applyFilters() {
       const invalidTimeFilter = this.minPlayTimeFilter !== null && this.maxPlayTimeFilter !== null && 
                                 this.minPlayTimeFilter > this.maxPlayTimeFilter;
@@ -221,6 +450,7 @@ export default {
         return;
       }
       const groupId = this.$route.params.groupId;
+      this.groupId = groupId;
       this.loading = true;
       try {
         const response = await axios.get(`http://localhost:3000/group/${groupId}/details`);
@@ -269,6 +499,30 @@ export default {
       }
     },
 
+    async openEventVoteModal(event) {
+      this.currentEvent = event;
+      try {
+        const response = await axios.get(`http://localhost:3000/event/${event.id}/games-votes`, { withCredentials: true });
+        const votes = response.data;
+        // Update the games list with vote counts and determine voted status
+        this.games = this.games.map(game => {
+          const voteData = votes.find(vote => vote.game_id === game.id);
+          return {
+            ...game,
+            votes: voteData ? voteData.vote_count : 0,
+            voted: !!voteData // Set voted true if there is vote data
+          };
+        });
+      } catch (error) {
+        console.error('Error fetching votes:', error);
+      }
+      
+      const modalElement = this.$refs.gamesModal;
+      // eslint-disable-next-line
+      M.Modal.init(modalElement).open();
+    },
+
+
     openRemoveMemberModal(member) {
       if (member) {
         this.memberToRemove = member;
@@ -280,6 +534,41 @@ export default {
         // Handle the case where the member is not defined
         console.error('No member selected for removal.');
       }
+    },
+    openRemoveEventModal(event) {
+      if (event) {
+        this.memberToRemove = event;
+        const modalElement = this.$refs.removeModal;
+        // eslint-disable-next-line
+        this.removeModalInstance = M.Modal.init(modalElement); // Save the instance
+        this.removeModalInstance.open();
+      } else {
+        // Handle the case where the member is not defined
+        console.error('No event selected for removal.');
+      }
+    },
+
+    toggleVote(game) {
+      game.voted = !game.voted;
+      if (game.voted) {
+        game.votes++;
+      } else {
+        game.votes--;
+      }
+    },
+
+    clearVotedStates() {
+      this.games = this.games.map(game => ({
+        ...game,
+        voted: false
+      }));
+    },
+
+    closeModal() {
+      const modalElement = this.$refs.gamesModal;
+      // eslint-disable-next-line
+      M.Modal.getInstance(modalElement).close();
+      this.clearVotedStates();
     },
 
     async confirmRemoveMember() {
@@ -305,10 +594,6 @@ export default {
           this.removeModalInstance.close(); // Use the saved instance to close the modal
         }
       }
-    },
-
-    toggleManageMode() {
-      this.manageMode = !this.manageMode;
     },
   }
 };
@@ -380,12 +665,17 @@ export default {
 }
 
 @media (min-width: 768px) {
-  .group-members {
-    width: 45%; 
+  .group-members, .group-chat, .calendar {
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .group-chat {
-    width: 45%; 
+    width: calc(50% - 10px); 
+  }
+
+  .calendar {
+    width: calc(50% - 10px); 
   }
 }
 
@@ -473,6 +763,20 @@ export default {
   justify-content: center;
   margin-bottom: 4px;
 }
+
+.remove-event-button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  padding: 0;
+  margin-left: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
 .group-games {
   margin-top: 20px;
 }
@@ -529,7 +833,7 @@ export default {
 }
 
 .modal-content {
-  color: #ffffff;
+  color: #FAFAFA;
   padding: 20px;
 }
 
@@ -547,7 +851,7 @@ export default {
 }
 
 .modal-close {
-  color: #FFFFFF;
+  color: #FAFAFA;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -642,4 +946,98 @@ export default {
   overflow-y: auto;
 }
 
+.calendar-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.btn-create-event {
+  background-color: #4e6ef2;
+  margin-right: 10px;
+  padding: 10px 15px;
+  color: white;
+  border: 2px solid #474747;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transition: all 0.3s ease-in-out;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.btn-create-event:hover {
+  background-color: #3b56c1;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transform: translateY(-2px);
+}
+
+.event-container {
+  margin-bottom: 10px; 
+  background-color: #272538;
+  border-radius: 10px;
+  box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease;
+  display: block; 
+  width: 75%; 
+  color: #FAFAFA !important;
+  font-size: 1.2em;
+  padding: 0; /* Remove padding here */
+}
+
+.event-container:hover {
+  cursor: pointer;
+  background-color: #322f46;
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.8);
+  transform: translateY(-2px);
+}
+
+.full-width-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 1.5rem; /* Apply padding here for the child anchor */
+  color: white; /* Ensure text color is white */
+  text-decoration: none; /* Optional: Removes underline from links */
+}
+
+a {
+  color: white;
+}
+
+
+a {
+  color: white;
+}
+
+.vote-button {
+  background-color: #4caf50;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+  
+}
+
+.vote-button.centered {
+  display: block;
+  margin: 0 auto;
+  margin-top: 10px;
+}
+
+.vote-button:hover {
+  background-color: #388e3c;
+}
+
+.vote-button.voted {
+  background-color: green;
+  color: white;
+}
 </style>

@@ -10,7 +10,7 @@
       <div id="createGroupModal" class="modal" ref="createModal">
         <div class="modal-content">
           <h4>Create Group</h4>
-          <input type="text" v-model="newGroupName" placeholder="Group Name" style="color:#FFFFFF" />
+          <input type="text" v-model="newGroupName" placeholder="Group Name" maxlength="30" style="color:#FAFAFA" />
         </div>
         <div class="modal-footer">
           <a href="#!" class="modal-close waves-effect waves-green btn-flat" @click="confirmCreateGroup">Create</a>
@@ -207,7 +207,7 @@ export default {
 }
 
 .modal-content {
-  color: #ffffff;
+  color: #FAFAFA;
   padding: 20px;
 }
 
@@ -225,7 +225,7 @@ export default {
 }
 
 .modal-close {
-  color: #FFFFFF;
+  color: #FAFAFA;
   display: flex;
   justify-content: center;
   align-items: center;
