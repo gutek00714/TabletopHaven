@@ -10,17 +10,27 @@ function generateRandomGameIds(count, maxId) {
 // Function to create a single user
 async function createUser(userId) {
   try {
+      let googleId = userId.toString();
+      let existingUser = await db.oneOrNone('SELECT id FROM users WHERE googleId = $1', googleId);
+      // If the Google ID already exists, generate a new one until it's unique
+      while (existingUser) {
+          userId++; // Increment userId
+          googleId = userId.toString(); // Update Google ID
+          existingUser = await db.oneOrNone('SELECT id FROM users WHERE googleId = $1', googleId);
+      }
+
+      // Generate other random data
       const ownedGames = generateRandomGameIds(Math.floor(Math.random() * 10) + 1, 200);
       const wishlist = generateRandomGameIds(Math.floor(Math.random() * 10) + 1, 200);
       const favorites = generateRandomGameIds(Math.floor(Math.random() * 10) + 1, 200);
-
       const uniqueImageUrl = `https://lh3.googleusercontent.com/a/ACg8ocKlxn9GIhFaQuclsk9Oz6ffLGKNjQVhqr3-IJUrZ4u8=s96-c`;
 
+      // Insert the user with the unique Google ID
       await db.none(
           'INSERT INTO users (googleId, email, username, owned_games, wishlist, favorites, profile_image_url) ' +
           'VALUES (${googleId}, ${email}, ${username}, ${owned_games}, ${wishlist}, ${favorites}, ${profile_image_url})',
           {
-              googleId: userId.toString(),
+              googleId: googleId,
               email: `user${userId}@example.com`,
               username: `User${userId}`,
               owned_games: ownedGames,
