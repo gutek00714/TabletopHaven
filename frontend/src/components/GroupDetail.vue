@@ -301,6 +301,13 @@ export default {
         });
 
         await this.fetchVotes(this.currentEvent); // Refetch votes to ensure data consistency
+        if (game.voted) {
+          // eslint-disable-next-line
+          M.toast({ html: 'Voted successfully', displayLength: 4000 });
+        } else {
+          // eslint-disable-next-line
+          M.toast({ html: 'Vote removed', displayLength: 4000 });
+        }
       } catch (error) {
         console.error('Error voting for game:', error);
         // Revert changes if there was an error
