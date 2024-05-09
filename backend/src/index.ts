@@ -621,7 +621,7 @@ app.get('/is-following/:friendId', async (req, res) => {
 
   const user = req.user as MinimalUser | undefined;
   const friendId = parseInt(req.params.friendId, 10);
-
+  console.log('User:', user);
   if (!user || !user.id || !friendId) {
     return res.status(400).send('Invalid data');
   }
@@ -1015,7 +1015,28 @@ app.delete('/delete-group/:groupId', async (req, res) => {
     return res.status(400).json({ message: 'Invalid group ID.' });
   }
 
+  interface MinimalUser {
+    id: number;
+  }
+  const user = req.user as MinimalUser | undefined;
+  if (!user || !user.id) {
+    return res.status(401).json({ message: 'User not logged in.' });
+  }
+
   try {
+    const checkOwnershipQuery = 'SELECT owner_id FROM groups WHERE id = $1';
+    const ownershipResult = await pool.query(checkOwnershipQuery, [groupId]);
+
+    if (ownershipResult.rows.length === 0) {
+      return res.status(404).json({ message: 'Group not found.' });
+    }
+
+    const ownerId = ownershipResult.rows[0].owner_id;
+
+    if (user.id !== ownerId) {
+      return res.status(403).json({ message: 'You are not authorized to delete this group.' });
+    }
+    
     const deleteVotesQuery = `
     DELETE FROM event_game_votes
     USING calendar_events
