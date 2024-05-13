@@ -73,8 +73,8 @@ export default {
       else if (title.length > 19) {
         return '22px';
       }
-      else if (title.length > 16) { // Adjust the number based on your needs
-        return '24px'; // Smaller font size for longer titles
+      else if (title.length > 16) { 
+        return '24px'; 
       } 
 
       return '30px';
