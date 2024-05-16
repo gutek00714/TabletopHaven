@@ -132,7 +132,7 @@
                               Vote ({{ game.votes }})
                             </button>
                             <button class="vote-button centered" @click="voteForGame(game)" v-else>
-                              Voted ({{ game.votes }})
+                              ✓ Voted ({{ game.votes }})
                             </button>                                                   
                           </li>
                         </ul>
