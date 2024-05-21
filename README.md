@@ -1,39 +1,20 @@
 # TabletopHaven
 
-To create tables:
-node backend/src/createTables.js
+**Instalation**
+To install project:
+```
+npm install.js x
+```
+where x = amount of games we want to download to databae
 
-## Getting Started
+To install project with test users:
+```
+npm install-with-users.js x
+```
+where x = amount of games we want to download to databae
 
-**Backend**
-
-1. Change directory to `backend`
+**Running project**
+To run project:
 ```
-cd ./backend
-````
-
-2. Install requirements
-```
-npm install
-```
-
-3. Run server
-```
-npm run watch
-```
-
-**Frontend**
-1. Change directory to `frontend`
-```
-cd ./frontend
-```
-
-2. Install dependencies
-```
-npm install
-```
-
-3. Run server
-```
-npm run serve
+npm run.js
 ```
