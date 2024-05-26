@@ -1,5 +1,4 @@
-import pool from '../db/pool'; // Adjust the path as necessary
-
+import pool from '../db/pool';
 export async function getTopGames() {
   const query = `
     SELECT g.id, g.name, g.publisher, g.description, g.categories, g.min_players, g.max_players, g.play_time, g.age, g.foreign_names, g.image, g.bgg_id,
