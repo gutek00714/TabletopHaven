@@ -270,7 +270,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh; /* Adjust this value as needed */
+  height: 100vh; 
   overflow-y: auto; /* Enable scrolling if content overflows */
 }
 .shelf-title, .section-title {
