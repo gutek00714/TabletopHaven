@@ -6,9 +6,10 @@ import passport from 'passport';
 import './googleAuth/passport-setup';
 import cors from 'cors';
 import { authGoogle, authGoogleCallback, logout, checkLoginStatus } from './googleAuth/auth';
-
+import gameRoutes from './gamesControllers/gameRoutes'
 import pgSession from 'connect-pg-simple';
 import { Pool } from 'pg';
+import pool from './db/pool'
 
 require('dotenv').config();
 console.log('PostgreSQL connection settings:', {
@@ -75,128 +76,7 @@ app.get('/auth/google/callback', authGoogleCallback);
 app.get('/logout', logout);
 app.get('/check-login-status', checkLoginStatus);
 
-app.get('/game/:gameId', async (req, res) => {
-  interface MinimalUser {
-    id: number;
-  }
-
-  const user = req.user as MinimalUser | undefined;
-
-  const gameId = parseInt(req.params.gameId, 10);
-  if (!gameId) {
-    return res.status(400).send('Invalid game ID');
-  }
-
-  try {
-    const gameDetails = await getGameDetails(gameId);
-    if (!gameDetails) {
-      return res.status(404).send('Game not found');
-    }
-
-    let ownedGames = [];
-    let wishlist = [];
-    let favorites = [];
-  
-    if (user && user.id) {
-      const userQuery = 'SELECT owned_games, wishlist, favorites FROM users WHERE id = $1';
-      const userRes = await pool.query(userQuery, [user.id]);
-      ownedGames = userRes.rows[0]?.owned_games || [];
-      wishlist = userRes.rows[0]?.wishlist || [];
-      favorites = userRes.rows[0]?.favorites || [];
-    }
-  
-    res.json({ ...gameDetails, owned_games: ownedGames, wishlist, favorites });
-  
-  } catch (error) {
-    console.error('Error fetching game details:', error);
-    res.status(500).send('Internal Server Error');
-  }
-});
-
-
-const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_DATABASE,
-  password: process.env.DB_PASSWORD,
-  port: parseInt(process.env.DB_PORT || '5432', 10),
-});
-
-async function getGameDetails(gameId: number) {
-  const query = 'SELECT * FROM games WHERE id = $1';
-  try {
-    const res = await pool.query(query, [gameId]);
-    return res.rows[0];
-  } catch (err) {
-    if (err instanceof Error) {
-      console.error('Error executing query', err.stack);
-    } else {
-      console.error('An unknown error occurred');
-    }
-    throw err;
-  }
-}
-
-app.get('/top-games', async (req, res) => {
-  try {
-    const query = `
-    SELECT g.id, g.name, g.publisher, g.description, g.categories, g.min_players, g.max_players, g.play_time, g.age, g.foreign_names, g.image, g.bgg_id,
-       COALESCE(ROUND((g.total_rating_score::FLOAT / NULLIF(g.rating_count, 0))::numeric, 1), 0) AS average_rating
-    FROM games g
-    ORDER BY average_rating DESC, g.rating_count DESC
-    LIMIT 5;
-    `;
-    const result = await pool.query(query);
-    res.json(result.rows);
-  } catch (err) {
-    if (err instanceof Error) {
-      console.error('Error executing query', err.stack);
-    } else {
-      console.error('An unknown error occurred');
-    }
-    res.status(500).send('Internal Server Error');
-  }
-});
-
-app.get('/ranking', async (req, res) => {
-  try {
-    const query = `
-    SELECT g.id, g.name, g.publisher, g.description, g.categories, g.min_players, g.max_players, g.play_time, g.age, g.foreign_names, g.image, g.bgg_id,
-       COALESCE(ROUND((g.total_rating_score::FLOAT / NULLIF(g.rating_count, 0))::numeric, 1), 0) AS average_rating
-    FROM games g
-    ORDER BY average_rating DESC, g.rating_count DESC
-    LIMIT 100;
-    `;
-    const result = await pool.query(query);
-    res.json(result.rows);
-  } catch (err) {
-    if (err instanceof Error) {
-      console.error('Error executing query', err.stack);
-    } else {
-      console.error('An unknown error occurred');
-    }
-    res.status(500).send('Internal Server Error');
-  }
-});
-
-app.get('/search-games', async (req, res) => {
-  const searchQuery = typeof req.query.q === 'string' ? req.query.q : '';
-  if (!searchQuery) {
-    return res.json([]);
-  }
-
-  try {
-    const query = 'SELECT * FROM games WHERE LOWER(name) LIKE $1 LIMIT 100'; // Limiting to 10 results for efficiency
-    const results = await pool.query(query, [`%${searchQuery.toLowerCase()}%`]);
-    res.json(results.rows);
-    } catch (err) {
-      if (err instanceof Error) {
-        console.error('Error executing search query', err.stack);
-      } else {
-        console.error('An unknown error occurred');
-      }
-    }
-});
+app.use(gameRoutes);
 
 app.post('/add-to-shelf', async (req, res) => {
   console.log('Request body:', req.body);
