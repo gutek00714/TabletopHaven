@@ -13,10 +13,10 @@ router.get('/user/:userId/eligible-groups', async (req, res) => {
       return res.status(401).json({ message: 'User not logged in.' });
     }
     const loggedInUserId = loggedInUser.id;
-    console.log(`User ${loggedInUserId}`)
+    // console.log(`User ${loggedInUserId}`)
   
     const profileUserId = parseInt(req.params.userId, 10);
-    console.log(`User ${profileUserId}`)
+    // console.log(`User ${profileUserId}`)
     if (isNaN(profileUserId)) {
       return res.status(400).json({ message: 'Invalid user ID.' });
     }
