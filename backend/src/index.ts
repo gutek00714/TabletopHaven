@@ -3,10 +3,11 @@ import { Server as SocketIOServer } from 'socket.io';
 import express from "express";
 import session from 'express-session';
 import passport from 'passport';
-import './googleAuth/passport-setup';
+import './passport-setup';
 import cors from 'cors';
-import { authGoogle, authGoogleCallback, logout, checkLoginStatus } from './googleAuth/auth';
 
+import { gameDetails } from "./bggAPI/gameDetails";
+import { bggAPI } from "./controllers/bggAPI";
 import pgSession from 'connect-pg-simple';
 import { Pool } from 'pg';
 
@@ -48,6 +49,9 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'] // allow these headers
 }));
 
+app.use(gameDetails);
+app.use(bggAPI);
+
 
 app.use(session({
   store: new PgSession({
@@ -70,10 +74,46 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.get('/auth/google', authGoogle);
-app.get('/auth/google/callback', authGoogleCallback);
-app.get('/logout', logout);
-app.get('/check-login-status', checkLoginStatus);
+// Google Auth Routes
+app.get('/auth/google',
+  passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+app.get('/auth/google/callback', 
+  passport.authenticate('google', { 
+      failureRedirect: 'http://localhost:8081' // Redirect to Vue.js fail route
+  }),
+  (req, res) => {
+    // Successful authentication, redirect to Vue.js success route
+    res.redirect('http://localhost:8081');
+  });
+
+app.get('/logout', (req, res) => {
+  console.log('Initiating logout for user:', req.user);
+  req.logout((err) => {
+    if (err) {
+      console.error('Logout error:', err);
+      return res.status(500).send('Error during logout');
+    }
+    req.session.destroy(err => {
+      if (err) {
+        console.error('Session destruction error:', err);
+        return res.status(500).send('Could not log out');
+      }
+      console.log('Session destroyed');
+      res.clearCookie('connect.sid');
+      res.json({ message: 'Logged out' });
+    });
+  });
+});  
+
+app.get('/check-login-status', (req, res) => {
+  console.log('Checking login status, user:', req.user);
+  if (req.isAuthenticated()) {
+    res.json({ isLoggedIn: true });
+  } else {
+    res.json({ isLoggedIn: false });
+  }
+});
 
 app.get('/game/:gameId', async (req, res) => {
   interface MinimalUser {

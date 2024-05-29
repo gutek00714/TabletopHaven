@@ -22,7 +22,7 @@ const main = async () => {
     await runCommand('npm', ['install'], './frontend');
     await runCommand('npm', ['install'], './backend');
 
-    await runCommand('node', ['createTables.js'], './backend/db/src');
+    await runCommand('node', ['createTables.js'], './backend/src');
     const numberOfGames = process.argv[2];
     if (!numberOfGames || isNaN(numberOfGames)) {
       throw new Error("Please provide a valid number of games as a command line argument.");
