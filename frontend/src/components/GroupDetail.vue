@@ -394,6 +394,7 @@ export default {
     await axios.post(`http://localhost:3000/group/${groupId}/create-event`, {
       eventName: this.eventName,
       eventDate: this.eventDate,
+      // Additional data if needed
     }, {
       withCredentials: true
     });
@@ -946,6 +947,7 @@ export default {
   max-width: 100%;
 }
 
+/* You might need to adjust the container of the messages to allow for scrolling */
 .messages-container {
   flex-grow: 1;
   overflow-y: auto;
@@ -991,7 +993,7 @@ export default {
   width: 75%; 
   color: #FAFAFA !important;
   font-size: 1.2em;
-  padding: 0; 
+  padding: 0; /* Remove padding here */
 }
 
 .event-container:hover {
@@ -1005,9 +1007,9 @@ export default {
   display: block;
   width: 100%;
   height: 100%;
-  padding: 1.5rem; 
-  color: white; 
-  text-decoration: none; 
+  padding: 1.5rem; /* Apply padding here for the child anchor */
+  color: white; /* Ensure text color is white */
+  text-decoration: none; /* Optional: Removes underline from links */
 }
 
 a {

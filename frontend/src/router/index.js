@@ -67,6 +67,7 @@ const routes = [
     props: route => ({ groupId: parseInt(route.params.groupId, 10) })
   },
   
+  // other routes...
 ];
 
 const router = createRouter({

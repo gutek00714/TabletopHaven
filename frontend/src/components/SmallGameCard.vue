@@ -64,8 +64,8 @@ export default {
     },
 
     adjustFontSize(title) {
-      if (title.length > 16) { 
-        return '24px'; 
+      if (title.length > 16) { // Adjust the number based on your needs
+        return '24px'; // Smaller font size for longer titles
       }
       else if (title.length > 19) {
         return '20px';
