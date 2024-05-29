@@ -4,7 +4,6 @@ import { getGameDetails} from './gameDetails'; // Adjust the path as necessary
 import { getTopGames } from './gameTop';
 import { getRanking } from './gameRanking';
 import { searchGames } from './gameSearch';
-import getCategories from './gameCategories';
 
 interface MinimalUser {
   id: number;
@@ -79,7 +78,5 @@ router.get('/search-games', async (req: Request, res: Response) => {
     res.status(500).send('Internal Server Error');
   }
 });
-
-router.use(getCategories);
 
 export default router;
