@@ -1,4 +1,5 @@
-import pool from '../db/pool';
+import pool from '../db/pool'; // Adjust the path as necessary
+
 export async function getGameDetails(gameId: number) {
   const query = 'SELECT * FROM games WHERE id = $1';
   try {

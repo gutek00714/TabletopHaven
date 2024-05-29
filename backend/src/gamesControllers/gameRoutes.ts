@@ -1,6 +1,6 @@
 import { Request, Response, Router } from 'express';
-import pool from '../db/pool';
-import { getGameDetails} from './gameDetails';
+import pool from '../db/pool'; // Adjust the path as necessary
+import { getGameDetails} from './gameDetails'; // Adjust the path as necessary
 import { getTopGames } from './gameTop';
 import { getRanking } from './gameRanking';
 import { searchGames } from './gameSearch';
