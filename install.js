@@ -22,7 +22,7 @@ const main = async () => {
     await runCommand('npm', ['install'], './frontend');
     await runCommand('npm', ['install'], './backend');
 
-    await runCommand('node', ['createTables.js'], './backend/src/db');
+    await runCommand('node', ['createTables.js'], './backend/src');
 
     const numberOfGames = process.argv[2];
     if (!numberOfGames || isNaN(numberOfGames)) {
