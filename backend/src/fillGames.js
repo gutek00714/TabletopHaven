@@ -51,7 +51,7 @@ function transformGameData(gameData) {
   };
 }
 
-const db = require('./db'); // Your database module
+const db = require('./db/db'); // Your database module
 
 async function addGameToDatabase(game) {
   try {
