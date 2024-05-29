@@ -10,6 +10,7 @@ router.get('/is-following/:friendId', async (req, res) => {
   
     const user = req.user as MinimalUser | undefined;
     const friendId = parseInt(req.params.friendId, 10);
+    console.log('User:', user);
     if (!user || !user.id || !friendId) {
       return res.status(400).send('Invalid data');
     }

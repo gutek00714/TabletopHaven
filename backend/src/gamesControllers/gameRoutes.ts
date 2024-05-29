@@ -5,9 +5,6 @@ import { getTopGames } from './gameTop';
 import { getRanking } from './gameRanking';
 import { searchGames } from './gameSearch';
 import getCategories from './gameCategories';
-import rateGame from './rateGame';
-import addRating from './addRating';
-import removeRating from './addRating';
 
 interface MinimalUser {
   id: number;
@@ -84,11 +81,5 @@ router.get('/search-games', async (req: Request, res: Response) => {
 });
 
 router.use(getCategories);
-
-router.use(rateGame);
-
-router.use(addRating);
-
-router.use(removeRating);
 
 export default router;
