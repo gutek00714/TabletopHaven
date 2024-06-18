@@ -1,4 +1,4 @@
-In this project I was responsible for the frontend of the application.
+# In this project I was responsible for the frontend of the application.
 
 # TabletopHaven
 
