@@ -1,3 +1,5 @@
+In this project I was responsible for the frontend of the application.
+
 # TabletopHaven
 
 **Instalation**<br />
